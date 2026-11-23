@@ -1,0 +1,281 @@
+// Calcule financiare și produse. Toate sumele sunt în bani (întregi).
+// Funcțiile de aici nu știu nimic de evenimente; engine.js le apelează în ordinea lunii.
+
+import { cfg, inBani } from './util.js';
+
+// ---------- Prețuri și inflație ----------
+
+// O sumă din config (lei, prețuri de la start), ajustată cu inflația cumulată.
+export function pret(state, ctx, cale) {
+  return Math.round(cfg(ctx, cale) * state.indicePreturi * 100);
+}
+
+export const rataLunara = (anuala) => Math.pow(1 + anuala, 1 / 12) - 1;
+
+// ---------- Salariu ----------
+
+export function fluturas(brut, contract, ctx) {
+  if (contract === 'cim') {
+    const cas = Math.round(brut * cfg(ctx, 'taxe.cas'));
+    const cass = Math.round(brut * cfg(ctx, 'taxe.cass'));
+    const deducere = inBani(cfg(ctx, 'taxe.deducerePersonala'));
+    const impozit = Math.round(Math.max(0, brut - cas - cass - deducere) * cfg(ctx, 'taxe.impozitVenit'));
+    const pilon2 = Math.round(brut * cfg(ctx, 'pilon2.procentDinBrut'));
+    return { contract, brut, cas, cass, impozit, deducere, net: brut - cas - cass - impozit, pilon2 };
+  }
+  if (contract === 'pfa') {
+    const retineri = Math.round(brut * cfg(ctx, 'pfa.procentRetineri'));
+    return { contract, brut, cas: 0, cass: 0, impozit: 0, retineri, net: brut - retineri, pilon2: 0 };
+  }
+  // la negru: fără taxe, fără vechime, fără pensie
+  const net = Math.round(brut * cfg(ctx, 'muncaLaNegru.procentNetDinBrut'));
+  return { contract, brut, cas: 0, cass: 0, impozit: 0, net, pilon2: 0 };
+}
+
+// ---------- Portofel: cont curent + numerar ----------
+
+export const contCurent = (state) => state.produse.find((p) => p.tip === 'contCurent');
+export const baniDisponibili = (state) => state.numerar + Math.max(0, contCurent(state)?.sold ?? 0);
+
+export function fondUrgenta(state) {
+  return state.produse
+    .filter((p) => p.tip === 'contEconomii' && p.fondUrgenta)
+    .reduce((s, p) => s + p.sold, 0);
+}
+
+export function cardDisponibil(card) {
+  return Math.max(0, card.limita - card.soldNou - card.soldScadent);
+}
+
+export function incaseaza(state, suma, { cash = false } = {}) {
+  const cont = contCurent(state);
+  if (!cash && cont) cont.sold += suma;
+  else state.numerar += suma;
+}
+
+// Plătește cât poate din sursa cerută. Întoarce suma plătită efectiv.
+export function plateste(state, suma, sursa = 'portofel') {
+  if (suma <= 0) return 0;
+  let rest = suma;
+  const ia = (disponibil) => {
+    const luat = Math.min(rest, Math.max(0, disponibil));
+    rest -= luat;
+    return luat;
+  };
+  if (sursa === 'portofel' || sursa === 'cont') {
+    const cont = contCurent(state);
+    if (cont) cont.sold -= ia(cont.sold);
+  }
+  if (sursa === 'portofel' || sursa === 'cash') {
+    state.numerar -= ia(state.numerar);
+  }
+  if (sursa === 'fondUrgenta') {
+    for (const p of state.produse) {
+      if (p.tip === 'contEconomii' && p.fondUrgenta) p.sold -= ia(p.sold);
+    }
+  }
+  if (sursa === 'cardCredit') {
+    const card = state.produse.find((p) => p.tip === 'cardCredit');
+    if (card) card.soldNou += ia(cardDisponibil(card));
+  }
+  return suma - rest;
+}
+
+// ---------- Produse ----------
+
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca'];
+export const CLASE_INVESTITII = ['etf', 'actiuni', 'crypto', 'aur', 'titluriStat'];
+export const CLASE_PIATA = ['etf', 'actiuni', 'crypto', 'aur'];
+
+// Sumele din spec sunt deja în bani. Cine creează produsul plătește/încasează separat.
+export function creeazaProdus(spec, state, ctx) {
+  const baza = { id: `p${++state.contoare.id}`, tip: spec.tip, deschisLa: state.luna, cauza: spec.cauza ?? null };
+  switch (spec.tip) {
+    case 'contCurent':
+      return { ...baza, pachet: spec.pachet ?? 'standard', sold: 0 };
+    case 'contEconomii':
+      return {
+        ...baza, sold: spec.suma ?? 0, fondUrgenta: !!spec.fondUrgenta,
+        dobandaAnuala: spec.dobandaAnuala ?? cfg(ctx, 'conturi.contEconomii.dobandaAnuala'),
+      };
+    case 'depozit': {
+      const luni = spec.luni ?? cfg(ctx, 'conturi.depozit.luniStandard');
+      return {
+        ...baza, sold: spec.suma, luni, luniRamase: luni, dobandaAcumulata: 0, reinnoire: spec.reinnoire ?? true,
+        dobandaAnuala: spec.dobandaAnuala ?? cfg(ctx, 'conturi.depozit.dobandaAnuala'),
+      };
+    }
+    case 'cardCredit':
+      return {
+        ...baza, limita: spec.limita ?? inBani(cfg(ctx, 'cardCredit.limitaStandard')),
+        dobandaAnuala: spec.dobandaAnuala ?? cfg(ctx, 'cardCredit.dobandaAnuala'),
+        soldNou: 0, soldScadent: 0, plata: spec.plata ?? 'integral', cumparaturiPeCard: !!spec.cumparaturiPeCard,
+        luniRestanta: 0, dobandaTotala: 0,
+      };
+    case 'credit': {
+      const rLunar = rataLunara(spec.dae);
+      return {
+        ...baza, furnizor: spec.furnizor ?? 'banca', stadiu: 'activ',
+        sumaInitiala: spec.suma, rest: spec.suma, dae: spec.dae, rLunar,
+        luni: spec.luni, luniRamase: spec.luni, luniFaraDobanda: spec.luniFaraDobanda ?? 0,
+        rata: rataAnuitate(spec.suma, rLunar, spec.luni),
+        restanta: 0, luniRestanta: 0, totalPlatit: 0, dobandaTotala: 0, penalitati: 0,
+        laRestanta: spec.laRestanta ?? null, flag: spec.flag ?? null,
+      };
+    }
+    case 'investitie': {
+      const clasa = spec.clasa;
+      const comision = Math.round(spec.suma * cfg(ctx, `investitii.${clasa}.comision`));
+      const investit = spec.suma - comision;
+      if (clasa === 'titluriStat') {
+        const luni = spec.luni ?? cfg(ctx, 'investitii.titluriStat.luniMaturitate');
+        return {
+          ...baza, clasa, principal: investit, cost: spec.suma, luniRamase: luni, luniPanaLaCupon: 12,
+          dobandaAnuala: spec.dobandaAnuala ?? cfg(ctx, 'investitii.titluriStat.dobandaAnuala'),
+        };
+      }
+      return { ...baza, clasa, unitati: investit / state.piete[clasa], cost: spec.suma };
+    }
+    case 'poprire':
+      return { ...baza, creditor: spec.creditor ?? 'recuperator', datorie: spec.suma, retinutTotal: 0 };
+    case 'contractMunca':
+      return { ...baza, jobId: spec.jobId, contract: spec.contract, brut: spec.brut, luniVechime: 0 };
+    default:
+      throw new Error(`Tip de produs necunoscut: ${spec.tip}`);
+  }
+}
+
+export function rataAnuitate(principal, r, n) {
+  if (n <= 0) return principal;
+  if (r === 0) return Math.ceil(principal / n);
+  return Math.ceil((principal * r) / (1 - Math.pow(1 + r, -n)));
+}
+
+export function valoareProdus(p, state) {
+  switch (p.tip) {
+    case 'contCurent':
+    case 'contEconomii':
+      return Math.max(0, p.sold);
+    case 'depozit':
+      return p.sold;
+    case 'investitie':
+      return p.clasa === 'titluriStat' ? p.principal : Math.round(p.unitati * state.piete[p.clasa]);
+    default:
+      return 0;
+  }
+}
+
+export function datorieProdus(p) {
+  switch (p.tip) {
+    case 'credit':
+      return p.rest + p.restanta;
+    case 'cardCredit':
+      return p.soldNou + p.soldScadent;
+    case 'poprire':
+      return p.datorie;
+    case 'contCurent':
+      return Math.max(0, -p.sold);
+    default:
+      return 0;
+  }
+}
+
+export function plataMinimaCard(sold, ctx) {
+  if (sold <= 0) return 0;
+  const minim = Math.max(Math.round(sold * cfg(ctx, 'cardCredit.plataMinimaProcent')), inBani(cfg(ctx, 'cardCredit.plataMinimaFixa')));
+  return Math.min(sold, minim);
+}
+
+// ---------- Procesare lunară ----------
+// Fiecare funcție modifică produsul și întoarce ce s-a întâmplat, pentru rezumat.
+
+export function proceseazaCredit(credit, state, ctx) {
+  const lunaCredit = credit.luni - credit.luniRamase;
+  if (credit.stadiu === 'activ') {
+    const dobanda = lunaCredit < credit.luniFaraDobanda ? 0 : Math.round(credit.rest * credit.rLunar);
+    credit.rest += dobanda;
+    credit.dobandaTotala += dobanda;
+  }
+  if (credit.restanta > 0) {
+    const pen = Math.round(credit.restanta * cfg(ctx, 'restante.penalitateLunara'));
+    credit.restanta += pen;
+    credit.penalitati += pen;
+  }
+  const scadent = credit.stadiu !== 'activ' ? 0 : credit.luniRamase <= 1 ? credit.rest : Math.min(credit.rata, credit.rest);
+  credit.rest -= scadent;
+  const datorat = credit.restanta + scadent;
+  const platit = plateste(state, datorat);
+  credit.restanta = datorat - platit;
+  credit.totalPlatit += platit;
+  credit.luniRamase = Math.max(0, credit.luniRamase - 1);
+  credit.luniRestanta = credit.restanta > 0 ? credit.luniRestanta + 1 : 0;
+  return { platit, inchis: credit.rest === 0 && credit.restanta === 0 };
+}
+
+export function proceseazaCard(card, state, ctx) {
+  const datorat = card.soldScadent;
+  const minim = plataMinimaCard(datorat, ctx);
+  const deplatit = card.plata === 'integral' ? datorat : minim;
+  const platit = plateste(state, deplatit);
+  let ramas = datorat - platit;
+  if (platit < minim) {
+    ramas += Math.round((minim - platit) * cfg(ctx, 'restante.penalitateLunara'));
+    card.luniRestanta += 1;
+  } else {
+    card.luniRestanta = 0;
+  }
+  // Dobânda se aplică doar pe ce n-ai achitat: plata integrală = perioadă de grație = 0 dobândă.
+  const dobanda = Math.round(ramas * rataLunara(card.dobandaAnuala));
+  card.dobandaTotala += dobanda;
+  card.soldScadent = ramas + dobanda + card.soldNou;
+  card.soldNou = 0;
+  return { platit, dobanda };
+}
+
+export function proceseazaDepozit(dep, ctx) {
+  dep.dobandaAcumulata += Math.round(dep.sold * (dep.dobandaAnuala / 12));
+  dep.luniRamase -= 1;
+  if (dep.luniRamase > 0) return { dobandaNeta: 0 };
+  const dobandaNeta = Math.round(dep.dobandaAcumulata * (1 - cfg(ctx, 'taxe.impozitDobanzi')));
+  dep.sold += dobandaNeta;
+  dep.dobandaAcumulata = 0;
+  dep.luniRamase = dep.luni;
+  return { dobandaNeta, scadent: true };
+}
+
+export function proceseazaContEconomii(cont, ctx) {
+  if (cont.sold <= 0) return { dobandaNeta: 0 };
+  const dobandaNeta = Math.round(cont.sold * (cont.dobandaAnuala / 12) * (1 - cfg(ctx, 'taxe.impozitDobanzi')));
+  cont.sold += dobandaNeta;
+  return { dobandaNeta };
+}
+
+// Titluri de stat: cupon anual fix, principalul revine la maturitate.
+export function proceseazaTitluri(t) {
+  t.luniRamase -= 1;
+  t.luniPanaLaCupon -= 1;
+  let cupon = 0;
+  if (t.luniPanaLaCupon <= 0) {
+    cupon = Math.round(t.principal * t.dobandaAnuala);
+    t.luniPanaLaCupon = 12;
+  }
+  return { cupon, maturitate: t.luniRamase <= 0 };
+}
+
+// Randament lunar pentru o clasă de piață, dintr-o normală standard z.
+export function randamentLunar(clasa, z, ctx, crash) {
+  const mu = cfg(ctx, `investitii.${clasa}.randamentAnual`);
+  const sigma = cfg(ctx, `investitii.${clasa}.volatilitateAnuala`);
+  let factor = Math.exp((mu - (sigma * sigma) / 2) / 12 + (sigma / Math.sqrt(12)) * z);
+  if (crash) factor *= 1 + cfg(ctx, `investitii.${clasa}.socCrash`);
+  return factor;
+}
+
+// Vânzarea unei investiții de piață: comision + impozit pe câștig.
+export function valoareVanzare(inv, state, ctx) {
+  const brut = valoareProdus(inv, state);
+  const comision = Math.round(brut * cfg(ctx, `investitii.${inv.clasa}.comision`));
+  const castig = Math.max(0, brut - comision - inv.cost);
+  const impozit = Math.round(castig * cfg(ctx, 'taxe.impozitCastiguriInvestitii'));
+  return { brut, comision, impozit, net: brut - comision - impozit };
+}
