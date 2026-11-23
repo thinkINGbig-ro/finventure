@@ -31,15 +31,38 @@
   },
 
   "costTrai": {
-    "bazaLunara": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "mâncare, transport, telefon, ieșiri minime" },
-    "procentCumparaturi": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "partea din costul de trai care poate fi plătită cu cardul" }
+    "mancareTransport": { "valoare": 1150, "deVerificat": true, "sursa": "", "nota": "mâncare, transport, ieșiri minime" },
+    "telefon": { "valoare": 50, "deVerificat": true, "sursa": "", "nota": "abonament lunar" },
+    "procentCumparaturi": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "partea din mâncare și transport care poate fi plătită cu cardul" }
   },
 
   "locuinte": {
-    "acasa": { "valoare": 300, "deVerificat": true, "sursa": "", "nota": "contribuție lunară la casa părinților" },
-    "camin": { "valoare": 450, "deVerificat": true, "sursa": "" },
-    "chirieColegi": { "valoare": 1300, "deVerificat": true, "sursa": "", "nota": "partea ta din chirie + utilități" },
-    "chirieSingur": { "valoare": 2600, "deVerificat": true, "sursa": "", "nota": "garsonieră + utilități" }
+    "acasa": {
+      "chirie": { "valoare": 0, "deVerificat": true, "sursa": "" },
+      "utilitati": { "valoare": 300, "deVerificat": true, "sursa": "", "nota": "contribuția ta la facturile casei" }
+    },
+    "camin": {
+      "chirie": { "valoare": 450, "deVerificat": true, "sursa": "", "nota": "taxa de cămin, utilități incluse" },
+      "utilitati": { "valoare": 0, "deVerificat": true, "sursa": "" }
+    },
+    "chirieColegi": {
+      "chirie": { "valoare": 1000, "deVerificat": true, "sursa": "", "nota": "partea ta din chirie" },
+      "utilitati": { "valoare": 300, "deVerificat": true, "sursa": "", "nota": "partea ta din utilități" }
+    },
+    "chirieSingur": {
+      "chirie": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "garsonieră" },
+      "utilitati": { "valoare": 600, "deVerificat": true, "sursa": "" }
+    }
+  },
+
+  "facturi": {
+    "penalitateLunara": { "valoare": 0.03, "deVerificat": true, "sursa": "", "nota": "penalități de întârziere la facturi, pe lună, din suma restantă" },
+    "luniPanaLaSomatie": { "valoare": 1, "deVerificat": true, "sursa": "" },
+    "luniPanaLaDeconectare": { "valoare": 2, "deVerificat": true, "sursa": "", "nota": "utilități" },
+    "luniPanaLaSuspendare": { "valoare": 2, "deVerificat": true, "sursa": "", "nota": "telefon" },
+    "luniPanaLaEvacuare": { "valoare": 3, "deVerificat": true, "sursa": "", "nota": "chirie; în realitate depinde de contract și de instanță" },
+    "luniPanaLaRecuperare": { "valoare": 6, "deVerificat": true, "sursa": "", "nota": "după câte luni restanța e trimisă la recuperare" },
+    "taxaReconectare": { "valoare": 100, "deVerificat": true, "sursa": "" }
   },
 
   "studii": {
@@ -109,7 +132,8 @@
   },
 
   "poprire": {
-    "procentMaxDinNet": { "valoare": 0.3333, "deVerificat": true, "sursa": "", "nota": "limita pentru datorii obișnuite (alte limite la pensia alimentară)" }
+    "procentMaxDinNet": { "valoare": 0.3333, "deVerificat": true, "sursa": "", "nota": "limita pentru datorii obișnuite (alte limite la pensia alimentară)" },
+    "sumaProtejataCont": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "suma din contul curent care nu poate fi poprită; valoare plauzibilă, de verificat în Codul de procedură civilă" }
   },
 
   "investitii": {

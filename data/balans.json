@@ -16,7 +16,7 @@
     "sloturiMin": 1,
     "sloturiMax": 3,
     "opririMaxPeAn": 4,
-    "alegeriMax": 6,
+    "alegeriMax": 4,
     "cooldownImplicitLuni": 12
   },
 
@@ -25,12 +25,18 @@
     "energieTinta": 75,
     "fericireTinta": 60,
     "fericireRevenire": 0.1,
-    "lipsaBaniFericire": 6,
-    "lipsaBaniEnergie": 3,
-    "restantaFericire": 3,
     "studiiEnergie": 1,
     "scorCreditPenalizareLunara": 6,
-    "scorCreditCrestereLunara": 0.3
+    "scorCreditCrestereLunara": 0.3,
+    "_penalizari": "Fiecare penalizare lunară are o „podea”: nu poate coborî statistica sub ea. Lipsa banilor singură nu duce la Fericire 0; doar cumulul (izolare, epuizare) poate.",
+    "penalizari": {
+      "lipsaBani": { "fericire": 6, "energie": 3, "podea": 30 },
+      "restante": { "fericire": 3, "podea": 15 },
+      "deconectat": { "fericire": 3, "energie": 3, "podea": 15 },
+      "telefonSuspendat": { "retea": 2, "podea": 10 },
+      "izolare": { "prag": 20, "fericire": 2, "podea": 0 },
+      "epuizare": { "prag": 20, "fericire": 2, "podea": 0 }
+    }
   },
 
   "statistici": {
@@ -49,6 +55,8 @@
   "cardCredit": {
     "scorCreditMinim": 40
   },
+
+  "locuintaDupaEvacuare": "acasa",
 
   "faze": {
     "varstaMinima": { "2": 19, "3": 25, "4": 28, "5": 35 },

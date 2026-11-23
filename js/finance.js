@@ -83,7 +83,18 @@ export function plateste(state, suma, sursa = 'portofel') {
 
 // ---------- Produse ----------
 
-export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca'];
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura'];
+export const CATEGORII_FACTURI = ['chirie', 'utilitati', 'telefon'];
+
+// Facturile lunii, în ordinea în care se plătesc când banii nu ajung.
+export function facturiLunare(state, ctx) {
+  const loc = `locuinte.${state.situatie.locuinta}`;
+  return {
+    chirie: pret(state, ctx, `${loc}.chirie`),
+    utilitati: pret(state, ctx, `${loc}.utilitati`),
+    telefon: pret(state, ctx, 'costTrai.telefon'),
+  };
+}
 export const CLASE_INVESTITII = ['etf', 'actiuni', 'crypto', 'aur', 'titluriStat'];
 export const CLASE_PIATA = ['etf', 'actiuni', 'crypto', 'aur'];
 
@@ -140,6 +151,9 @@ export function creeazaProdus(spec, state, ctx) {
       return { ...baza, creditor: spec.creditor ?? 'recuperator', datorie: spec.suma, retinutTotal: 0 };
     case 'contractMunca':
       return { ...baza, jobId: spec.jobId, contract: spec.contract, brut: spec.brut, luniVechime: 0 };
+    case 'factura':
+      // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
+      return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };
     default:
       throw new Error(`Tip de produs necunoscut: ${spec.tip}`);
   }
@@ -173,6 +187,8 @@ export function datorieProdus(p) {
       return p.soldNou + p.soldScadent;
     case 'poprire':
       return p.datorie;
+    case 'factura':
+      return p.restanta;
     case 'contCurent':
       return Math.max(0, -p.sold);
     default:

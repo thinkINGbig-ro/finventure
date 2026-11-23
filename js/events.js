@@ -30,6 +30,7 @@ const STARE = {
   fondUrgenta: (s) => fondUrgenta(s),
   datorie: (s, sel) => (gasesteProdus(s, sel) ? datorieProdus(gasesteProdus(s, sel)) : 0),
   restanta: (s, sel) => gasesteProdus(s, sel)?.restanta ?? 0,
+  datorieFacturi: (s) => gasesteProduse(s, 'factura').reduce((t, f) => t + f.restanta, 0),
   soldCard: (s) => gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0,
   minimCard: (s, _sel, ctx) => plataMinimaCard(gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0, ctx),
 };
@@ -77,7 +78,7 @@ export function textCuVariabile(text, vars) {
 
 const NUME_PRODUSE = {
   contCurent: 'cont curent', contEconomii: 'cont de economii', depozit: 'depozit', cardCredit: 'card de credit',
-  credit: 'credit', investitie: 'investiții', poprire: 'poprire', contractMunca: 'job',
+  credit: 'credit', investitie: 'investiții', poprire: 'poprire', contractMunca: 'job', factura: 'facturi restante',
 };
 const MOTIVE_STAT = {
   skill: 'Nu ai destulă pregătire pentru asta.',
@@ -181,18 +182,38 @@ export function creeazaOprireEveniment(ev, state, ctx, { cauza = null, variabile
 }
 
 // Ce vede UI-ul: textul final și alegerile, cu cele indisponibile marcate.
+// O alegere cu „subalegeri” e un grup: se deschide al doilea pas, iar calea finală e „grup/sub”.
 export function descrieOprire(oprire, state, ctx) {
   const ev = ctx.evenimente.get(oprire.eveniment);
   const vars = oprire.variabile;
+  const descrie = (a, prefix = '') => {
+    const motivPropriu = motivNeindeplinire(a.cere, state, ctx, vars);
+    const baza = { id: a.id, cale: prefix + a.id, eticheta: textCuVariabile(a.eticheta, vars) };
+    if (!a.subalegeri) return { ...baza, disponibil: motivPropriu == null, motiv: motivPropriu };
+    const sub = a.subalegeri.map((s) => descrie(s, `${a.id}/`));
+    if (motivPropriu) sub.forEach((s) => Object.assign(s, { disponibil: false, motiv: s.motiv ?? motivPropriu }));
+    const oricare = sub.some((s) => s.disponibil);
+    return {
+      ...baza, grup: true, subalegeri: sub, disponibil: oricare,
+      motiv: oricare ? null : motivPropriu ?? (sub.length === 1 ? sub[0].motiv : 'Nicio variantă nu e posibilă acum.'),
+    };
+  };
   return {
     ...oprire,
     titlu: ev.titlu ? textCuVariabile(ev.titlu, vars) : null,
     text: textCuVariabile(ev.text, vars),
-    alegeri: ev.alegeri.map((a) => {
-      const motiv = motivNeindeplinire(a.cere, state, ctx, vars);
-      return { id: a.id, eticheta: textCuVariabile(a.eticheta, vars), disponibil: motiv == null, motiv };
-    }),
+    alegeri: ev.alegeri.map((a) => descrie(a)),
   };
+}
+
+// „id” sau „grup/sub” -> { alegere, cereri: [cere grup, cere alegere] }
+export function gasesteAlegere(ev, cale) {
+  const [idPrim, idSub] = String(cale).split('/');
+  const prim = ev.alegeri.find((a) => a.id === idPrim);
+  if (!prim) return null;
+  if (!prim.subalegeri) return idSub ? null : { alegere: prim, cereri: [prim.cere] };
+  const sub = prim.subalegeri.find((s) => s.id === idSub);
+  return sub ? { alegere: sub, cereri: [prim.cere, sub.cere] } : null;
 }
 
 // ---------- Urmări ----------
@@ -229,11 +250,14 @@ const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'p
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
-  const alegere = ev.alegeri.find((a) => a.id === idAlegere);
-  if (!alegere) throw new Error(`Alegere inexistentă: ${oprire.eveniment}/${idAlegere}`);
+  const gasit = gasesteAlegere(ev, idAlegere);
+  if (!gasit) throw new Error(`Alegere inexistentă: ${oprire.eveniment} › ${idAlegere} (pentru un grup folosește „grup/sub”)`);
+  const { alegere } = gasit;
   const vars = oprire.variabile;
-  const motiv = motivNeindeplinire(alegere.cere, state, ctx, vars);
-  if (motiv) throw new Error(`Alegere indisponibilă (${ev.id}/${idAlegere}): ${motiv}`);
+  for (const cere of gasit.cereri) {
+    const motiv = motivNeindeplinire(cere, state, ctx, vars);
+    if (motiv) throw new Error(`Alegere indisponibilă (${ev.id} › ${idAlegere}): ${motiv}`);
+  }
 
   const decizie = { id: `d${++state.contoare.decizii}`, luna: state.luna, eveniment: ev.id, alegere: idAlegere, cauza: oprire.cauza };
   state.decizii.push(decizie);
@@ -263,8 +287,10 @@ function aplicaPachet(state, ctx, p, vars, idDecizie) {
     deschideProdus(state, ctx, rezolvaSpec(spec, val), idDecizie);
   }
   if (p.ramburseaza) {
-    const prod = gasesteProdus(state, p.ramburseaza);
-    if (prod) ramburseaza(state, prod);
+    // Facturile se achită toate (chirie, utilități, telefon); la celelalte, doar primul produs găsit
+    // (ex. „credit:ifn” = cel mai vechi IFN, cel pe care îl acoperă al doilea IFN).
+    const produse = p.ramburseaza.startsWith('factura') ? gasesteProduse(state, p.ramburseaza) : [gasesteProdus(state, p.ramburseaza)];
+    for (const prod of produse.filter(Boolean)) ramburseaza(state, prod);
   }
 
   const e = p.efecte ?? {};
@@ -289,7 +315,7 @@ function aplicaPachet(state, ctx, p, vars, idDecizie) {
     }
   }
   if (p.job !== undefined) schimbaJob(state, ctx, p.job, idDecizie);
-  if (p.situatie) aplicaSituatie(state, ctx, p.situatie);
+  if (p.situatie) aplicaSituatie(state, ctx, p.situatie, idDecizie);
   for (const r of p.recurente ?? []) {
     state.recurente.push({ tip: r.tip, suma: inBani(val(r.suma)), luniRamase: r.luni ?? null, eticheta: r.eticheta, cauza: idDecizie });
   }
@@ -360,9 +386,23 @@ export function ramburseaza(state, prod) {
   } else if (prod.tip === 'poprire') {
     prod.datorie -= platit;
     if (prod.datorie === 0) state.produse = state.produse.filter((p) => p !== prod);
+  } else if (prod.tip === 'factura') {
+    prod.restanta -= platit;
+    if (prod.restanta === 0) inchideFactura(state, prod);
   }
   return platit;
 }
+
+// Flag-ul pus de fiecare categorie de factură când restanța se agravează.
+export const FLAG_FACTURA = { utilitati: 'deconectat', telefon: 'telefon_suspendat', chirie: 'somatie_chirie' };
+
+export function inchideFactura(state, f) {
+  state.produse = state.produse.filter((p) => p !== f);
+  delete state.flaguri[FLAG_FACTURA[f.furnizor]];
+  if (f.luniRestanta > 0) adaugaJurnal(state, `Ai achitat restanțele la ${NUME_FACTURI[f.furnizor]}.`);
+}
+
+export const NUME_FACTURI = { chirie: 'chirie', utilitati: 'utilități', telefon: 'telefon' };
 
 export function inchideCredit(state, credit) {
   state.produse = state.produse.filter((p) => p !== credit);
@@ -380,8 +420,11 @@ function schimbaJob(state, ctx, spec, cauza) {
   state.produse.push(creeazaProdus({ tip: 'contractMunca', jobId: job.id, contract: spec.contract, brut, cauza }, state, ctx));
 }
 
-function aplicaSituatie(state, ctx, sit) {
-  if (sit.locuinta) state.situatie.locuinta = sit.locuinta;
+function aplicaSituatie(state, ctx, sit, idDecizie) {
+  if (sit.locuinta) {
+    state.situatie.locuinta = sit.locuinta;
+    state.situatie.cauzaLocuinta = idDecizie; // restanțele la chirie/utilități pornesc de aici
+  }
   if (sit.studii !== undefined) {
     state.situatie.studii = sit.studii
       ? { id: sit.studii, luniRamase: dupaCale(ctx.config, `studii.${sit.studii}.durataLuni`), inceputLa: state.luna }

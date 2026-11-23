@@ -1,0 +1,77 @@
+{
+  "evenimente": [
+    {
+      "id": "facturi-somatie",
+      "titlu": "Somație de plată",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "conditii": { "areProdus": ["factura"] },
+      "variabile": { "datorie": "stare:datorieFacturi" },
+      "text": "În cutia poștală: o somație. Ai {datorie} lei restanți la facturi, iar penalitățile cresc în fiecare lună.",
+      "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "Plătesc tot acum",
+          "cere": { "baniMin": "{datorie}", "motiv": "N-ai {datorie} lei disponibili." },
+          "ramburseaza": "factura",
+          "concepte": ["restante-facturi"],
+          "lectie": "Ai oprit penalitățile înainte să crească. La facturi, fiecare lună de întârziere costă în plus.",
+          "jurnal": "Ai plătit restanțele la facturi."
+        },
+        {
+          "id": "partial",
+          "eticheta": "Dau cât am și sun să cer eșalonare",
+          "ramburseaza": "factura",
+          "efecte": { "fericire": -3 },
+          "concepte": ["restante-facturi"],
+          "lectie": "Furnizorii acceptă des o eșalonare dacă îi suni înainte de deconectare. Ignorarea e varianta cea mai scumpă.",
+          "jurnal": "Ai plătit o parte din facturi și ai cerut eșalonare."
+        },
+        {
+          "id": "familie",
+          "eticheta": "Cer ajutor de la familie",
+          "cere": { "ascunse": { "retea": { "min": 50 } }, "motiv": "Familia nu te poate ajuta acum." },
+          "efecte": { "numerar": "{datorie}", "retea": -10, "fericire": -5 },
+          "ramburseaza": "factura",
+          "concepte": ["restante-facturi"],
+          "lectie": "Familia te-a scos din impas, dar ajutorul nu e infinit. Un buget lunar te ferește de a doua oară.",
+          "jurnal": "Familia ți-a plătit restanțele la facturi."
+        },
+        {
+          "id": "ignor",
+          "eticheta": "O pun deoparte, mă gândesc mai târziu",
+          "efecte": { "fericire": -3 },
+          "concepte": ["restante-facturi"],
+          "lectie": "Urmează deconectarea, iar la chirie evacuarea. După câteva luni, datoria ajunge la recuperatori.",
+          "jurnal": "Ai pus somația deoparte, necitită."
+        }
+      ]
+    },
+    {
+      "id": "evacuare",
+      "titlu": "Evacuat",
+      "doarUrmare": true,
+      "conditii": { "flag": ["evacuat"] },
+      "variabile": { "datorie": "stare:datorie:factura:chirie", "garantie": 1000 },
+      "text": "După evacuare ai dus bagajele înapoi la părinți. Datoria la chirie, {datorie} lei, n-a dispărut odată cu mutarea.",
+      "alegeri": [
+        {
+          "id": "raman",
+          "eticheta": "Rămân acasă până mă pun pe picioare",
+          "efecte": { "fericire": -5 },
+          "lectie": "Acasă cheltuielile sunt mai mici: e momentul să închizi datoria înainte să ajungă la recuperatori.",
+          "jurnal": "Te-ai întors la părinți după evacuare."
+        },
+        {
+          "id": "colegi",
+          "eticheta": "Caut o cameră cu colegi",
+          "cere": { "baniMin": "{garantie}", "motiv": "N-ai {garantie} lei pentru garanție." },
+          "efecte": { "numerar": "-{garantie}", "fericire": 3 },
+          "situatie": { "locuinta": "chirieColegi" },
+          "lectie": "O chirie mai mică e un început bun, dar datoria veche tot trebuie plătită.",
+          "jurnal": "Te-ai mutat într-o cameră cu colegi."
+        }
+      ]
+    }
+  ]
+}

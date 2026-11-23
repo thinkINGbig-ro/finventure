@@ -110,11 +110,7 @@
           "lectie": "Banii în plus de azi vin fără vechime, fără asigurare medicală și fără pensie. Consecințele apar mai târziu.",
           "jurnal": "Te-ai angajat barista, la negru."
         },
-        {
-          "id": "refuz",
-          "eticheta": "Nu acum",
-          "jurnal": "Ai refuzat un job de barista."
-        }
+        { "id": "refuz", "eticheta": "Nu acum", "jurnal": "Ai refuzat un job de barista." }
       ]
     }
   ]

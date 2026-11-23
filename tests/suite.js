@@ -2,11 +2,12 @@
 
 import { construiesteContinut, formateazaEroare, incarcaContinut } from '../js/content.js';
 import { actiune, alege, avanseaza, continua, forteazaEveniment, jocNou } from '../js/engine.js';
-import { lantDecizii, gasesteProdus, gasesteProduse } from '../js/events.js';
-import { fluturas, baniDisponibili, fondUrgenta, pret } from '../js/finance.js';
+import { lantDecizii, gasesteProdus } from '../js/events.js';
+import { fluturas, baniDisponibili, contCurent, fondUrgenta, pret } from '../js/finance.js';
 import {
   adaugaCheckpoint, areFlag, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
 } from '../js/state.js';
+import { simuleazaVieti, strategieAleatoare } from '../js/simulare.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
 import { inBani, varstaLa } from '../js/util.js';
 
@@ -16,13 +17,23 @@ const egal = (a, b, mesaj) => ok(Object.is(a, b), `${mesaj}: așteptat ${JSON.st
 
 // ---------- Ajutoare ----------
 
-// Strategie: funcție (oprire) -> id alegere. Implicit: prima alegere disponibilă.
-const primaDisponibila = (o) => o.alegeri.find((a) => a.disponibil).id;
+// Găsește o alegere după cale („id” sau „grup/sub”) în oprirea descrisă.
+function alegerePeCale(o, cale) {
+  const [a, s] = cale.split('/');
+  const prim = o.alegeri.find((x) => x.id === a);
+  return s ? prim?.subalegeri?.find((x) => x.id === s) : prim;
+}
+
+// Strategie implicită: prima alegere disponibilă (intră și în grupuri).
+function primaDisponibila(o) {
+  const a = o.alegeri.find((x) => x.disponibil);
+  return a.grup ? a.subalegeri.find((s) => s.disponibil).cale : a.cale;
+}
 
 function strategieDin(harta, rezerva = primaDisponibila) {
   return (o) => {
     const dorita = harta[o.eveniment];
-    return dorita && o.alegeri.find((a) => a.id === dorita && a.disponibil) ? dorita : rezerva(o);
+    return dorita && alegerePeCale(o, dorita)?.disponibil ? dorita : rezerva(o);
   };
 }
 
@@ -39,19 +50,8 @@ function consuma(state, ctx, oprire, strategie, jurnal = []) {
 
 function ruleazaAni(state, ctx, ani, strategie = primaDisponibila) {
   const opriri = [];
-  if (state.pendinte) consuma(state, ctx, avanseaza(state, ctx), strategie, opriri);
   for (let i = 0; i < ani && !state.final; i++) consuma(state, ctx, avanseaza(state, ctx), strategie, opriri);
   return opriri;
-}
-
-// Alegere „aleatoare” deterministă pentru simulări (LCG separat de RNG-ul jocului).
-function strategieAleatoare(seed) {
-  let x = seed >>> 0;
-  return (o) => {
-    const disp = o.alegeri.filter((a) => a.disponibil);
-    x = (Math.imul(x, 1664525) + 1013904223) >>> 0;
-    return disp[x % disp.length].id;
-  };
 }
 
 function verificaInvarianti(state) {
@@ -74,11 +74,19 @@ function teste(ctxBaza, incarcare) {
     const ctx = ctxNou(extra);
     return { ctx, state: jocNou(ctx, { seed, nume: 'Test' }) };
   };
-  // Pornește un joc cu job de curier (CIM), cont curent deschis și primul an trecut.
+  // Joc cu job de curier (CIM), cont curent deschis și primul an trecut.
   const jocCuJob = (seed = 'job') => {
     const { ctx, state } = joc(seed);
     alege(state, ctx, 'munca');
     ruleazaAni(state, ctx, 1, strategieDin({ 'primul-cont': 'standard' }));
+    return { ctx, state };
+  };
+  // Joc fără niciun venit: doar banii de start.
+  const jocFaraVenit = (seed, locuinta) => {
+    const { ctx, state } = joc(seed);
+    alege(state, ctx, 'sabatic');
+    state.recurente = [];
+    if (locuinta) state.situatie.locuinta = locuinta;
     return { ctx, state };
   };
 
@@ -95,6 +103,9 @@ function teste(ctxBaza, incarcare) {
         alegeri: [
           { id: 'a', eticheat: 'Typo', efecte: { numerar: '-{suma}' }, concepte: ['inexistent'] },
           { id: 'b', eticheta: 'B', flaguri: ['Datorie IFN'], urmari: [{ eveniment: 'nu-exista', dupaLuni: 2 }] },
+          { id: 'c', eticheta: 'C', subalegeri: [{ id: 'x', eticheta: 'X', subalegeri: [] }, { id: 'y', eticheta: 'Y' }] },
+          { id: 'd', eticheta: 'D' },
+          { id: 'e', eticheta: 'E' },
         ],
       };
       const r = construiesteContinut({
@@ -104,12 +115,22 @@ function teste(ctxBaza, incarcare) {
       }, erori);
       const text = erori.map(formateazaEroare).join('\n');
       ok(text.includes('data/events/test.json › test-gresit'), 'eroarea trebuie să conțină fișierul și id-ul');
-      ok(text.includes('ai vrut „eticheta”'), 'trebuie sugerat câmpul corect pentru „eticheat”');
-      ok(text.includes('{sumaa}'), 'variabila nedefinită din text trebuie raportată');
-      ok(text.includes('„inexistent”'), 'conceptul inexistent trebuie raportat');
-      ok(text.includes('Datorie IFN'), 'flag-ul invalid trebuie raportat');
-      ok(text.includes('„nu-exista” nu există'), 'urmarea către un eveniment inexistent trebuie raportată');
+      ok(text.includes('între 2 și 4 alegeri'), 'peste 4 alegeri pe ecran trebuie raportat');
       ok(!r.ctx.evenimente.has('test-gresit'), 'evenimentul invalid nu intră în joc');
+
+      const erori2 = [];
+      construiesteContinut({
+        config: ctxBaza.config, balans: ctxBaza.balans,
+        joburiJson: { joburi: [...ctxBaza.joburi.values()] }, concepteJson: { concepte: [...ctxBaza.concepte.values()] },
+        brute: [{ ev: { ...ev, alegeri: ev.alegeri.slice(0, 3) }, fisier: 'data/events/test.json', pozitie: 0 }],
+      }, erori2);
+      const text2 = erori2.map(formateazaEroare).join('\n');
+      ok(text2.includes('ai vrut „eticheta”'), 'trebuie sugerat câmpul corect pentru „eticheat”');
+      ok(text2.includes('{sumaa}'), 'variabila nedefinită din text trebuie raportată');
+      ok(text2.includes('„inexistent”'), 'conceptul inexistent trebuie raportat');
+      ok(text2.includes('Datorie IFN'), 'flag-ul invalid trebuie raportat');
+      ok(text2.includes('nu pot avea la rândul lor sub-alegeri'), 'sub-alegeri pe două niveluri trebuie raportate');
+      ok(text2.includes('„nu-exista” nu există'), 'urmarea către un eveniment inexistent trebuie raportată');
     },
 
     'brut → net la CIM'() {
@@ -140,17 +161,17 @@ function teste(ctxBaza, incarcare) {
       egal(varstaLa(state.luna), 19, 'vârsta în al doilea an');
       const luni = evenimente.map((o) => o.luna);
       ok(luni.every((l, i) => i === 0 || l > luni[i - 1]), 'max. o oprire pe lună, în ordine');
-      ok(opriri.some((o) => o.tip === 'moment' && o.id === 'primulSalariu'), 'momentul „primul salariu”');
-      ok(opriri.find((o) => o.id === 'primulSalariu').date.fluturas.net > 0, 'fluturașul e atașat momentului');
+      const salariu = opriri.find((o) => o.tip === 'moment' && o.id === 'primulSalariu');
+      ok(salariu?.date.fluturas.net > 0, 'momentul „primul salariu”, cu fluturașul atașat');
     },
 
     'în 30 de ani, niciun an nu are peste 4 opriri'() {
       const { state, ctx } = joc('plafon');
       alege(state, ctx, 'munca');
       const opriri = ruleazaAni(state, ctx, 30, strategieAleatoare(7));
-      const pePeAn = {};
-      for (const o of opriri.filter((x) => x.tip === 'eveniment')) pePeAn[varstaLa(o.luna)] = (pePeAn[varstaLa(o.luna)] ?? 0) + 1;
-      ok(Object.values(pePeAn).every((n) => n <= 4), `an cu prea multe opriri: ${JSON.stringify(pePeAn)}`);
+      const peAn = {};
+      for (const o of opriri.filter((x) => x.tip === 'eveniment')) peAn[varstaLa(o.luna)] = (peAn[varstaLa(o.luna)] ?? 0) + 1;
+      ok(Object.values(peAn).every((n) => n <= 4), `an cu prea multe opriri: ${JSON.stringify(peAn)}`);
     },
 
     'flag-urile cu durată expiră'() {
@@ -163,9 +184,7 @@ function teste(ctxBaza, incarcare) {
     },
 
     'același seed + aceleași alegeri = aceeași viață'() {
-      const a = joc('seed-x');
-      const b = joc('seed-x');
-      const c = joc('seed-y');
+      const [a, b, c] = [joc('seed-x'), joc('seed-x'), joc('seed-y')];
       for (const j of [a, b, c]) {
         alege(j.state, j.ctx, 'munca');
         ruleazaAni(j.state, j.ctx, 6, strategieAleatoare(42));
@@ -175,23 +194,21 @@ function teste(ctxBaza, incarcare) {
     },
 
     'salvare + încărcare la fiecare oprire dă același rezultat ca rularea continuă'() {
-      const strategie = strategieAleatoare(3);
       const a = joc('salvare');
       alege(a.state, a.ctx, 'munca');
-      ruleazaAni(a.state, a.ctx, 4, strategie);
+      ruleazaAni(a.state, a.ctx, 4, strategieAleatoare(3));
 
       const storage = creeazaStorageMemorie();
       const ctx = ctxNou({ persistenta: { salveaza: (s) => salveazaJoc(storage, s) } });
       let state = jocNou(ctx, { seed: 'salvare', nume: 'Test' });
       alege(state, ctx, 'munca');
-      const strategie2 = strategieAleatoare(3);
-      for (let an = 0; an < 4; an++) {
+      const strategie = strategieAleatoare(3);
+      for (let an = 0; an < 4 && !state.final; an++) {
         let o = avanseaza(state, ctx);
         while (o && o.tip !== 'final') {
           state = incarcaJoc(storage); // reîncărcăm din storage înainte de fiecare pas
           ok(state, 'salvarea există');
-          if (o.tip === 'eveniment') o = alege(state, ctx, strategie2(o)).oprire;
-          else o = continua(state, ctx);
+          o = o.tip === 'eveniment' ? alege(state, ctx, strategie(o)).oprire : continua(state, ctx);
         }
       }
       egal(JSON.stringify(state), JSON.stringify(a.state), 'stări identice după reîncărcări');
@@ -209,23 +226,39 @@ function teste(ctxBaza, incarcare) {
       egal(reluat.decizii.length, 0, 'fără decizia luată după');
     },
 
+    'alegeri în doi pași: grupul arată sub-alegerile, cu motive, și cere calea completă'() {
+      const { state, ctx } = jocCuJob('grup');
+      const o = forteazaEveniment(state, ctx, 'urgenta-2000');
+      ok(o.alegeri.length <= 4, 'max. 4 pe primul ecran');
+      const banii = alegerePeCale(o, 'din-banii-mei');
+      ok(banii.grup, '„Din banii mei” e un grup');
+      ok(!banii.disponibil, 'fără fond, depozit sau card: grupul e indisponibil');
+      egal(banii.motiv, 'Nicio variantă nu e posibilă acum.', 'motivul grupului');
+      egal(alegerePeCale(o, 'din-banii-mei/card').motiv, 'Nu ai card de credit.', 'motivul sub-alegerii rămâne vizibil');
+      egal(alegerePeCale(o, 'ma-imprumut/ifn').cale, 'ma-imprumut/ifn', 'calea sub-alegerii');
+      let eroare = null;
+      try { alege(state, ctx, 'ma-imprumut'); } catch (e) { eroare = e; }
+      ok(eroare, 'un grup nu se poate alege fără sub-alegere');
+      const { decizie } = alege(state, ctx, 'ma-imprumut/ifn').rezultat;
+      egal(decizie.alegere, 'ma-imprumut/ifn', 'decizia păstrează calea completă');
+    },
+
     'fondul de urgență: doar contul marcat, alegerea apare dezactivată cu motiv'() {
       const { state, ctx } = jocCuJob('fond');
       const cont = actiune(state, ctx, 'deschide', { tip: 'contEconomii' }).produs;
       ok(actiune(state, ctx, 'depune', { id: cont.id, suma: 3000 }).ok, 'depunere');
 
       let o = forteazaEveniment(state, ctx, 'urgenta-2000');
-      const fond = o.alegeri.find((a) => a.id === 'fond');
+      const fond = alegerePeCale(o, 'din-banii-mei/fond');
       ok(!fond.disponibil, 'nemarcat: indisponibil');
       egal(fond.motiv, 'Nu ai un fond de urgență.', 'motivul afișat');
-      ok(!o.alegeri.find((a) => a.id === 'card').disponibil, 'fără card de credit: indisponibil');
 
       state.pendinte = null;
       actiune(state, ctx, 'seteaza', { id: cont.id, campuri: { fondUrgenta: true } });
       o = forteazaEveniment(state, ctx, 'urgenta-2000');
-      ok(o.alegeri.find((a) => a.id === 'fond').disponibil, 'marcat: disponibil');
+      ok(alegerePeCale(o, 'din-banii-mei/fond').disponibil, 'marcat: disponibil');
       const inainte = { fond: fondUrgenta(state), portofel: baniDisponibili(state) };
-      alege(state, ctx, 'fond');
+      alege(state, ctx, 'din-banii-mei/fond');
       egal(fondUrgenta(state), inainte.fond - inBani(o.variabile.suma), 'plătit din fond');
       egal(baniDisponibili(state), inainte.portofel, 'portofelul neatins');
     },
@@ -234,12 +267,12 @@ function teste(ctxBaza, incarcare) {
       const { state, ctx } = jocCuJob('depozit');
       const dep = actiune(state, ctx, 'deschide', { tip: 'depozit', suma: 2500, luni: 24 }).produs;
       ok(dep, 'depozit deschis');
-      ruleazaAni(state, ctx, 1, strategieDin({ 'urgenta-2000': 'extra' }));
+      ruleazaAni(state, ctx, 1, strategieDin({ 'urgenta-2000': 'muncesc' }));
       ok(dep.dobandaAcumulata > 0, 'depozitul a acumulat dobândă');
       const o = forteazaEveniment(state, ctx, 'urgenta-2000');
-      ok(o.alegeri.find((a) => a.id === 'depozit').disponibil, 'alegerea „Sparg depozitul” e disponibilă');
+      ok(alegerePeCale(o, 'din-banii-mei/depozit').disponibil, '„Sparg depozitul” e disponibilă');
       const inainte = baniDisponibili(state);
-      alege(state, ctx, 'depozit');
+      alege(state, ctx, 'din-banii-mei/depozit');
       egal(baniDisponibili(state), inainte + inBani(2500) - inBani(o.variabile.suma), 'primești doar suma depusă');
       ok(!gasesteProdus(state, 'depozit'), 'depozitul a fost închis');
     },
@@ -261,7 +294,7 @@ function teste(ctxBaza, incarcare) {
     'IFN returnat în luna fără dobândă costă doar suma împrumutată'() {
       const { state, ctx } = jocCuJob('ifn-ok');
       const o = forteazaEveniment(state, ctx, 'urgenta-2000');
-      alege(state, ctx, 'ifn');
+      alege(state, ctx, 'ma-imprumut/ifn');
       const credit = gasesteProdus(state, 'credit:ifn');
       ok(credit, 'credit IFN creat');
       ok(areFlag(state, 'datorie_ifn'), 'flag datorie_ifn');
@@ -274,14 +307,15 @@ function teste(ctxBaza, incarcare) {
       ok(!areFlag(state, 'datorie_ifn'), 'flag-ul a dispărut la închidere');
     },
 
-    'IFN ignorat: restanță → Biroul de Credit → cesiune → executare → poprire limitată'() {
+    'IFN ignorat: restanță → Biroul de Credit → cesiune → executare → poprire'() {
       const { state, ctx } = joc('ifn-rau');
       alege(state, ctx, 'sabatic');
       // Venit exact cât costul de trai, ca rata IFN să rămână neplătită.
-      state.recurente = [{ tip: 'venit', suma: pret(state, ctx, 'costTrai.bazaLunara') + pret(state, ctx, 'locuinte.acasa'), luniRamase: null }];
+      const trai = pret(state, ctx, 'costTrai.mancareTransport') + pret(state, ctx, 'locuinte.acasa.utilitati') + pret(state, ctx, 'costTrai.telefon');
+      state.recurente = [{ tip: 'venit', suma: trai, luniRamase: null }];
       state.numerar = 0;
       forteazaEveniment(state, ctx, 'urgenta-2000');
-      const { rezultat } = alege(state, ctx, 'ifn');
+      const { rezultat } = alege(state, ctx, 'ma-imprumut/ifn');
       const scor = state.ascunse.scorCredit;
 
       const strategie = strategieDin({ 'primul-cont': 'cash', 'ifn-alegere': 'rate', 'ifn-restanta': 'ignor' });
@@ -294,63 +328,64 @@ function teste(ctxBaza, incarcare) {
       ok(poprire, 'poprirea a fost creată');
       ok(areFlag(state, 'executare_silita'), 'flag executare silită');
 
-      // Lanțul pentru „Ce s-a întâmplat?”
       const dIgnor = state.decizii.find((d) => d.eveniment === 'ifn-restanta');
-      const lant = lantDecizii(state, dIgnor.id);
-      egal(lant[0].id, rezultat.decizie.id, 'lanțul pornește de la decizia IFN');
+      egal(lantDecizii(state, dIgnor.id)[0].id, rezultat.decizie.id, 'lanțul pornește de la decizia IFN');
       egal(poprire.cauza, rezultat.decizie.id, 'poprirea știe de unde a pornit');
       verificaInvarianti(state);
     },
-  };
-}
 
-function testPoprire(ctxBaza) {
-  return {
-    'poprirea reține max. o treime din net și declanșează momentul-cheie'() {
-      const ctx = { ...ctxBaza };
+    'facturi neplătite: somație → deconectare → evacuare → recuperare → faliment, nu renunțare'() {
+      const { state, ctx } = jocFaraVenit('facturi', 'chirieSingur');
+      const opriri = [];
+      for (let an = 0; an < 6 && !state.final; an++) consuma(state, ctx, avanseaza(state, ctx), strategieDin({ 'facturi-somatie': 'ignor', 'evacuare': 'raman' }), opriri);
+      ok(opriri.some((o) => o.eveniment === 'facturi-somatie'), 'somația a apărut');
+      ok(state.jurnal.some((j) => j.text.includes('tăiat curentul')), 'deconectare');
+      ok(state.jurnal.some((j) => j.text.includes('evacuat')), 'evacuare');
+      ok(opriri.some((o) => o.eveniment === 'evacuare'), 'evenimentul de după evacuare');
+      egal(state.situatie.locuinta, 'acasa', 'după evacuare, înapoi acasă');
+      ok(state.jurnal.some((j) => j.text.includes('firme de recuperare')), 'restanța a ajuns la recuperare');
+      egal(state.final?.motiv, 'faliment', 'lipsa banilor duce la faliment');
+      ok(state.stat.fericire > 0, 'Fericirea nu ajunge la 0 doar din lipsă de bani');
+    },
+
+    'poprirea pe cont lasă neatinsă suma protejată'() {
+      const { state, ctx } = jocFaraVenit('poprire-cont');
+      const cont = actiune(state, ctx, 'deschide', { tip: 'contCurent' }).produs;
+      state.numerar = 0;
+      cont.sold = inBani(5000);
+      state.produse.push({ id: 'px', tip: 'poprire', creditor: 'recuperator', datorie: inBani(50000), retinutTotal: 0, deschisLa: 0, cauza: null });
+      let o = avanseaza(state, ctx);
+      while (o && !(o.tip === 'moment' && o.id === 'primaPoprireCont')) o = o.tip === 'eveniment' ? alege(state, ctx, primaDisponibila(o)).oprire : continua(state, ctx);
+      ok(o, 'momentul „prima poprire pe cont”');
+      egal(contCurent(state).sold, pret(state, ctx, 'poprire.sumaProtejataCont'), 'în cont rămâne exact suma protejată');
+      ok(state.concepte.includes('poprire-cont'), 'conceptul s-a deblocat');
+    },
+
+    'poprirea pe salariu reține max. o treime din net'() {
+      const ctx = ctxNou();
       const state = jocNou(ctx, { seed: 'poprire' });
       alege(state, ctx, 'munca');
       state.produse.push({ id: 'px', tip: 'poprire', creditor: 'recuperator', datorie: inBani(50000), retinutTotal: 0, deschisLa: 0, cauza: null });
       const opriri = consuma(state, ctx, avanseaza(state, ctx), strategieDin({ 'primul-cont': 'standard' }));
       const moment = opriri.find((o) => o.id === 'primaPoprire');
-      ok(moment, 'momentul „prima poprire”');
+      ok(moment?.date.retinut > 0, 'momentul „prima poprire”, cu suma reținută');
       const f = fluturas(gasesteProdus(state, 'contractMunca').brut, 'cim', ctx);
       ok(moment.date.retinut <= Math.round(f.net * 0.3334), 'reținerea respectă limita');
-      ok(moment.date.retinut > 0, 's-a reținut ceva');
       verificaInvarianti(state);
     },
-  };
-}
 
-function testSimulare(ctxBaza) {
-  return {
-    'simulare: 30 de vieți cu alegeri aleatoare, până la final, fără erori'() {
-      const finaluri = {};
-      for (let i = 0; i < 30; i++) {
-        const ctx = { ...ctxBaza };
-        const state = jocNou(ctx, { seed: `viata-${i}` });
-        const strategie = strategieAleatoare(i + 1);
-        consuma(state, ctx, oprireCurentaSauStart(state, ctx), strategie);
-        for (let an = 0; an < 60 && !state.final; an++) {
-          consuma(state, ctx, avanseaza(state, ctx), strategie);
-          verificaInvarianti(state);
-        }
-        ok(state.final, `viața ${i} nu s-a terminat`);
-        finaluri[state.final.motiv] = (finaluri[state.final.motiv] ?? 0) + 1;
-      }
-      return `finaluri: ${JSON.stringify(finaluri)}`;
+    'simulare: 40 de vieți cu alegeri aleatoare, până la final, fără erori'() {
+      const r = simuleazaVieti(ctxNou(), { n: 40, seed: 'test', laSfarsitDeAn: verificaInvarianti });
+      ok(!r.finaluri.neterminat, 'toate viețile s-au terminat');
+      return `finaluri: ${JSON.stringify(r.finaluri)}`;
     },
   };
-}
-
-function oprireCurentaSauStart(state, ctx) {
-  return state.pendinte ? avanseaza(state, ctx) : null;
 }
 
 export async function ruleazaTeste(citeste, log = console.log) {
   const incarcare = await incarcaContinut(citeste);
   for (const a of incarcare.avertismente) log(`  ⚠ ${formateazaEroare(a)}`);
-  const toate = { ...teste(incarcare.ctx, incarcare), ...testPoprire(incarcare.ctx), ...testSimulare(incarcare.ctx) };
+  const toate = teste(incarcare.ctx, incarcare);
   let trecute = 0;
   const picate = [];
   for (const [nume, fn] of Object.entries(toate)) {

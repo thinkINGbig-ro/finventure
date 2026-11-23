@@ -90,6 +90,16 @@
       "id": "dobanda-compusa",
       "titlu": "Dobânda compusă",
       "text": "Dobânda compusă înseamnă că și câștigurile tale încep să câștige. Cu cât lași banii mai mult, cu atât efectul e mai mare. Exemplu: 200 lei pe lună la 7% pe an devin cam 34.600 lei după 10 ani, deși ai pus doar 24.000. Timpul contează mai mult decât suma de start."
+    },
+    {
+      "id": "poprire-cont",
+      "titlu": "Poprirea pe cont",
+      "text": "În executarea silită, executorul poate bloca și banii din contul tău curent, nu doar o parte din salariu. Legea lasă neatinsă o sumă minimă, ca să poți trăi. Tot ce e peste ea poate fi luat pentru datorie. Exemplu: ai 3.500 lei în cont și o sumă protejată de 2.000 lei, deci executorul poate lua 1.500 lei."
+    },
+    {
+      "id": "restante-facturi",
+      "titlu": "Restanțele la facturi",
+      "text": "O factură neplătită la termen devine restanță, iar furnizorul adaugă penalități lunare. Urmează somația, apoi deconectarea (la utilități) sau evacuarea (la chirie). După câteva luni, datoria poate ajunge la o firmă de recuperare și apoi la executor. Exemplu: 300 lei restanță la utilități, cu 3% penalitate pe lună, ajung la aproape 1.000 lei în 3 luni dacă nu plătești nici facturile noi."
     }
   ]
 }

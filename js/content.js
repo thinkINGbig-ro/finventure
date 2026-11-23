@@ -185,31 +185,47 @@ function valideazaEveniment(ev, err, warn, cv, fisier) {
   verificaText(ev.titlu, 'titlu', err, vars);
   valideazaConditii(ev.conditii, 'conditii', err, cv, vars);
 
+  valideazaListaAlegeri(ev.alegeri, 'alegeri', { err, warn, cv, vars, fisier, idEv: ev.id, permiteGrup: true });
+}
+
+// Max. `alegeriMax` pe ecran, pe fiecare nivel. O alegere cu „subalegeri” e un grup (al doilea pas):
+// are doar id, eticheta, cere opțional și subalegeri; efectele stau în subalegeri.
+function valideazaListaAlegeri(lista, caleLista, o) {
+  const { err, cv } = o;
   const max = cv.balans?.evenimente?.alegeriMax ?? 4;
-  if (!Array.isArray(ev.alegeri) || ev.alegeri.length < 2 || ev.alegeri.length > max) {
-    return err('alegeri', `trebuie să fie între 2 și ${max} alegeri`);
+  const min = 2;
+  if (!Array.isArray(lista) || lista.length < min || lista.length > max) {
+    return err(caleLista, `trebuie să fie între ${min} și ${max} alegeri (pentru mai multe, grupează-le cu „subalegeri”)`);
   }
-  const idAlegeri = new Set();
-  ev.alegeri.forEach((a, i) => {
-    const cale = `alegeri[${i}]${a?.id ? ` (${a.id})` : ''}`;
+  const ids = new Set();
+  lista.forEach((a, i) => {
+    const cale = `${caleLista}[${i}]${a?.id ? ` (${a.id})` : ''}`;
     if (!a || typeof a !== 'object') return err(cale, 'alegerea trebuie să fie un obiect');
-    campuriNecunoscute(a, CAMPURI_ALEGERE, cale, err);
-    if (typeof a.id !== 'string' || !a.id) err(`${cale}.id`, 'lipsește id-ul alegerii');
-    else if (idAlegeri.has(a.id)) err(`${cale}.id`, 'id duplicat în acest eveniment');
-    idAlegeri.add(a.id);
+    if (typeof a.id !== 'string' || !/^[a-z0-9-]+$/.test(a.id)) err(`${cale}.id`, 'id-ul alegerii: litere mici, cifre, cratime');
+    else if (ids.has(a.id)) err(`${cale}.id`, 'id duplicat pe acest nivel');
+    ids.add(a.id);
     if (typeof a.eticheta !== 'string' || !a.eticheta.trim()) err(`${cale}.eticheta`, 'lipsește eticheta (textul butonului)');
-    verificaText(a.eticheta, `${cale}.eticheta`, err, vars);
-    valideazaConditii(a.cere, `${cale}.cere`, err, cv, vars);
-    valideazaRezultat(a, cale, err, warn, cv, vars, fisier, ev.id);
-    if (a.rezultate !== undefined) {
-      if (!Array.isArray(a.rezultate) || a.rezultate.length < 2) err(`${cale}.rezultate`, 'trebuie să fie o listă cu cel puțin 2 rezultate');
-      else a.rezultate.forEach((r, j) => {
-        const cr = `${cale}.rezultate[${j}]`;
-        campuriNecunoscute(r, CAMPURI_REZULTAT, cr, err);
-        if (r.pondere !== undefined && !(typeof r.pondere === 'number' && r.pondere > 0)) err(`${cr}.pondere`, 'trebuie să fie un număr > 0');
-        valideazaRezultat(r, cr, err, warn, cv, vars, fisier, ev.id);
-      });
+    verificaText(a.eticheta, `${cale}.eticheta`, o.err, o.vars);
+    valideazaConditii(a.cere, `${cale}.cere`, o.err, cv, o.vars);
+    if (a.subalegeri !== undefined) {
+      if (!o.permiteGrup) return err(`${cale}.subalegeri`, 'sub-alegerile nu pot avea la rândul lor sub-alegeri');
+      campuriNecunoscute(a, ['id', 'eticheta', 'cere', 'subalegeri'], cale, err);
+      return valideazaListaAlegeri(a.subalegeri, `${cale}.subalegeri`, { ...o, permiteGrup: false });
     }
+    valideazaAlegereFinala(a, cale, o);
+  });
+}
+
+function valideazaAlegereFinala(a, cale, { err, warn, cv, vars, fisier, idEv }) {
+  campuriNecunoscute(a, CAMPURI_ALEGERE, cale, err);
+  valideazaRezultat(a, cale, err, warn, cv, vars, fisier, idEv);
+  if (a.rezultate === undefined) return;
+  if (!Array.isArray(a.rezultate) || a.rezultate.length < 2) return err(`${cale}.rezultate`, 'trebuie să fie o listă cu cel puțin 2 rezultate');
+  a.rezultate.forEach((r, j) => {
+    const cr = `${cale}.rezultate[${j}]`;
+    campuriNecunoscute(r, CAMPURI_REZULTAT, cr, err);
+    if (r.pondere !== undefined && !(typeof r.pondere === 'number' && r.pondere > 0)) err(`${cr}.pondere`, 'trebuie să fie un număr > 0');
+    valideazaRezultat(r, cr, err, warn, cv, vars, fisier, idEv);
   });
 }
 

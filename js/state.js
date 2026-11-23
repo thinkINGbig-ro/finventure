@@ -2,7 +2,7 @@
 
 import { bal, clamp, cloneaza, inBani, varstaLa, numeLuna } from './util.js';
 import { creeazaFluxuri } from './rng.js';
-import { CLASE_PIATA, baniDisponibili, contCurent, datorieProdus, pret, valoareProdus } from './finance.js';
+import { CLASE_PIATA, baniDisponibili, contCurent, datorieProdus, facturiLunare, pret, valoareProdus } from './finance.js';
 import { CHEI } from './storage.js';
 
 export const VERSIUNE_SALVARE = 1;
@@ -24,7 +24,7 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     numerar: inBani(s.numerar),
     produse: [],
     recurente: [],
-    situatie: { studii: null, nivelStudii: 'liceu', locuinta: 'acasa' },
+    situatie: { studii: null, nivelStudii: 'liceu', locuinta: 'acasa', cauzaLocuinta: null },
     pensie: { luniContributie: 0, pilon2: 0 },
     indicePreturi: 1,
     piete: Object.fromEntries(CLASE_PIATA.map((c) => [c, 100])),
@@ -33,7 +33,7 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     urmari: [],
     istoricEvenimente: {},
     decizii: [],
-    momente: { primulSalariu: false, primaRata: false, primaPoprire: false, primulAnPePlus: false },
+    momente: { primulSalariu: false, primaRata: false, primaPoprire: false, primaPoprireCont: false, primulAnPePlus: false },
 
     an: null,        // anul în curs (sloturi, acumulatori); null între ani
     pendinte: null,  // oprirea afișată acum (eveniment, moment, rezumat, final)
@@ -77,7 +77,8 @@ export function expiraFlaguri(state) {
 // ---------- Valori derivate ----------
 
 export function cheltuieliLunare(state, ctx) {
-  let total = pret(state, ctx, 'costTrai.bazaLunara') + pret(state, ctx, `locuinte.${state.situatie.locuinta}`);
+  let total = pret(state, ctx, 'costTrai.mancareTransport');
+  for (const suma of Object.values(facturiLunare(state, ctx))) total += suma;
   for (const r of state.recurente) if (r.tip === 'cheltuiala') total += r.suma;
   for (const p of state.produse) if (p.tip === 'credit' && p.stadiu === 'activ') total += Math.min(p.rata, p.rest);
   return total;

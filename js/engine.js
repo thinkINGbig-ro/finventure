@@ -11,16 +11,16 @@
 import { bal, cfg, cloneaza, inBani, inLei, numeLuna, varstaLa, formateazaLei } from './util.js';
 import { intreg, normal, sansa } from './rng.js';
 import {
-  CLASE_PIATA, baniDisponibili, cardDisponibil, contCurent, creeazaProdus, datorieProdus, fluturas,
+  CLASE_PIATA, baniDisponibili, cardDisponibil, contCurent, creeazaProdus, datorieProdus, facturiLunare, fluturas,
   incaseaza, plateste, pret, proceseazaCard, proceseazaContEconomii, proceseazaCredit, proceseazaDepozit,
   proceseazaTitluri, randamentLunar, rataLunara, valoareProdus,
 } from './finance.js';
 import {
-  actualizeazaDerivate, adaugaJurnal, avereNeta, creeazaStare, datoriiTotale, expiraFlaguri, seteazaFlag,
+  actualizeazaDerivate, adaugaJurnal, areFlag, avereNeta, creeazaStare, datoriiTotale, expiraFlaguri, seteazaFlag,
 } from './state.js';
 import {
-  alegeEvenimentAleator, aplicaAlegere, creeazaOprireEveniment, deschideProdus, descrieOprire,
-  extrageUrmareScadenta, gasesteProduse, inchideCredit, lichideaza, planificaSloturi, programeazaUrmare, ramburseaza,
+  FLAG_FACTURA, NUME_FACTURI, alegeEvenimentAleator, aplicaAlegere, creeazaOprireEveniment, deschideProdus, descrieOprire,
+  extrageUrmareScadenta, gasesteProduse, inchideCredit, inchideFactura, lichideaza, planificaSloturi, programeazaUrmare, ramburseaza,
 } from './events.js';
 
 export const VARSTA_PENSIE = 65;
@@ -244,18 +244,21 @@ export function proceseazaLuna(state, ctx) {
     if (studii.luniRamase <= 0) finalizeazaStudii(state, ctx);
   }
 
-  // 4. Costul de trai; cumpărăturile pot trece pe cardul de credit
-  const baza = pret(state, ctx, 'costTrai.bazaLunara');
-  const trai = baza + pret(state, ctx, `locuinte.${state.situatie.locuinta}`);
+  // 4. Mâncare și transport primele (cumpărăturile pot trece pe cardul de credit).
+  // Ce nu se poate plăti aici înseamnă lipsuri, nu datorie.
+  const mancare = pret(state, ctx, 'costTrai.mancareTransport');
   let peCard = 0;
   const card = gasesteProduse(state, 'cardCredit')[0];
   if (card?.cumparaturiPeCard) {
-    peCard = Math.min(Math.round(baza * cfg(ctx, 'costTrai.procentCumparaturi')), cardDisponibil(card));
+    peCard = Math.min(Math.round(mancare * cfg(ctx, 'costTrai.procentCumparaturi')), cardDisponibil(card));
     card.soldNou += peCard;
   }
-  const platitTrai = plateste(state, trai - peCard);
-  ac.cheltuieliTrai += platitTrai + peCard;
-  neplatit += trai - peCard - platitTrai;
+  const platitMancare = plateste(state, mancare - peCard);
+  ac.cheltuieliTrai += platitMancare + peCard;
+  neplatit += mancare - peCard - platitMancare;
+
+  // 5. Facturile: ce rămâne neplătit devine restanță, cu penalități (vezi proceseazaRestante).
+  ac.cheltuieliTrai += proceseazaFacturi(state, ctx);
 
   const cont = contCurent(state);
   if (cont) {
@@ -269,7 +272,7 @@ export function proceseazaLuna(state, ctx) {
     ac.comisioane += luat;
   }
 
-  // 5. Credite și carduri
+  // 6. Credite și carduri
   for (const p of [...state.produse]) {
     // Prima rată vine luna următoare celei în care ai luat creditul.
     if (p.tip === 'credit' && p.deschisLa === state.luna) continue;
@@ -289,7 +292,7 @@ export function proceseazaLuna(state, ctx) {
     }
   }
 
-  // 6. Economii și titluri
+  // 7. Economii și titluri
   for (const p of [...state.produse]) {
     if (p.tip === 'depozit') ac.dobanziPrimite += proceseazaDepozit(p, ctx).dobandaNeta;
     if (p.tip === 'contEconomii') ac.dobanziPrimite += proceseazaContEconomii(p, ctx).dobandaNeta;
@@ -308,20 +311,24 @@ export function proceseazaLuna(state, ctx) {
   }
   state.pensie.pilon2 = Math.round(state.pensie.pilon2 * (1 + rataLunara(cfg(ctx, 'pilon2.randamentAnual'))));
 
-  // 7. Energie și fericire revin spre o țintă, proporțional cu distanța. Așa fiecare
+  // 8. Energie și fericire revin spre o țintă, proporțional cu distanța. Așa fiecare
   // încărcare (job, studii) are un echilibru: țintă − cost/revenire (ex. curier: 75 − 4/0.15 ≈ 48).
   // Burnout-ul vine din cumul (2 joburi, evenimente), nu dintr-un job obișnuit.
   state.stat.energie += (lunar.energieTinta - state.stat.energie) * lunar.energieRevenire;
   state.stat.fericire += (lunar.fericireTinta - state.stat.fericire) * lunar.fericireRevenire;
   if (neplatit > 0) {
-    state.stat.fericire -= lunar.lipsaBaniFericire;
-    state.stat.energie -= lunar.lipsaBaniEnergie;
+    penalizeaza(state, lunar.penalizari.lipsaBani);
     ac.neplatit += neplatit;
     ac.luniCuLipsuri += 1;
   }
+  // Izolarea și epuizarea n-au podea: doar cumulul lor poate duce Fericirea la 0.
+  const { izolare, epuizare } = lunar.penalizari;
+  if (state.ascunse.retea < izolare.prag) penalizeaza(state, izolare);
+  if (state.stat.energie < epuizare.prag) penalizeaza(state, epuizare);
 
-  // 8. Restanțe: Biroul de Credit, cesiune, executare silită
+  // 9. Restanțe: Biroul de Credit, somații, cesiune, executare silită; apoi poprirea pe cont
   proceseazaRestante(state, ctx);
+  proceseazaPoprireCont(state, ctx);
 
   actualizeazaDerivate(state, ctx);
   verificaFinal(state, ctx, { lunar: true });
@@ -381,15 +388,89 @@ function finalizeazaStudii(state, ctx) {
   adaugaJurnal(state, info.nivel === 'licenta' ? 'Ai terminat facultatea!' : 'Ai terminat școala și ai o calificare.');
 }
 
+// Penalizare lunară care nu coboară statistica sub „podea” (ce e deja sub podea rămâne neatins).
+function penalizeaza(state, p) {
+  const aplica = (obiect, cheie) => {
+    if (!p[cheie] || obiect[cheie] <= p.podea) return;
+    obiect[cheie] = Math.max(p.podea, obiect[cheie] - p[cheie]);
+  };
+  aplica(state.stat, 'fericire');
+  aplica(state.stat, 'energie');
+  aplica(state.ascunse, 'retea');
+}
+
+// Plătește facturile lunii plus restanțele. Întoarce cât s-a plătit.
+function proceseazaFacturi(state, ctx) {
+  const penalitate = cfg(ctx, 'facturi.penalitateLunara');
+  let platitTotal = 0;
+  for (const [categorie, sumaLuna] of Object.entries(facturiLunare(state, ctx))) {
+    let f = gasesteProduse(state, `factura:${categorie}`)[0];
+    if (!sumaLuna && !f) continue;
+    if (f) {
+      const pen = Math.round(f.restanta * penalitate);
+      f.restanta += pen;
+      f.penalitati += pen;
+    }
+    const datorat = sumaLuna + (f?.restanta ?? 0);
+    const platit = plateste(state, datorat);
+    platitTotal += platit;
+    const ramas = datorat - platit;
+    if (ramas > 0) {
+      if (!f) {
+        const cauza = categorie === 'telefon' ? null : state.situatie.cauzaLocuinta ?? null;
+        f = creeazaProdus({ tip: 'factura', categorie, cauza }, state, ctx);
+        state.produse.push(f);
+      }
+      f.restanta = ramas;
+      f.luniRestanta += 1;
+    } else if (f) {
+      if (f.furnizor === 'utilitati' && areFlag(state, 'deconectat')) {
+        const taxa = plateste(state, pret(state, ctx, 'facturi.taxaReconectare'));
+        platitTotal += taxa;
+        adaugaJurnal(state, 'Ți-au reconectat utilitățile, după ce ai plătit restanța și taxa de reconectare.');
+      }
+      inchideFactura(state, f);
+    }
+  }
+  return platitTotal;
+}
+
+// Executorul poprește și contul curent, peste suma protejată.
+function proceseazaPoprireCont(state, ctx) {
+  const cont = contCurent(state);
+  const popriri = gasesteProduse(state, 'poprire');
+  if (!cont || !popriri.length) return;
+  let disponibil = Math.max(0, cont.sold - pret(state, ctx, 'poprire.sumaProtejataCont'));
+  for (const p of popriri) {
+    const luat = Math.min(p.datorie, disponibil);
+    if (!luat) continue;
+    cont.sold -= luat;
+    disponibil -= luat;
+    p.datorie -= luat;
+    p.retinutTotal += luat;
+    state.an.ac.retinutPoprire += luat;
+    if (!state.momente.primaPoprireCont) adaugaMoment(state, 'primaPoprireCont', { retinut: luat }, ['poprire-cont']);
+    if (p.datorie === 0) {
+      state.produse = state.produse.filter((x) => x !== p);
+      adaugaJurnal(state, 'Poprirea s-a încheiat: datoria e acoperită.');
+    }
+  }
+}
+
 function proceseazaRestante(state, ctx) {
   const r = (k) => cfg(ctx, `restante.${k}`);
+  const fc = (k) => cfg(ctx, `facturi.${k}`);
   const lunar = bal(ctx, 'lunar');
   let areRestante = false;
 
   for (const p of [...state.produse]) {
+    if (p.tip === 'factura' && p.luniRestanta > 0) {
+      areRestante = true;
+      escaladeazaFactura(state, ctx, p, fc);
+      continue;
+    }
     if ((p.tip !== 'credit' && p.tip !== 'cardCredit') || p.luniRestanta === 0) continue;
     areRestante = true;
-    state.stat.fericire -= lunar.restantaFericire;
     if (p.luniRestanta >= r('luniPanaLaRaportare')) {
       state.ascunse.scorCredit -= lunar.scorCreditPenalizareLunara;
       seteazaFlag(state, `istoric_restante:${r('aniInIstoric') * 12}`);
@@ -411,9 +492,44 @@ function proceseazaRestante(state, ctx) {
     }
   }
 
+  if (areRestante) penalizeaza(state, lunar.penalizari.restante);
+  if (areFlag(state, 'deconectat')) penalizeaza(state, lunar.penalizari.deconectat);
+  if (areFlag(state, 'telefon_suspendat')) penalizeaza(state, lunar.penalizari.telefonSuspendat);
+
   // Istoricul bun crește încet scorul (doar dacă ai produse de credit și plătești la timp).
   const areCredit = state.produse.some((p) => p.tip === 'credit' || p.tip === 'cardCredit');
   if (areCredit && !areRestante) state.ascunse.scorCredit += lunar.scorCreditCrestereLunara;
+}
+
+// Lanțul facturilor: somație → deconectare / suspendare / evacuare → recuperare → executare.
+function escaladeazaFactura(state, ctx, f, fc) {
+  const n = f.luniRestanta;
+  const nume = NUME_FACTURI[f.furnizor];
+  if (n === fc('luniPanaLaSomatie')) {
+    adaugaJurnal(state, `Ai primit o somație: restanță la ${nume}.`);
+    if (!state.urmari.some((u) => u.eveniment === 'facturi-somatie')) {
+      programeazaUrmare(state, ctx, { eveniment: 'facturi-somatie', dupaLuni: 1 }, f.cauza);
+    }
+  }
+  if (f.furnizor === 'utilitati' && n === fc('luniPanaLaDeconectare')) {
+    seteazaFlag(state, 'deconectat');
+    adaugaJurnal(state, 'Ți-au tăiat curentul și gazul pentru neplată.');
+  }
+  if (f.furnizor === 'telefon' && n === fc('luniPanaLaSuspendare')) {
+    seteazaFlag(state, 'telefon_suspendat');
+    adaugaJurnal(state, 'Ți-au suspendat abonamentul de telefon.');
+  }
+  if (f.furnizor === 'chirie' && n === fc('luniPanaLaEvacuare')) {
+    // Evacuarea e imediată; evenimentul care urmează decide unde stai de acum.
+    state.situatie.locuinta = bal(ctx, 'locuintaDupaEvacuare');
+    seteazaFlag(state, 'evacuat:24');
+    adaugaJurnal(state, 'Proprietarul te-a evacuat pentru neplata chiriei. Datoria rămâne.');
+    programeazaUrmare(state, ctx, { eveniment: 'evacuare', dupaLuni: 1 }, f.cauza);
+  }
+  if (n >= fc('luniPanaLaRecuperare')) {
+    delete state.flaguri[FLAG_FACTURA[f.furnizor]];
+    cesioneaza(state, ctx, f);
+  }
 }
 
 // Datoria e vândută unei firme de recuperare: devine scadentă integral, plus costuri.
