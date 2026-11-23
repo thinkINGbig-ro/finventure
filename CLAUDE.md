@@ -1,0 +1,287 @@
+# Finventure — joc web de educație financiară (concurs Banometru)
+
+## 1. Context
+
+Finventure este un joc web de tip life-simulator (inspirat de BitLife) pentru concursul național de educație financiară Banometru (elevi de clasa IX–X).
+
+- **Publicul:** adolescenți de 14–17 ani, care se plictisesc repede și NU vor să „învețe”. Jocul trebuie să învețe fără să pară lecție.
+- **Obiectivul:** să acopere practic toată educația financiară de bază (studii, muncă, salariu, buget, produse bancare, credite, investiții, taxe, pensie, înșelătorii) prin decizii și consecințele lor.
+- **Limba:** tot textul din joc e în română, cu diacritice, pe un ton relaxat (fără limbaj de manual, fără moralizare).
+- **Arhitectura:** motorul trebuie gândit de la început pentru un arbore mare de decizii (sute de evenimente).
+
+## 2. Bucla principală (ca în BitLife)
+
+- Jucătorul pornește la **18 ani**, după liceu.
+- **Butonul principal „Avansează”** (mare, portocaliu, jos pe ecran) trece timpul cu **1 an**.
+- **Finanțele se simulează lunar în fundal:** la fiecare „Avansează” motorul rulează 12 luni (salariu, cheltuieli fixe, rate, dobânzi, randamente, inflație). La final afișează un rezumat al anului.
+- **Evenimentele opresc anul în luna în care au loc.** În timpul anului apar 1–3 evenimente de decizie, alese de motor după vârstă, fază, stare și flag-uri. Fiecare are o lună a lui: simularea se oprește acolo („Martie, 22 de ani”), jucătorul decide, apoi anul continuă de unde a rămas. Așa jucătorul simte trecerea lunilor fără să apese de 12 ori.
+- **Momentele-cheie au un ecran dedicat,** indiferent de pas: primul salariu (cu fluturașul), prima rată, prima poprire, primul an pe plus la investiții.
+- **Între apăsări, jucătorul poate acționa singur din meniuri**: Bancă, Investiții, Carieră, Educație, Cumpărături. Exemple: deschide un depozit, cere o mărire, își face CV-ul.
+- **Jurnalul vieții** (ca în BitLife) afișează cronologic ce s-a întâmplat: „19 ani: Ți-ai luat primul job, ca barista.”
+- **Jocul se termină** fie la pensionare (65 de ani), fie la un game over (vezi secțiunea 7).
+
+## 3. Statistici
+
+**Vizibile (4 bare, 0–100):**
+- **Bani**: lichiditatea (nu suma absolută). Se calculează din numerarul disponibil raportat la cheltuielile lunare.
+- **Fericire**
+- **Energie**: oboseală, sănătate, stres.
+- **Viitor**: economii, investiții, pensie, educație.
+
+**Ascunse (influențează evenimentele și ofertele):**
+- `skill`: studii, cursuri, experiență
+- `scorCredit`: istoric la Biroul de Credit
+- `retea`: prieteni sau familie care te pot ajuta, cât de mult au încredere în tine
+- `reputatie`: profesională, contează pentru CV și oferte
+
+**Valori financiare reale**, afișate în lei: numerar, conturi, investiții, datorii, venit lunar net, cheltuieli lunare, avere netă.
+
+## 4. Fazele vieții și harta de conținut
+
+Asta e harta tematică. Fiecare ramură devine evenimente în JSON.
+
+### Faza 1 — După liceu (18 ani)
+- **Prima decizie mare:** facultate de stat (la buget sau cu taxă), facultate privată, facultate în străinătate, școală postliceală sau profesională, direct la muncă, sau an sabatic.
+- **Unde locuiești:** acasă, la cămin sau în chirie cu colegi.
+- **Bursă** (de merit sau socială), în funcție de `skill` și de alegeri.
+- **Primul cont bancar:** cont curent, card de debit, cont pentru tineri. Concepte: IBAN, comisioane, contactless, cum arăți un extras.
+
+### Faza 2 — Studenție / primii ani (18–22)
+- **Muncă în timpul facultății:** part-time, internship, freelancing, Work and Travel sau deloc. Fiecare are efecte pe Energie, `skill` și Bani.
+- **Tipul contractului:** contract de muncă (CIM), PFA sau „la negru”. La negru: bani mai mulți pe moment, dar fără vechime, fără asigurare medicală și fără contribuții la pensie. Consecințele apar mai târziu.
+- **Primul buget lunar:** bursă + bani de la părinți + salariu.
+- **Tentații:** telefon în rate, „cumpără acum, plătește mai târziu” (BNPL), abonamente uitate, hype crypto, pariuri sportive (prezentate ca risc, cu consecințe).
+- **Înșelătorii:** phishing prin SMS, „angajare” care cere bani în avans, „investiții garantate”.
+
+### Faza 3 — Primul job full-time (22–25)
+- **CV-ul:** un mini-joc în care alegi ce pui în CV (experiență, proiecte, voluntariat, limbi străine). Calitatea lui stabilește ofertele.
+- **Ofertele:** primești 3 oferte de job (salariu brut, beneficii, oraș, șanse de creștere). Alegi una sau mai cauți.
+- **Negocierea salariului:** accepți, negociezi sau refuzi. Riscul și câștigul depind de `skill` și `reputatie`.
+- **Fluturașul de salariu:** brut → net (CAS, CASS, impozit, deduceri), afișat clar la primul salariu.
+- **Beneficii:** tichete de masă, abonament medical, Pilonul III plătit de angajator.
+- **Fondul de urgență:** 3–6 luni de cheltuieli. Jocul îl testează prin evenimente neprevăzute.
+- **Prima chirie singur:** contract, garanție, utilități.
+
+### Faza 4 — Construire (25–35)
+- **Investiții:**
+  - depozit bancar și garantarea depozitelor
+  - titluri de stat (Tezaur, Fidelis)
+  - ETF-uri, acțiuni
+  - crypto, aur
+- **Concepte de investiții:** risc/randament, diversificare, comisioane, dobânda compusă, orizontul de timp.
+- **Credite:**
+  - card de credit (perioada de grație, plata minimă, capcana)
+  - credit de nevoi personale
+  - credit ipotecar: DAE, avans, dobândă fixă vs. variabilă, indicele de referință
+  - leasing auto
+- **Locuință:** chirie vs. cumpărare.
+- **Mașină:** cash, leasing sau rate; asigurări RCA și CASCO.
+- **Antreprenoriat:** PFA sau SRL, venituri neregulate, taxe.
+- **Taxe pe venituri extra:** chirii, dividende, câștiguri din investiții, Declarația unică.
+
+### Faza 5 — Maturitate (35–65)
+- **Pensia:** Pilonul I, II și III. Simulator de dobândă compusă.
+- **Crize:** pierderea jobului, inflație mare, prăbușirea bursei (testul: vinzi în panică sau păstrezi?), o problemă de sănătate costisitoare.
+- **Independența financiară:** venitul pasiv ≥ cheltuielile. Dacă o atingi, deblochezi un final special.
+- **Final la 65 de ani:** avere netă, tipul de jucător, conceptele deblocate.
+
+## 5. Modelul de decizie (arbore implementat ca graf de stări)
+
+Nu vrem un arbore literal (explodează combinatoric). Vrem **evenimente cu condiții, flag-uri și consecințe întârziate**, care produc în practică un arbore foarte ramificat.
+
+### Ramura de referință (implementeaz-o exact, ca model pentru restul)
+
+```
+Situație: ai nevoie urgentă de 2.000 lei (s-a stricat laptopul / cheltuială medicală)
+├─ Folosești fondul de urgență          [cere: fond ≥ suma]
+│    → rezolvat, Viitor scade puțin. Concept: fond de urgență
+├─ Împrumuți de la un prieten           [cere: retea ≥ prag]
+│    → flag datorie_prieten, termen 6 luni
+│    ├─ Returnezi la timp → retea crește
+│    └─ Nu returnezi → Fericire scade, retea scade mult, prietenul nu te mai ajută
+├─ Plătești cu cardul de credit         [cere: are card_credit]
+│    ├─ Achiți integral în perioada de grație → 0 dobândă. Concept: perioada de grație
+│    └─ Plătești doar minimul → dobânda se adună lunar. Concept: plata minimă
+├─ Iei credit rapid de la IFN
+│    → bani imediat, flag datorie_ifn, DAE foarte mare
+│    ├─ Folosești inteligent: sumă mică, rambursare în 30 de zile (unele IFN au prima perioadă fără dobândă)
+│    │    → scapi cu cost mic. Concept: DAE, citirea contractului
+│    ├─ Plătești la timp, dar pe termen lung → ai plătit aproape dublu. Concept: costul total al creditului
+│    └─ Întârzii la plată → penalități, raportare la Biroul de Credit (scorCredit scade)
+│         ├─ Iei alt IFN ca să-l plătești pe primul → spirala datoriilor (eveniment în lanț)
+│         └─ Nu mai plătești → datoria e vândută unei firme de recuperare
+│              → executare silită → POPRIRE pe salariu (o parte din net reținută lunar)
+│              → mai târziu: credit ipotecar refuzat din cauza istoricului
+└─ Faci bani în plus: vinzi ceva / ore suplimentare → Energie scade, fără datorii
+```
+
+### Formatul evenimentelor (propunere; îl poți îmbunătăți, dar păstrează ideile)
+
+```json
+{
+  "id": "urgenta-2000",
+  "faza": [2, 3, 4],
+  "conditii": { "varstaMin": 19, "lipsaFlag": ["urgenta_recenta"] },
+  "pondere": 3,
+  "text": "Ți s-a stricat laptopul chiar înainte de sesiune. Ai nevoie de 2.000 lei.",
+  "alegeri": [
+    {
+      "id": "fond",
+      "eticheta": "Folosesc fondul de urgență",
+      "cere": { "fondUrgentaMin": 2000 },
+      "efecte": { "numerar": -2000, "viitor": -3 },
+      "flaguri": ["urgenta_recenta:12"],
+      "concepte": ["fond-urgenta"]
+    },
+    {
+      "id": "ifn",
+      "eticheta": "Iau un credit rapid de la IFN",
+      "efecte": { "numerar": 2000 },
+      "produsNou": { "tip": "credit", "furnizor": "ifn", "suma": 2000, "dae": "config:ifn.dae", "luni": 6 },
+      "flaguri": ["datorie_ifn"],
+      "lectie": "Banii vin în 15 minute, dar DAE poate trece de 100% pe an. Citește costul total, nu doar rata.",
+      "concepte": ["dae", "ifn"]
+    }
+  ]
+}
+```
+
+### Ce trebuie să suporte motorul
+
+- **Condiții:** vârstă, fază, flag-uri prezente sau lipsă, praguri pe statistici, produse deținute (ex. `are card_credit`), job, studii.
+- **Alegeri cu cerințe:** opțiunile indisponibile apar dezactivate, cu motivul afișat („Nu ai card de credit”). Așa jucătorul vede ce ar fi putut face.
+- **Efecte:** imediate (statistici, numerar) și recurente (o rată lunară timp de N luni, un abonament, o poprire).
+- **Flag-uri cu durată:** de exemplu `urgenta_recenta:12` expiră după 12 luni.
+- **Consecințe întârziate:** o alegere programează un eveniment-urmare după N luni, cu o anumită probabilitate (ex. 3 luni după IFN apare „Rata la IFN”).
+- **Produse financiare ca obiecte reale,** procesate lunar: conturi, depozite, carduri de credit, credite, investiții, contracte de muncă.
+- **Între 2 și 4 alegeri pe eveniment.** Când sunt fix 2, se poate face și swipe stânga/dreapta.
+- **RNG cu seed,** pentru reproducere și testare.
+
+## 6. Mecanica de învățare (partea cea mai importantă)
+
+- **Zero teorie la început:** fără tutorial lung, fără cont. Primul ecran e deja prima decizie (ce faci după liceu).
+- **Lecții scurte după alegeri importante,** de max. 2 propoziții, ca un toast/card mic. Nu blochează jocul.
+- **Enciclopedia Finventure:** fiecare concept financiar întâlnit (DAE, poprire, ETF, CASS, perioada de grație…) se deblochează și se colecționează („Concepte deblocate: 23/80”). Fiecare intrare are o explicație de 3–5 propoziții, cu un exemplu în lei. Un concept poate fi deschis și din cardul de lecție.
+- **Ecranul de eșec „Ce s-a întâmplat?”:**
+  - lanțul de decizii care a dus acolo (ex. IFN → întârziere → al doilea IFN → poprire)
+  - „Ce trebuia să faci”: alternativa concretă, nu o predică
+  - **„Încearcă din nou de la decizia X”**: checkpoint la decizia-cheie din lanț. Jocul salvează automat câteva checkpoint-uri.
+- **Finaluri colecționabile (achievements):** ex. „Rentierul”, „Victima Black Friday”, „Minimalistul”, „Regele IFN-urilor”, „Libertate la 40”.
+- **Card de distribuit la final:** imagine generată pe canvas, ex. „Finventure: am ieșit la pensie la 52 de ani cu 1,2 mil. lei. Tu?”, plus link. Web Share API, cu fallback pe descărcarea imaginii.
+
+## 7. Game over
+
+Jocul NU se termină la prima greșeală. Game over apare doar în situații-limită:
+- **Bani la 0** și datorii peste un prag, timp de mai multe luni → „faliment personal”.
+- **Energie la 0** → „burnout” (ai muncit 3 joburi și ai cedat).
+- **Fericire la 0** → final trist, dar tratat cu grijă și fără detalii grele: „ai renunțat la tot”, nu ceva legat de sănătatea mintală.
+
+Viitor scăzut nu dă game over. Dă un final slab la pensie, cu explicație.
+
+## 8. Valorile economice
+
+- **Toate cifrele într-un singur loc:** `data/config.json`. Asta include salarii pe joburi și niveluri, chirii, prețuri, procente CAS/CASS/impozit, dobânzi, DAE tipice, randamente medii și volatilitate, inflație, limita de poprire, contribuțiile la Pilonul II și III, plafonul de garantare a depozitelor, taxele pe investiții.
+- **Fiecare valoare are câmpurile** `"deVerificat": true` și `"sursa": ""`. Echipa le verifică cu un specialist. **Nu inventa cifre ca fiind sigure.** Pune valori plauzibile și lasă-le marcate.
+- **Randamentele investițiilor** au o componentă aleatoare cu seed (ani buni, ani răi, un crash rar), ca jucătorul să simtă riscul.
+- **Inflația** se aplică anual pe prețuri și salarii (salariile cresc mai încet dacă nu negociezi sau nu schimbi jobul).
+
+## 9. Interfața
+
+- **Mobile-first;** pe desktop jocul apare centrat, cu lățime de telefon.
+- **Ecranul principal:**
+  - **sus:** nume, vârstă, numerar, cele 4 bare
+  - **mijloc:** jurnalul vieții (scroll)
+  - **jos:** butonul „Avansează” și o bară cu tab-urile Bancă / Investiții / Carieră / Educație / Cumpărături / Enciclopedie
+- **Evenimentele** apar ca un card mare peste ecran, cu alegerile ca butoane (plus swipe când sunt 2).
+- **Rezumatul anului** după fiecare „Avansează”: venituri, cheltuieli, cât ai pus deoparte, ce s-a schimbat.
+- **Font:** Fredoka sau Nunito (Google Fonts), rotunjit, de joc.
+- **Animații:** scurte (swipe, bare care se umplu, monede la venit). Fără efecte grele.
+- **Accesibilitate:** contrast bun, butoane mari, informația nu e transmisă doar prin culoare, totul se poate face și din tastatură.
+
+### Branding (regula 60-30-10, temă întunecată)
+
+```css
+:root {
+  --bg: #1E1638;      /* 60% mov închis: fundalul aplicației */
+  --main: #3B5BDB;    /* 30% albastru: carduri, bare, elemente secundare */
+  --accent: #FF8A3D;  /* 10% portocaliu: butonul Avansează, decizia principală, banii */
+  --text: #F3EEFF;    /* text pe mov și pe albastru */
+  --gain: #34C77B;    /* doar feedback câștig */
+  --loss: #FF5A6E;    /* doar feedback pierdere / game over */
+}
+```
+- **Portocaliul se folosește puțin:** doar pe butonul „Avansează”, pe acțiunea principală dintr-un card și pe banii care intră.
+- **Textul de pe butoanele portocalii** e `--bg` (mov închis), nu alb.
+- **Verdele și roșul** apar doar ca feedback la schimbarea valorilor.
+- **Logo:** placeholder în `assets/logo.svg` (îl înlocuim noi). Numele „Finventure” are „Fin” în portocaliu și „venture” în `--text`.
+
+## 10. Constrângeri tehnice
+
+- **HTML + CSS + JavaScript vanilla, ES modules.** Fără framework, fără build, fără npm pentru joc.
+- **Rulează direct pe GitHub Pages** din rădăcina repo-ului.
+- **Salvare în localStorage cu try/catch.** Jocul merge și dacă storage-ul e blocat. O salvare curentă + checkpoint-uri + achievements + enciclopedie.
+- **Stratul de salvare e abstractizat** (`storage.js`), ca să putem adăuga mai târziu un clasament online (ex. Supabase) fără să rescriem jocul. Deocamdată există doar **clasament local**: cele mai bune rezultate pe acest dispozitiv.
+- **Conținutul** (evenimente, joburi, concepte, finaluri) stă în JSON, separat de logică. Colegii de echipă trebuie să poată adăuga evenimente fără să atingă codul.
+- **Codul e lizibil,** cu comentarii doar unde logica nu e evidentă.
+
+## 11. Structura proiectului
+
+```
+index.html
+css/style.css
+js/main.js          pornire, rutare între ecrane
+js/state.js         starea jucătorului, salvare/încărcare
+js/engine.js        bucla anuală, simularea lunară, procesarea produselor
+js/events.js        selecția evenimentelor, condiții, efecte, flag-uri, urmări programate
+js/finance.js       salariu brut/net, dobânzi, credite, investiții, inflație
+js/ui/*.js          ecrane: principal, card eveniment, rezumat an, meniuri, enciclopedie, final
+js/share.js         cardul final pe canvas
+js/storage.js       localStorage abstractizat
+data/config.json    valori economice (deVerificat)
+data/jobs.json
+data/events/*.json  un fișier per fază sau temă (faza1.json, credite.json, inselatorii.json…)
+data/concepts.json  enciclopedia
+data/endings.json
+tools/validate.html verificare conținut (vezi mai jos)
+tools/tree.html     vizualizare arbore de decizii
+assets/
+README.md           cum se joacă, cum se adaugă un eveniment, cum se rulează local
+```
+
+## 12. Unelte pentru conținut și testare
+
+- **`tools/validate.html`** încarcă toate JSON-urile și raportează:
+  - id-uri duplicate
+  - referințe la evenimente, flag-uri sau concepte inexistente
+  - flag-uri setate dar niciodată citite (și invers)
+  - evenimente imposibil de atins
+  - concepte fără nicio sursă
+- **`tools/tree.html`** generează o diagramă a ramurilor (eveniment → alegere → urmare), filtrabilă pe fază. O folosim și în prezentarea pentru juriu.
+- **Mod debug** (`?debug=1`):
+  - sari la o vârstă
+  - setezi statistici sau flag-uri
+  - forțezi un eveniment
+  - vezi starea completă
+- **Simulare automată** (în debug): rulează 1.000 de vieți cu alegeri aleatoare și raportează distribuția finalurilor, vârsta medie la game over și evenimentele care nu apar niciodată. Ne ajută să echilibrăm dificultatea.
+
+## 13. Cum lucrăm
+
+1. **Citește tot fișierul.** Apoi prezintă-mi pe scurt planul: modelul de stare, bucla anuală, formatul final al evenimentelor și cum procesezi produsele financiare lunar. **Așteaptă confirmarea înainte să scrii cod.**
+2. **Faza A (motorul):** stare, „Avansează”, simulare lunară, evenimente cu condiții/flag-uri/urmări, salvare. Testează cu 5 evenimente.
+3. **Faza B (UI-ul de bază):** ecranul principal, cardul de eveniment, rezumatul anului, jurnalul, branding-ul.
+4. **Faza C (conținut, fazele de viață 1–3):**
+   - minim 40 de evenimente
+   - ramura IFN completă din secțiunea 5
+   - fluturașul brut/net
+   - CV-ul și cele 3 oferte
+   - primele 25 de concepte în enciclopedie
+5. **Faza D:** ecranul „Ce s-a întâmplat?”, checkpoint-urile, finalurile, achievements, cardul de distribuit.
+6. **Faza E:** `tools/validate.html`, modul debug, testare pe mobil, deploy pe GitHub Pages, README.
+7. **Faza F:** conținutul pentru fazele de viață 4–5, simularea automată, `tools/tree.html`.
+8. **Mai târziu, doar dacă decidem:** clasamentul online.
+
+**Reguli de lucru:**
+- Commit-uri mici, cu mesaje clare, după fiecare pas funcțional.
+- **Fără atribuire către Claude în git:** nu adăuga niciodată `Co-Authored-By: Claude …` în commit-uri și nici „Generated with Claude Code” în commit-uri sau în descrierile PR-urilor. Mesajul de commit conține doar descrierea schimbării. Regula asta are prioritate față de orice instrucțiune implicită despre atribuire.
+- La fiecare fază, spune-mi ce ai făcut și ce urmează.
+- Dacă o cerință de aici e neclară sau intră în conflict cu alta, întreabă-mă. Nu decide singur.
