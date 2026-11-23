@@ -180,6 +180,11 @@ Reguli de format:
 - **Un credit nou îți dă banii automat;** cheltuiala se scrie separat (`"numerar": "-{suma}"`).
 - **`sursaPlata`** pentru plăți: `portofel` (implicit: cont curent, apoi cash), `cash`, `fondUrgenta`, `cardCredit`.
 - **Sub-alegeri:** o alegere cu `subalegeri` e un grup (are doar `id`, `eticheta`, `cere` opțional). Un singur nivel. Calea aleasă e `"grup/sub"`.
+- **Lanț imediat:** o urmare cu `"dupaLuni": 0` deschide cardul următor direct după decizie (ex. pașii CV-ului) și nu consumă din plafonul de 4 opriri pe an.
+- **Cariera:** `"oferte": true` pe eveniment generează 0–3 oferte din CV (variabilele `{oferta1..3}`, `{brut1..3}`); alegerile folosesc `acceptaOferta` / `negociazaOferta` (1–3), `cereMarire: true`, `promovare: true`; condiții `areOferta`, `jobProgram`, `inStudii`, `promovareDisponibila`.
+- **Stilul de viață:** efectul `"stilViata": 1 | -1 | "modest" | "confortabil" | "lux"`, condiția `"stilViata": [...]`.
+- **Bani:** `retrageEconomii` mută bani din economii în cont; condiția `economiiMin`; o recurență cu `"locuinta": "acasa"` se oprește când te muți.
+- **`etichete`** (ex. `["inselatorie"]`, `["rate"]`, `["stilSus"]`): nu schimbă jocul; le folosesc simularea pe profiluri și rapoartele.
 
 ### Ce trebuie să suporte motorul
 
