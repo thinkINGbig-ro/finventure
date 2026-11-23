@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1E1638">
+  <meta name="description" content="Finventure: un joc despre bani, decizii și viață, de la 18 la 65 de ani.">
+  <title>Finventure</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <div id="erori-continut" class="erori-continut" hidden></div>
+
+    <header class="antet">
+      <div class="antet-sus">
+        <span class="wordmark" aria-label="Finventure"><span class="fin">Fin</span>venture</span>
+        <button id="btn-meniu" class="btn-icon" type="button" aria-label="Meniu joc" aria-haspopup="dialog">⋯</button>
+      </div>
+      <div class="identitate">
+        <div>
+          <div id="nume" class="nume"></div>
+          <div id="varsta" class="varsta"></div>
+        </div>
+        <div class="bani-sus">
+          <span class="eticheta-mica">Bani disponibili</span>
+          <span id="bani-total" class="suma-bani"></span>
+        </div>
+      </div>
+      <div id="bare" class="bare"></div>
+    </header>
+
+    <main class="jurnal-zona">
+      <h2 class="sr-only">Jurnalul vieții</h2>
+      <ol id="jurnal" class="jurnal" aria-live="polite"></ol>
+    </main>
+
+    <footer class="subsol">
+      <button id="btn-avanseaza" class="btn-avanseaza" type="button">
+        <span class="btn-avanseaza-text">Avansează</span>
+        <span class="btn-avanseaza-sub">+1 an</span>
+      </button>
+      <nav class="taburi" aria-label="Meniuri">
+        <button type="button" class="tab" data-tab="banca"><span class="tab-icon" aria-hidden="true">🏦</span>Bancă</button>
+        <button type="button" class="tab" data-tab="investitii"><span class="tab-icon" aria-hidden="true">📈</span>Investiții</button>
+        <button type="button" class="tab" data-tab="cariera"><span class="tab-icon" aria-hidden="true">💼</span>Carieră</button>
+        <button type="button" class="tab" data-tab="educatie"><span class="tab-icon" aria-hidden="true">🎓</span>Educație</button>
+        <button type="button" class="tab" data-tab="cumparaturi"><span class="tab-icon" aria-hidden="true">🛒</span>Cumpărături</button>
+        <button type="button" class="tab" data-tab="enciclopedie"><span class="tab-icon" aria-hidden="true">📖</span>Concepte</button>
+      </nav>
+    </footer>
+
+    <div id="strat" class="strat" hidden></div>
+    <div id="toasturi" class="toasturi" aria-live="polite"></div>
+  </div>
+
+  <noscript><p class="noscript">Finventure are nevoie de JavaScript.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
