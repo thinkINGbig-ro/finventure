@@ -162,14 +162,49 @@ function meniuRiscant(state, ctx, rnd) {
   return cautaJobDacaTrebuie(state, ctx);
 }
 
-// Aleator: din când în când face ceva din meniuri, fără plan.
+// Aleator: în fiecare an, 0–3 acțiuni de meniu luate la întâmplare, bune sau proaste.
+const ACTIUNI_ALEATOARE = [
+  (state, ctx) => actiune(state, ctx, 'deschide', { tip: 'contCurent', pachet: varstaLa(state.luna) <= 25 ? 'tineri' : 'standard' }),
+  (state, ctx, rnd) => actiune(state, ctx, 'stilViata', { nivel: ['modest', 'confortabil', 'lux'][Math.floor(rnd() * 3)] }),
+  (state, ctx, rnd) => {
+    let e = gasesteProduse(state, 'contEconomii')[0];
+    if (!e) e = actiune(state, ctx, 'deschide', { tip: 'contEconomii' }).produs;
+    if (e) actiune(state, ctx, 'depune', { id: e.id, suma: lei(Math.round(baniDisponibili(state) * rnd() * 0.5)) });
+    if (e && rnd() < 0.5) actiune(state, ctx, 'seteaza', { id: e.id, campuri: { fondUrgenta: true } });
+  },
+  (state, ctx, rnd) => {
+    const e = gasesteProduse(state, 'contEconomii')[0];
+    if (e) actiune(state, ctx, 'retrage', { id: e.id, suma: lei(Math.round(e.sold * rnd())) });
+  },
+  (state, ctx, rnd) => actiune(state, ctx, 'deschide', { tip: 'depozit', suma: lei(Math.round(baniDisponibili(state) * (0.2 + rnd() * 0.3))) }),
+  (state, ctx) => {
+    const d = gasesteProduse(state, 'depozit')[0];
+    if (d) actiune(state, ctx, 'lichideaza', { id: d.id });
+  },
+  (state, ctx, rnd) => actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(Math.round(baniDisponibili(state) * (0.1 + rnd() * 0.4))) }),
+  (state, ctx, rnd) => actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'crypto', suma: lei(Math.round(baniDisponibili(state) * (0.05 + rnd() * 0.25))) }),
+  (state, ctx, rnd) => {
+    const inv = gasesteProduse(state, 'investitie').filter((p) => p.clasa !== 'titluriStat');
+    if (inv.length) actiune(state, ctx, 'lichideaza', { id: inv[Math.floor(rnd() * inv.length)].id });
+  },
+  (state, ctx, rnd) => {
+    let card = gasesteProduse(state, 'cardCredit')[0];
+    if (!card) card = actiune(state, ctx, 'deschide', { tip: 'cardCredit' }).produs;
+    if (card) actiune(state, ctx, 'seteaza', { id: card.id, campuri: { plata: rnd() < 0.5 ? 'minim' : 'integral', cumparaturiPeCard: rnd() < 0.5 } });
+  },
+  (state, ctx, rnd) => actiune(state, ctx, 'cumpara', { suma: lei(Math.round(baniDisponibili(state) * (0.1 + rnd() * 0.5))), fericire: 4 }),
+  (state, ctx) => actiune(state, ctx, 'cereMarire'),
+  (state, ctx) => actiune(state, ctx, 'cautaJob'),
+];
+
 function meniuAleator(state, ctx, rnd) {
-  if (rnd() < 0.5) asiguraCont(state, ctx);
-  if (rnd() < 0.3) meniuPrudent(state, ctx);
-  if (rnd() < 0.15) meniuRiscant(state, ctx, rnd);
-  if (rnd() < 0.3) cereMarireAnual(state, ctx);
-  if (rnd() < 0.15) actiune(state, ctx, 'stilViata', { nivel: ['modest', 'confortabil', 'lux'][Math.floor(rnd() * 3)] });
-  return rnd() < 0.5 ? cautaJobDacaTrebuie(state, ctx) : null;
+  const n = Math.floor(rnd() * 4);
+  let oprire = null;
+  for (let i = 0; i < n; i++) {
+    const r = ACTIUNI_ALEATOARE[Math.floor(rnd() * ACTIUNI_ALEATOARE.length)](state, ctx, rnd);
+    if (r?.oprire) oprire = r.oprire; // „caută job” deschide CV-ul
+  }
+  return oprire;
 }
 
 function alegeAleator(oprire, state, ctx, rnd) {
@@ -181,7 +216,7 @@ function alegeAleator(oprire, state, ctx, rnd) {
 }
 
 export const PROFILURI = {
-  aleator: { nume: 'aleator', descriere: 'alegeri la întâmplare, meniuri folosite rar', alege: alegeAleator, meniu: meniuAleator },
+  aleator: { nume: 'aleator', descriere: 'alegeri și acțiuni din meniuri la întâmplare, bune și proaste', alege: alegeAleator, meniu: meniuAleator },
   prudent: {
     nume: 'prudent',
     descriere: 'fond de urgență, fără IFN, contract de muncă, economisește și investește',

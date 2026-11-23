@@ -343,13 +343,13 @@ function valideazaConditii(cond, cale, err, cv, vars) {
   const liste = ['faza', 'flag', 'lipsaFlag', 'areProdus', 'lipsaProdus', 'job', 'studii', 'locuinta'];
   const numerice = ['numerarMin', 'baniMin', 'economiiMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
   campuriNecunoscute(cond, [...liste, ...numerice, 'varstaMin', 'varstaMax', 'stat', 'ascunse', 'poateRambursa', 'sau', 'motiv',
-    'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata'], cale, err);
+    'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata', 'asigurat'], cale, err);
   if (cond.stilViata !== undefined && !Array.isArray(cond.stilViata)) err(`${cale}.stilViata`, 'listă de niveluri (ex. ["modest"])');
   if (cond.areOferta !== undefined && ![1, 2, 3].includes(cond.areOferta)) err(`${cale}.areOferta`, 'trebuie să fie 1, 2 sau 3');
   if (cond.jobProgram !== undefined && (!Array.isArray(cond.jobProgram) || cond.jobProgram.some((p) => !['part-time', 'full-time', 'niciunul'].includes(p)))) {
     err(`${cale}.jobProgram`, 'listă cu „part-time”, „full-time” sau „niciunul”');
   }
-  for (const c of ['inStudii', 'promovareDisponibila']) if (cond[c] !== undefined && typeof cond[c] !== 'boolean') err(`${cale}.${c}`, 'trebuie să fie true sau false');
+  for (const c of ['inStudii', 'promovareDisponibila', 'asigurat']) if (cond[c] !== undefined && typeof cond[c] !== 'boolean') err(`${cale}.${c}`, 'trebuie să fie true sau false');
   for (const c of liste) {
     if (cond[c] !== undefined && !Array.isArray(cond[c])) err(`${cale}.${c}`, 'trebuie să fie o listă (ex. ["datorie_ifn"])');
   }

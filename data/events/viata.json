@@ -403,7 +403,7 @@
           "eticheta": "Încep imediat să caut",
           "job": null,
           "efecte": { "numerar": "{compensatie}", "fericire": -8 },
-          "flaguri": ["cautare_job:12"],
+          "flaguri": ["cautare_job:12", "somaj:6"],
           "urmari": [{ "eveniment": "cv-start", "dupaLuni": 1 }],
           "concepte": ["fond-urgenta"],
           "lectie": "Exact pentru asta e fondul de urgență: lunile dintre două joburi.",
@@ -414,7 +414,7 @@
           "eticheta": "Iau o pauză de două luni",
           "job": null,
           "efecte": { "numerar": "{compensatie}", "fericire": 2, "energie": 15 },
-          "flaguri": ["cautare_job:12"],
+          "flaguri": ["cautare_job:12", "somaj:6"],
           "urmari": [{ "eveniment": "cv-start", "dupaLuni": 3 }],
           "concepte": ["fond-urgenta"],
           "lectie": "O pauză poate fi bună, dacă ai din ce trăi. Fără fond de urgență, pauza se plătește cu datorii.",
@@ -431,7 +431,7 @@
       "cooldownLuni": 48,
       "checkpoint": true,
       "variabile": { "suma": 6000 },
-      "text": "Ai o problemă de sănătate. La stat, programarea e peste 4 luni. La privat, rezolvi săptămâna asta, cu {suma} lei.",
+      "text": "Ai o problemă de sănătate. La stat, dacă ești asigurat, programarea e peste 4 luni și nu plătești nimic. La privat, rezolvi săptămâna asta, cu {suma} lei.",
       "alegeri": [
         {
           "id": "din-banii-mei",
@@ -513,7 +513,11 @@
           "efecte": { "energie": -15, "fericire": -8 },
           "concepte": ["asigurare-sanatate"],
           "lectie": "CASS-ul din salariu îți dă dreptul la tratament gratuit la stat. Uneori aștepți, dar nu plătești.",
-          "jurnal": "Ai așteptat programarea la stat. A durat, dar te-ai tratat gratuit."
+          "jurnal": "Ai așteptat programarea la stat. A durat, dar te-ai tratat gratuit.",
+          "cere": {
+            "asigurat": true,
+            "motiv": "Lucrezi fără contract, deci nu ești asigurat: la stat ar trebui să plătești tot."
+          }
         }
       ]
     }

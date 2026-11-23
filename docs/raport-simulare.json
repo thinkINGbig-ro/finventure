@@ -1,68 +1,68 @@
 {
-  "generat": "2026-11-23T22:43:22.381Z",
+  "generat": "2026-11-23T22:49:56.222Z",
   "seed": "sim",
   "vietiPeProfil": 500,
   "evenimente": 40,
   "profiluri": {
     "aleator": {
-      "descriere": "alegeri la întâmplare, meniuri folosite rar",
+      "descriere": "alegeri și acțiuni din meniuri la întâmplare, bune și proaste",
       "n": 500,
       "procente": {
-        "pensie": 71,
-        "faliment": 29,
-        "burnout": 0,
+        "pensie": 43.6,
+        "faliment": 56.2,
+        "burnout": 0.2,
         "renuntare": 0
       },
-      "varstaMedie": 55,
-      "varstaMedieGameOver": 30.4,
-      "avereMedianaLei": 2354961,
-      "avereMedianaLeiDeAzi": 254742,
+      "varstaMedie": 46,
+      "varstaMedieGameOver": 31.3,
+      "avereMedianaLei": 318179,
+      "avereMedianaLeiDeAzi": 75619,
       "mediiAnualeProcent": {
-        "inflatie": 4.83,
-        "etf": 6.91,
-        "salariu": 5.31,
-        "salariuReal": 0.3
+        "inflatie": 4.77,
+        "etf": 7.05,
+        "salariu": 5.11,
+        "salariuReal": 0.08
       },
       "cauzeGameOver": [
         {
           "cauza": "faliment: masina › noua",
-          "numar": 57
+          "numar": 93
         },
         {
           "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
-          "numar": 33
+          "numar": 38
         },
         {
           "cauza": "faliment: telefon-rate › rate",
-          "numar": 12
+          "numar": 36
+        },
+        {
+          "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
+          "numar": 20
         },
         {
           "cauza": "faliment: mutare › singur",
-          "numar": 9
+          "numar": 13
         },
         {
-          "cauza": "faliment: oferta-card-credit › accept-rezerva",
-          "numar": 7
-        },
-        {
-          "cauza": "faliment: oferta-card-credit › accept",
-          "numar": 6
-        },
-        {
-          "cauza": "faliment: dupa-liceu › facultate-taxa",
-          "numar": 5
-        },
-        {
-          "cauza": "faliment: facturi-somatie › partial",
-          "numar": 3
-        },
-        {
-          "cauza": "faliment: lipsa-spatiu › caut",
-          "numar": 3
+          "cauza": "faliment: mutare › colegi",
+          "numar": 10
         },
         {
           "cauza": "faliment: dupa-liceu › facultate-buget",
-          "numar": 2
+          "numar": 8
+        },
+        {
+          "cauza": "faliment: facturi-somatie › ignor",
+          "numar": 7
+        },
+        {
+          "cauza": "faliment: facturi-somatie › partial",
+          "numar": 7
+        },
+        {
+          "cauza": "faliment: lipsa-spatiu › caut",
+          "numar": 6
         }
       ]
     },
@@ -97,19 +97,19 @@
         "renuntare": 0
       },
       "varstaMedie": 40.7,
-      "varstaMedieGameOver": 36.3,
-      "avereMedianaLei": 103578,
-      "avereMedianaLeiDeAzi": 43596,
+      "varstaMedieGameOver": 36.2,
+      "avereMedianaLei": 102995,
+      "avereMedianaLeiDeAzi": 43451,
       "mediiAnualeProcent": {
         "inflatie": 4.83,
-        "etf": 7.24,
+        "etf": 7.25,
         "salariu": 4.54,
         "salariuReal": -0.55
       },
       "cauzeGameOver": [
         {
           "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
-          "numar": 354
+          "numar": 353
         },
         {
           "cauza": "faliment: telefon-rate › rate",
@@ -117,7 +117,7 @@
         },
         {
           "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
-          "numar": 9
+          "numar": 10
         },
         {
           "cauza": "faliment: facturi-somatie › ignor",

@@ -20,6 +20,12 @@ export function potrivesteProdus(p, selector) {
   return !detaliu || p.furnizor === detaliu || p.pachet === detaliu || p.clasa === detaliu;
 }
 
+// Asigurat medical: contract de muncă sau PFA (plătești CASS), student, sau imediat după concediere (șomaj).
+export function esteAsigurat(state) {
+  const c = state.produse.find((p) => p.tip === 'contractMunca');
+  return (c && c.contract !== 'negru') || !!state.situatie.studii || areFlag(state, 'somaj');
+}
+
 export const gasesteProduse = (state, selector) => state.produse.filter((p) => potrivesteProdus(p, selector));
 export const economii = (state) => gasesteProduse(state, 'contEconomii').reduce((s, p) => s + p.sold, 0);
 export const gasesteProdus = (state, selector) => gasesteProduse(state, selector)[0];
@@ -153,6 +159,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     areOferta: (n) => vars[`brut${n}`] != null || 'CV-ul n-a convins destui angajatori pentru încă o ofertă.',
     jobProgram: (lista) => lista.includes(jobCurent(state, ctx)?.program ?? 'niciunul') || 'Nu se potrivește cu programul tău de lucru.',
     inStudii: (da) => !!state.situatie.studii === da || (da ? 'Nu ești la studii.' : 'Încă ești la studii.'),
+    asigurat: (da) => esteAsigurat(state, ctx) === da || (da ? 'Nu ești asigurat medical: lucrezi fără contract.' : 'Ești asigurat medical.'),
     stilViata: (lista) => lista.includes(state.stilViata) || 'Nu se potrivește cu stilul tău de viață.',
     promovareDisponibila: (da) => promovareDisponibila(state, ctx) === da || 'Nu e momentul pentru o promovare.',
     sau: (variante) => variante.some((c) => motivNeindeplinire(c, state, ctx, vars) == null) || 'Nu e cazul acum.',
