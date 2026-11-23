@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finventure: teste motor</title>
+  <style>
+    body { background: #1E1638; color: #F3EEFF; font: 14px/1.5 ui-monospace, Consolas, monospace; margin: 0; padding: 16px; }
+    h1 { font-size: 18px; }
+    pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Teste motor</h1>
+  <p>Trebuie servit printr-un server local (ex. <code>npx serve</code> sau <code>python -m http.server</code> din rădăcina proiectului).</p>
+  <pre id="iesire">Rulez…</pre>
+  <script type="module">
+    import { ruleazaTeste } from './suite.js';
+    import { cititorFetch } from '../js/content.js';
+
+    const iesire = document.getElementById('iesire');
+    iesire.textContent = '';
+    const log = (linie) => { iesire.textContent += linie + '\n'; };
+    ruleazaTeste(cititorFetch('../'), log).catch((e) => log(`Eroare: ${e.stack}`));
+  </script>
+</body>
+</html>
