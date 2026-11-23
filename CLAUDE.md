@@ -91,60 +91,95 @@ Nu vrem un arbore literal (explodează combinatoric). Vrem **evenimente cu condi
 
 ### Ramura de referință (implementeaz-o exact, ca model pentru restul)
 
+Pe ecran apar max. 4 alegeri, așa că ramura e grupată în doi pași (sub-alegeri). Gruparea e și ea o lecție: bani proprii vs. datorie vs. muncă.
+
 ```
 Situație: ai nevoie urgentă de 2.000 lei (s-a stricat laptopul / cheltuială medicală)
-├─ Folosești fondul de urgență          [cere: fond ≥ suma]
-│    → rezolvat, Viitor scade puțin. Concept: fond de urgență
-├─ Împrumuți de la un prieten           [cere: retea ≥ prag]
-│    → flag datorie_prieten, termen 6 luni
-│    ├─ Returnezi la timp → retea crește
-│    └─ Nu returnezi → Fericire scade, retea scade mult, prietenul nu te mai ajută
-├─ Plătești cu cardul de credit         [cere: are card_credit]
-│    ├─ Achiți integral în perioada de grație → 0 dobândă. Concept: perioada de grație
-│    └─ Plătești doar minimul → dobânda se adună lunar. Concept: plata minimă
-├─ Iei credit rapid de la IFN
-│    → bani imediat, flag datorie_ifn, DAE foarte mare
-│    ├─ Folosești inteligent: sumă mică, rambursare în 30 de zile (unele IFN au prima perioadă fără dobândă)
-│    │    → scapi cu cost mic. Concept: DAE, citirea contractului
-│    ├─ Plătești la timp, dar pe termen lung → ai plătit aproape dublu. Concept: costul total al creditului
-│    └─ Întârzii la plată → penalități, raportare la Biroul de Credit (scorCredit scade)
-│         ├─ Iei alt IFN ca să-l plătești pe primul → spirala datoriilor (eveniment în lanț)
-│         └─ Nu mai plătești → datoria e vândută unei firme de recuperare
-│              → executare silită → POPRIRE pe salariu (o parte din net reținută lunar)
-│              → mai târziu: credit ipotecar refuzat din cauza istoricului
-└─ Faci bani în plus: vinzi ceva / ore suplimentare → Energie scade, fără datorii
+├─ „Din banii mei” →
+│  ├─ Folosești fondul de urgență        [cere: fond ≥ suma; fondul = cont de economii marcat de jucător]
+│  │    → rezolvat, Viitor scade puțin. Concept: fond de urgență
+│  ├─ Spargi depozitul                   [cere: depozit ≥ suma]
+│  │    → primești doar suma depusă, dobânda se pierde. Concept: depozit (nu e fond de urgență)
+│  └─ Plătești cu cardul de credit       [cere: are card de credit, limită suficientă]
+│       ├─ Achiți integral în perioada de grație → 0 dobândă. Concept: perioada de grație
+│       └─ Plătești doar minimul → dobânda se adună lunar. Concept: plata minimă
+├─ „Mă împrumut” →
+│  ├─ De la un prieten                   [cere: retea ≥ prag]
+│  │    → flag datorie_prieten, termen 6 luni
+│  │    ├─ Returnezi la timp → retea crește
+│  │    └─ Nu returnezi → Fericire scade, retea scade mult, prietenul nu te mai ajută
+│  └─ Credit rapid de la IFN
+│       → bani imediat, flag datorie_ifn, DAE foarte mare
+│       ├─ Folosești inteligent: rambursare în 30 de zile (unele IFN au prima perioadă fără dobândă)
+│       │    → scapi cu cost mic. Concept: DAE, citirea contractului
+│       ├─ Plătești la timp, dar pe termen lung → ai plătit vizibil mai mult. Concept: costul total al creditului
+│       └─ Întârzii la plată → penalități, raportare la Biroul de Credit (scorCredit scade)
+│            ├─ Iei alt IFN ca să-l plătești pe primul → spirala datoriilor (eveniment în lanț)
+│            └─ Nu mai plătești → datoria e vândută unei firme de recuperare
+│                 → executare silită → POPRIRE pe salariu și pe cont (peste suma protejată)
+│                 → mai târziu: credit ipotecar refuzat din cauza istoricului
+└─ „Muncesc în plus” (vinzi ceva / ore suplimentare) → Energie scade, fără datorii
 ```
 
-### Formatul evenimentelor (propunere; îl poți îmbunătăți, dar păstrează ideile)
+### Facturile neplătite (același tip de lanț)
+
+Chiria, utilitățile și telefonul se plătesc după mâncare. Ce rămâne neplătit devine restanță, cu penalități lunare:
+somație (eveniment) → deconectare la utilități / suspendare la telefon / evacuare la chirie → recuperatori → executare → poprire.
+Lipsa banilor duce astfel la **faliment**, cu lanțul de decizii (pornește de la decizia care a ales locuința), nu la „renunțare”.
+
+### Formatul evenimentelor (implementat; validat la încărcare de js/content.js)
 
 ```json
 {
   "id": "urgenta-2000",
+  "titlu": "Ai nevoie urgent de bani",
   "faza": [2, 3, 4],
   "conditii": { "varstaMin": 19, "lipsaFlag": ["urgenta_recenta"] },
   "pondere": 3,
-  "text": "Ți s-a stricat laptopul chiar înainte de sesiune. Ai nevoie de 2.000 lei.",
+  "checkpoint": true,
+  "variabile": { "suma": 2000 },
+  "text": "Ți s-a stricat laptopul chiar înainte de sesiune. Reparația costă {suma} lei.",
   "alegeri": [
     {
-      "id": "fond",
-      "eticheta": "Folosesc fondul de urgență",
-      "cere": { "fondUrgentaMin": 2000 },
-      "efecte": { "numerar": -2000, "viitor": -3 },
-      "flaguri": ["urgenta_recenta:12"],
-      "concepte": ["fond-urgenta"]
+      "id": "din-banii-mei",
+      "eticheta": "Din banii mei",
+      "subalegeri": [
+        {
+          "id": "fond",
+          "eticheta": "Folosesc fondul de urgență",
+          "cere": { "fondUrgentaMin": "{suma}" },
+          "sursaPlata": "fondUrgenta",
+          "efecte": { "numerar": "-{suma}", "viitor": -3 },
+          "flaguri": ["urgenta_recenta:12"],
+          "concepte": ["fond-urgenta"]
+        }
+      ]
     },
     {
-      "id": "ifn",
-      "eticheta": "Iau un credit rapid de la IFN",
-      "efecte": { "numerar": 2000 },
-      "produsNou": { "tip": "credit", "furnizor": "ifn", "suma": 2000, "dae": "config:ifn.dae", "luni": 6 },
-      "flaguri": ["datorie_ifn"],
-      "lectie": "Banii vin în 15 minute, dar DAE poate trece de 100% pe an. Citește costul total, nu doar rata.",
-      "concepte": ["dae", "ifn"]
-    }
+      "id": "ma-imprumut",
+      "eticheta": "Mă împrumut",
+      "subalegeri": [
+        {
+          "id": "ifn",
+          "eticheta": "Iau un credit rapid de la IFN",
+          "produsNou": { "tip": "credit", "furnizor": "ifn", "suma": "{suma}", "dae": "config:ifn.dae", "luni": 6, "laRestanta": "ifn-restanta", "flag": "datorie_ifn" },
+          "efecte": { "numerar": "-{suma}" },
+          "urmari": [{ "eveniment": "ifn-alegere", "dupaLuni": 1 }],
+          "lectie": "Banii vin în 15 minute, dar DAE poate trece de 100% pe an. Citește costul total, nu doar rata.",
+          "concepte": ["dae", "ifn"]
+        }
+      ]
+    },
+    { "id": "muncesc", "eticheta": "Muncesc în plus", "efecte": { "energie": -15 } }
   ]
 }
 ```
+
+Reguli de format:
+- **Variabile:** `"variabile": { "suma": 2000 }` (lei la prețurile de start, ajustați automat cu inflația), `"config:…"`, `"balans:…"` sau `"stare:…"`. Se folosesc ca `{suma}` în texte și ca `"-{suma}"` în valori.
+- **Un credit nou îți dă banii automat;** cheltuiala se scrie separat (`"numerar": "-{suma}"`).
+- **`sursaPlata`** pentru plăți: `portofel` (implicit: cont curent, apoi cash), `cash`, `fondUrgenta`, `cardCredit`.
+- **Sub-alegeri:** o alegere cu `subalegeri` e un grup (are doar `id`, `eticheta`, `cere` opțional). Un singur nivel. Calea aleasă e `"grup/sub"`.
 
 ### Ce trebuie să suporte motorul
 
@@ -154,7 +189,7 @@ Situație: ai nevoie urgentă de 2.000 lei (s-a stricat laptopul / cheltuială m
 - **Flag-uri cu durată:** de exemplu `urgenta_recenta:12` expiră după 12 luni.
 - **Consecințe întârziate:** o alegere programează un eveniment-urmare după N luni, cu o anumită probabilitate (ex. 3 luni după IFN apare „Rata la IFN”).
 - **Produse financiare ca obiecte reale,** procesate lunar: conturi, depozite, carduri de credit, credite, investiții, contracte de muncă.
-- **Între 2 și 4 alegeri pe eveniment.** Când sunt fix 2, se poate face și swipe stânga/dreapta.
+- **Între 2 și 4 alegeri pe ecran.** Când sunt mai multe variante, se grupează în doi pași (sub-alegeri, tot 2–4 pe nivel); grupul e indisponibil doar dacă nicio variantă din el nu e posibilă, iar variantele indisponibile rămân vizibile, cu motivul. Când sunt fix 2, se poate face și swipe stânga/dreapta.
 - **RNG cu seed,** pentru reproducere și testare.
 
 ## 6. Mecanica de învățare (partea cea mai importantă)
@@ -238,11 +273,15 @@ js/ui/*.js          ecrane: principal, card eveniment, rezumat an, meniuri, enci
 js/share.js         cardul final pe canvas
 js/storage.js       localStorage abstractizat
 data/config.json    valori economice (deVerificat)
+data/balans.json    parametri de joc / echilibrare (nu valori economice)
 data/jobs.json
 data/events/*.json  un fișier per fază sau temă (faza1.json, credite.json, inselatorii.json…)
 data/concepts.json  enciclopedia
 data/endings.json
 tools/validate.html verificare conținut (vezi mai jos)
+tools/formateaza-json.js  formatează JSON-urile de conținut (node)
+tests/run.js + tests/run.html  testele motorului (Node / browser, același cod)
+tests/simulare.js   simulare de echilibru: node tests/simulare.js [--n 1000]
 tools/tree.html     vizualizare arbore de decizii
 assets/
 README.md           cum se joacă, cum se adaugă un eveniment, cum se rulează local
