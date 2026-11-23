@@ -3,13 +3,19 @@
 import { cititorFetch, formateazaEroare, incarcaContinut } from './content.js';
 import { alege, avanseaza, continua, jocNou, oprireCurenta } from './engine.js';
 import {
-  adaugaCheckpoint, deblocheazaConcepteGlobal, incarcaJoc, rezumatFinanciar, salveazaJoc, stergeJoc,
+  adaugaCheckpoint, adaugaInClasament, avereNeta, datoriiTotale, deblocheazaConcepteGlobal, deblocheazaFinal, incarcaCheckpoint, incarcaJoc,
+  listaCheckpointuri, salveazaJoc, stergeJoc,
 } from './state.js';
+import { rezumatViata } from './bilant.js';
+import { baniDisponibili } from './finance.js';
+import { alegeFinal } from './finaluri.js';
+import { calculeazaTipare } from './tipare.js';
+import { arataFinalViata } from './ui/final.js';
 import { CHEI, creeazaStorage } from './storage.js';
 import { bal } from './util.js';
 import { $, h } from './ui/dom.js';
 import { arataEveniment } from './ui/eveniment.js';
-import { arataFinal, arataMoment, arataRezumat, confirma } from './ui/ecrane.js';
+import { arataMoment, arataRezumat, confirma } from './ui/ecrane.js';
 import { deschidePanou } from './ui/meniuri.js';
 import { creeazaEcranPrincipal } from './ui/principal.js';
 import { stratDeschis } from './ui/strat.js';
@@ -32,7 +38,7 @@ async function porneste() {
   const storage = creeazaStorage();
   ctx.persistenta = {
     salveaza: (s) => salveazaJoc(storage, s),
-    checkpoint: (s, eticheta) => adaugaCheckpoint(storage, s, eticheta, bal(ctx, 'salvare.checkpointuriMax')),
+    checkpoint: (s, eticheta, info) => adaugaCheckpoint(storage, s, eticheta, { ...info, recente: bal(ctx, 'salvare.checkpointuriRecente'), max: bal(ctx, 'salvare.checkpointuriMax') }),
     concepte: (ids) => deblocheazaConcepteGlobal(storage, ids),
   };
 
@@ -66,8 +72,14 @@ async function porneste() {
           await arataRezumat(oprire, state, ctx);
           oprire = continua(state, ctx);
         } else if (oprire.tip === 'final') {
-          await arataFinal(oprire, rezumatFinanciar(state, ctx), state.indicePreturi);
-          state = incepeDinNou();
+          const r = await arataFinalViata(oprire, pregatesteFinal(oprire));
+          if (r.actiune === 'reia') {
+            state = incarcaCheckpoint(storage, r.checkpoint);
+            salveazaJoc(storage, state);
+            ui.reseteaza();
+          } else {
+            state = incepeDinNou();
+          }
           oprire = oprireCurenta(state, ctx);
         } else {
           oprire = null;
@@ -81,6 +93,28 @@ async function porneste() {
       btnAvanseaza.disabled = false;
       randeaza();
     }
+  }
+
+  // Totul ce are nevoie ecranul de final: finalul din colecție, tiparele, checkpoint-urile pe decizii.
+  function pregatesteFinal(oprire) {
+    const rezumat = rezumatViata(state, ctx);
+    const final = alegeFinal(ctx.finaluri, rezumat);
+    const nou = final ? deblocheazaFinal(storage, final.id) : false;
+    // O viață intră o singură dată în clasament (și dacă pagina e reîncărcată pe ecranul de final).
+    if (state.final && !state.final.inregistrat) {
+      adaugaInClasament(storage, { nume: state.nume, varsta: oprire.varsta, motiv: oprire.motiv, final: final?.titlu, avereAzi: rezumat.avereAzi, data: new Date().toISOString().slice(0, 10) });
+      state.final.inregistrat = true;
+      salveazaJoc(storage, state);
+    }
+    const checkpointuri = new Map(listaCheckpointuri(storage).filter((c) => c.decizie).map((c) => [c.decizie, c.id]));
+    return {
+      state, ctx, final, nou, checkpointuri,
+      avereNeta: avereNeta(state),
+      datorii: datoriiTotale(state),
+      disponibil: baniDisponibili(state),
+      tipare: calculeazaTipare(state, ctx),
+      colectie: { deblocate: storage.citeste(CHEI.achievements, []).length, total: ctx.finaluri.size },
+    };
   }
 
   function incepeDinNou() {
@@ -103,12 +137,18 @@ async function porneste() {
     });
   }
 
-  $('#btn-meniu').addEventListener('click', async () => {
+  $('#btn-meniu').addEventListener('click', () => {
     if (ocupat) return;
-    if (await confirma('Începi o viață nouă? Jocul de acum se pierde (conceptele descoperite rămân).', { da: 'Joc nou' })) {
-      state = incepeDinNou();
-      ruleaza(oprireCurenta(state, ctx));
-    }
+    deschidePanou('meniu', {
+      state, ctx, laSchimbare: randeaza,
+      colectie: { finaluri: storage.citeste(CHEI.achievements, []), clasament: storage.citeste(CHEI.clasament, []) },
+      laJocNou: async () => {
+        if (await confirma('Începi o viață nouă? Jocul de acum se pierde (conceptele și finalurile descoperite rămân).', { da: 'Joc nou' })) {
+          state = incepeDinNou();
+          ruleaza(oprireCurenta(state, ctx));
+        }
+      },
+    });
   });
 
   if (storage.tip !== 'localStorage') {

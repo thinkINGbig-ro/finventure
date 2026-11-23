@@ -241,6 +241,31 @@
           "lectie": "Eșalonarea e mai bună decât restanța: fără penalități, dar bugetul următoarelor 3 luni e mai mic."
         }
       ]
+    },
+    {
+      "id": "independenta-financiara",
+      "titlu": "Independență financiară",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "variabile": { "pasiv": "stare:venitPasiv", "cheltuieli": "stare:cheltuieli" },
+      "text": "Ți-ai făcut socotelile: investițiile și economiile tale pot da {pasiv} lei pe lună fără să se termine, iar tu cheltui {cheltuieli} lei. Nu mai ai nevoie de salariu.",
+      "alegeri": [
+        {
+          "id": "retrag",
+          "eticheta": "Mă retrag acum",
+          "retragere": true,
+          "concepte": ["independenta-financiara"],
+          "jurnal": "Ai devenit independent financiar și te-ai retras."
+        },
+        {
+          "id": "continui",
+          "eticheta": "Mai muncesc, îmi place ce fac",
+          "efecte": { "fericire": 4 },
+          "concepte": ["independenta-financiara"],
+          "lectie": "Ai libertatea să alegi. Asta e, de fapt, independența financiară: munca devine o opțiune.",
+          "jurnal": "Ai atins independența financiară, dar ai ales să mai muncești."
+        }
+      ]
     }
   ]
 }

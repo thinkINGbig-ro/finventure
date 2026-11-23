@@ -1,27 +1,41 @@
 {
-  "generat": "2026-11-23T22:49:56.222Z",
+  "generat": "2026-11-23T22:59:25.335Z",
   "seed": "sim",
   "vietiPeProfil": 500,
-  "evenimente": 40,
+  "evenimente": 41,
   "profiluri": {
     "aleator": {
       "descriere": "alegeri și acțiuni din meniuri la întâmplare, bune și proaste",
       "n": 500,
       "procente": {
-        "pensie": 43.6,
-        "faliment": 56.2,
+        "pensie": 37.2,
+        "independenta": 6.6,
+        "faliment": 56,
         "burnout": 0.2,
         "renuntare": 0
       },
-      "varstaMedie": 46,
+      "finaluriColectie": {
+        "Pensionar liniștit": 33.2,
+        "Faliment înainte de 25": 21.8,
+        "Faliment personal": 21.4,
+        "Regele IFN-urilor": 8.2,
+        "Victima reducerilor": 4.6,
+        "Liber să alegi": 4.4,
+        "Libertate la 40": 3.4,
+        "Rentierul": 1.4,
+        "Milionar (în lei de azi)": 1,
+        "Minimalistul": 0.4,
+        "Burnout": 0.2
+      },
+      "varstaMedie": 44.8,
       "varstaMedieGameOver": 31.3,
       "avereMedianaLei": 318179,
-      "avereMedianaLeiDeAzi": 75619,
+      "avereMedianaLeiDeAzi": 75662,
       "mediiAnualeProcent": {
         "inflatie": 4.77,
-        "etf": 7.05,
-        "salariu": 5.11,
-        "salariuReal": 0.08
+        "etf": 7.06,
+        "salariu": 5.12,
+        "salariuReal": 0.09
       },
       "cauzeGameOver": [
         {
@@ -38,7 +52,7 @@
         },
         {
           "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
-          "numar": 20
+          "numar": 19
         },
         {
           "cauza": "faliment: mutare › singur",
@@ -70,20 +84,27 @@
       "descriere": "fond de urgență, fără IFN, contract de muncă, economisește și investește",
       "n": 500,
       "procente": {
-        "pensie": 100,
+        "pensie": 95.2,
+        "independenta": 4.8,
         "faliment": 0,
         "burnout": 0,
         "renuntare": 0
       },
-      "varstaMedie": 65,
+      "finaluriColectie": {
+        "Libertate la 40": 61.2,
+        "Rentierul": 33.2,
+        "Minimalistul": 3.8,
+        "Liber să alegi": 1.8
+      },
+      "varstaMedie": 63.8,
       "varstaMedieGameOver": null,
-      "avereMedianaLei": 22481403,
-      "avereMedianaLeiDeAzi": 2400303,
+      "avereMedianaLei": 22077986,
+      "avereMedianaLeiDeAzi": 2227532,
       "mediiAnualeProcent": {
-        "inflatie": 4.86,
+        "inflatie": 4.85,
         "etf": 7.08,
-        "salariu": 5.51,
-        "salariuReal": 0.52
+        "salariu": 5.6,
+        "salariuReal": 0.6
       },
       "cauzeGameOver": []
     },
@@ -91,20 +112,28 @@
       "descriere": "IFN, la negru, card pe minim, cheltuie tot",
       "n": 500,
       "procente": {
-        "pensie": 15.4,
-        "faliment": 84.6,
+        "pensie": 15.2,
+        "independenta": 0,
+        "faliment": 84.8,
         "burnout": 0,
         "renuntare": 0
       },
-      "varstaMedie": 40.7,
-      "varstaMedieGameOver": 36.2,
+      "finaluriColectie": {
+        "Regele IFN-urilor": 69.6,
+        "Pensionar liniștit": 15.2,
+        "Faliment înainte de 25": 7.8,
+        "Faliment personal": 4.6,
+        "Victima reducerilor": 2.8
+      },
+      "varstaMedie": 40.5,
+      "varstaMedieGameOver": 36.1,
       "avereMedianaLei": 102995,
-      "avereMedianaLeiDeAzi": 43451,
+      "avereMedianaLeiDeAzi": 43016,
       "mediiAnualeProcent": {
         "inflatie": 4.83,
-        "etf": 7.25,
+        "etf": 7.21,
         "salariu": 4.54,
-        "salariuReal": -0.55
+        "salariuReal": -0.56
       },
       "cauzeGameOver": [
         {
@@ -117,15 +146,15 @@
         },
         {
           "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
-          "numar": 10
+          "numar": 9
         },
         {
           "cauza": "faliment: facturi-somatie › ignor",
-          "numar": 3
+          "numar": 4
         },
         {
           "cauza": "faliment: mutare › singur",
-          "numar": 2
+          "numar": 3
         },
         {
           "cauza": "faliment: masina › noua",

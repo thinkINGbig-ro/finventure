@@ -112,28 +112,6 @@ export function arataRezumat(r, state, ctx) {
   return arataCard(continut, { buton: 'Continuă', eticheta: 'Rezumatul anului' });
 }
 
-// ---------- Final (simplu; „Ce s-a întâmplat?” vine în Faza D) ----------
-
-const FINALURI = {
-  pensie: ['🏖️', 'La pensie!', 'Ai ajuns la 65 de ani. Uite cu ce ai rămas după o viață de decizii.'],
-  faliment: ['📉', 'Faliment personal', 'Datoriile au crescut mai repede decât puteai plăti, luni la rând.'],
-  burnout: ['🪫', 'Burnout', 'Ai tras prea tare, prea mult timp. Corpul a zis stop.'],
-  renuntare: ['🌧️', 'Ai renunțat la tot', 'A fost prea mult deodată. Uneori, cel mai curajos pas e să ceri ajutor.'],
-};
-
-export function arataFinal(oprire, rezumatFin, indicePreturi) {
-  const [emoji, titlu, text] = FINALURI[oprire.motiv] ?? ['🏁', 'Final', ''];
-  return arataCard([
-    h('span', { class: 'emoji-mare', 'aria-hidden': 'true' }, emoji),
-    h('h2', {}, titlu),
-    h('p', {}, text),
-    h('table', { class: 'tabel' }, h('tbody', {},
-      rand('Vârsta', ani(oprire.varsta)),
-      rand('Avere netă', leiCuAzi(rezumatFin.avereNeta, indicePreturi), 'total'))),
-    indicePreturi >= 1.05 ? h('p', { class: 'mic' }, `„Lei de azi” = cât valorează suma la prețurile de când ai început jocul. Prețurile au crescut de ${indicePreturi.toLocaleString('ro-RO', { maximumFractionDigits: 1 })} ori.`) : null,
-  ], { buton: 'Joc nou', eticheta: titlu });
-}
-
 export function confirma(text, { da = 'Da', nu = 'Renunță' } = {}) {
   return new Promise((rezolva) => {
     const gata = (r) => {

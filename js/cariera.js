@@ -135,6 +135,7 @@ export function cereMarire(state, ctx) {
     const crestere = p.cresteMin + aleator(state, R) * (p.cresteMax - p.cresteMin);
     c.brut = Math.min(Math.round(plafon / 5000) * 5000, Math.round((c.brut * (1 + crestere)) / 5000) * 5000);
     c.luniDeLaMarire = 0;
+    c.plusNegociat = (c.plusNegociat ?? 0) + (c.brut - brutVechi);
     state.ascunse.reputatie = clamp(state.ascunse.reputatie + 2, 0, 100);
     return { succes: true, brutVechi, brutNou: c.brut, text: `Ai primit mărirea: de la ${lei(brutVechi)} la ${lei(c.brut)} lei brut.` };
   }
@@ -160,6 +161,7 @@ export function promoveaza(state, ctx, cauza) {
   const urm = ctx.joburi.get(job.urmator);
   const brut = Math.max(pret(state, ctx, urm.salariu), Math.round(c.brut * (1 + bal(ctx, 'cariera.promovare.crestereMinima'))));
   const nou = schimbaJob(state, ctx, { id: urm.id, contract: urm.contracte.includes(c.contract) ? c.contract : 'cim', brut }, cauza);
+  nou.plusNegociat = c.plusNegociat ?? 0;
   return { job: urm, brutVechi: c.brut, brutNou: nou.brut, text: `Ai fost promovat: acum ești ${urm.titlu}, cu ${lei(nou.brut)} lei brut.` };
 }
 

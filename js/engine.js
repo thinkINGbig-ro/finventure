@@ -22,6 +22,8 @@ import {
   FLAG_FACTURA, NUME_FACTURI, alegeEvenimentAleator, aplicaAlegere, creeazaOprireEveniment, deschideProdus, descrieOprire,
   extrageUrmareScadenta, gasesteProduse, inchideCredit, inchideFactura, lichideaza, planificaSloturi, programeazaUrmare, ramburseaza,
 } from './events.js';
+import { bilantNou, inregistreazaAn, inregistreazaLuna, verificaIndependenta } from './bilant.js';
+import { esteAsigurat } from './events.js';
 import { areJobFullTime, cereMarire, contractCurent, sansaMarire } from './cariera.js';
 
 export const VARSTA_PENSIE = 65;
@@ -30,6 +32,7 @@ export const VARSTA_PENSIE = 65;
 
 export function jocNou(ctx, optiuni) {
   const state = creeazaStare(ctx, optiuni);
+  state.bilant = bilantNou();
   adaugaJurnal(state, 'Ai terminat liceul. Urmează prima decizie mare.');
   persista(state, ctx);
   return state;
@@ -52,12 +55,17 @@ export function alege(state, ctx, idAlegere) {
   const oprire = state.pendinte;
   if (oprire?.tip !== 'eveniment') throw new Error('Nu există un eveniment care așteaptă o decizie.');
   const ev = ctx.evenimente.get(oprire.eveniment);
-  if (ev.checkpoint) {
-    // Snapshot ÎNAINTE de decizie: reluarea redeschide exact cardul ăsta.
-    const eticheta = `${varstaLa(state.luna)} ani: ${ev.titlu ?? ev.id}`;
-    ctx.persistenta?.checkpoint?.(cloneaza(state), eticheta);
-  }
+  // Snapshot ÎNAINTE de decizie: reluarea redeschide exact cardul ăsta. Îl păstrăm dacă evenimentul
+  // e marcat „checkpoint” sau dacă decizia a deschis o datorie (credit nou sau datorii mai mari).
+  const snapshot = ctx.persistenta?.checkpoint ? cloneaza(state) : null;
+  const creditInainte = state.produse.filter((p) => p.tip === 'credit').length;
   const rezultat = aplicaAlegere(state, ctx, oprire, idAlegere);
+  if (snapshot) {
+    const datorie = state.produse.filter((p) => p.tip === 'credit').length > creditInainte;
+    if (ev.checkpoint || datorie) {
+      ctx.persistenta.checkpoint(snapshot, `${varstaLa(snapshot.luna)} ani: ${ev.titlu ?? ev.id}`, { decizie: rezultat.decizie.id, datorie });
+    }
+  }
   ctx.persistenta?.concepte?.(rezultat.concepteNoi);
   state.pendinte = null;
   verificaFinal(state, ctx);
@@ -179,6 +187,7 @@ function inceputAn(state, ctx) {
 
 function incheieAn(state, ctx) {
   const an = state.an;
+  inregistreazaAn(state, ctx, an.ac);
   if (an.inflatie > 0 && !state.concepte.includes('puterea-de-cumparare')) state.concepte.push('puterea-de-cumparare');
   const areInvestitii = gasesteProduse(state, 'investitie').length > 0;
   if (areInvestitii && an.ac.castigInvestitii > 0 && !state.momente.primulAnPePlus) {
@@ -345,6 +354,11 @@ export function proceseazaLuna(state, ctx) {
   proceseazaPoprireCont(state, ctx);
 
   actualizeazaDerivate(state, ctx);
+  inregistreazaLuna(state, ctx, { asigurat: esteAsigurat(state) });
+  if (verificaIndependenta(state, ctx)) {
+    adaugaJurnal(state, 'Investițiile și economiile tale îți acoperă acum cheltuielile. Ești independent financiar!');
+    if (varstaLa(state.luna) < VARSTA_PENSIE - 1) programeazaUrmare(state, ctx, { eveniment: 'independenta-financiara', dupaLuni: 1 }, null);
+  }
   verificaFinal(state, ctx, { lunar: true });
   state.luna += 1;
 }
@@ -513,6 +527,10 @@ function proceseazaRestante(state, ctx) {
   let areRestante = false;
 
   for (const p of [...state.produse]) {
+    if ((p.tip === 'factura' || p.tip === 'credit' || p.tip === 'poprire') && datorieProdus(p) > 0 && datorieProdus(p) < 100) {
+      state.produse = state.produse.filter((x) => x !== p); // rest de rotunjire, sub 1 leu
+      continue;
+    }
     if (p.tip === 'factura' && p.luniRestanta > 0) {
       areRestante = true;
       escaladeazaFactura(state, ctx, p, fc);
@@ -537,7 +555,7 @@ function proceseazaRestante(state, ctx) {
       state.produse.push(poprire);
       delete state.flaguri.datorie_recuperator;
       seteazaFlag(state, `executare_silita:${r('aniInIstoric') * 12}`);
-      adaugaJurnal(state, `A început executarea silită: poprire pe salariu până acoperi ${formateazaLei(inLei(p.restanta))} lei.`);
+      adaugaJurnal(state, `A început executarea silită: poprire pe salariu până acoperi ${formateazaLei(inLei(p.restanta))} lei.`, { tip: 'datorie', cauza: p.cauza });
     }
   }
 
@@ -555,14 +573,14 @@ function escaladeazaFactura(state, ctx, f, fc) {
   const n = f.luniRestanta;
   const nume = NUME_FACTURI[f.furnizor];
   if (n === fc('luniPanaLaSomatie')) {
-    adaugaJurnal(state, `Ai primit o somație: restanță la ${nume}.`);
+    adaugaJurnal(state, `Ai primit o somație: restanță la ${nume}.`, { tip: 'datorie', cauza: f.cauza });
     if (!state.urmari.some((u) => u.eveniment === 'facturi-somatie')) {
       programeazaUrmare(state, ctx, { eveniment: 'facturi-somatie', dupaLuni: 1 }, f.cauza);
     }
   }
   if (f.furnizor === 'utilitati' && n === fc('luniPanaLaDeconectare')) {
     seteazaFlag(state, 'deconectat');
-    adaugaJurnal(state, 'Ți-au tăiat curentul și gazul pentru neplată.');
+    adaugaJurnal(state, 'Ți-au tăiat curentul și gazul pentru neplată.', { tip: 'datorie', cauza: f.cauza });
   }
   if (f.furnizor === 'telefon' && n === fc('luniPanaLaSuspendare')) {
     seteazaFlag(state, 'telefon_suspendat');
@@ -572,7 +590,7 @@ function escaladeazaFactura(state, ctx, f, fc) {
     // Evacuarea e imediată; evenimentul care urmează decide unde stai de acum.
     state.situatie.locuinta = bal(ctx, 'locuintaDupaEvacuare');
     seteazaFlag(state, 'evacuat:24');
-    adaugaJurnal(state, 'Proprietarul te-a evacuat pentru neplata chiriei. Datoria rămâne.');
+    adaugaJurnal(state, 'Proprietarul te-a evacuat pentru neplata chiriei. Datoria rămâne.', { tip: 'datorie', cauza: f.cauza });
     programeazaUrmare(state, ctx, { eveniment: 'evacuare', dupaLuni: 1 }, f.cauza);
   }
   if (n >= fc('luniPanaLaRecuperare')) {
@@ -588,7 +606,7 @@ function cesioneaza(state, ctx, p) {
   Object.assign(nou, { stadiu: 'cesionat', restanta: datorie, luniRestanta: p.luniRestanta, flag: 'datorie_recuperator' });
   state.produse = state.produse.map((x) => (x === p ? nou : x));
   seteazaFlag(state, 'datorie_recuperator');
-  adaugaJurnal(state, `Datoria ta a fost vândută unei firme de recuperare. Acum ai de dat ${formateazaLei(inLei(datorie))} lei.`);
+  adaugaJurnal(state, `Datoria ta a fost vândută unei firme de recuperare. Acum ai de dat ${formateazaLei(inLei(datorie))} lei.`, { tip: 'datorie', cauza: p.cauza });
 }
 
 // ---------- Final ----------

@@ -169,8 +169,15 @@ export function actualizeazaDerivate(state, ctx) {
   state.faza = calculeazaFaza(state, ctx);
 }
 
-export function adaugaJurnal(state, text, luna = state.luna) {
-  state.jurnal.push({ luna, varsta: varstaLa(luna), numeLuna: numeLuna(luna), text });
+// extra: { tip: 'datorie', cauza: idDecizie } leagă intrarea de lanțul din „Ce s-a întâmplat?”.
+export function adaugaJurnal(state, text, extra = {}) {
+  const luna = extra.luna ?? state.luna;
+  if (extra.tip === 'datorie') {
+    // Aceeași consecință (fără sume) în ultimele 6 luni? Nu o mai repetăm: jurnalul rămâne lizibil.
+    const cheie = text.replace(/[\d.,]+ lei/g, '');
+    if (state.jurnal.some((j) => j.tip === 'datorie' && luna - j.luna < 6 && j.text.replace(/[\d.,]+ lei/g, '') === cheie)) return;
+  }
+  state.jurnal.push({ luna, varsta: varstaLa(luna), numeLuna: numeLuna(luna), text, ...(extra.tip ? { tip: extra.tip, cauza: extra.cauza ?? null } : {}) });
 }
 
 export function rezumatFinanciar(state, ctx) {
@@ -201,11 +208,17 @@ export function stergeJoc(storage) {
   storage.sterge(CHEI.checkpointuri);
 }
 
-export function adaugaCheckpoint(storage, state, eticheta, max = 5) {
+// Checkpoint ÎNAINTE de o decizie. Se păstrează ultimele `recente` plus cele mai noi checkpoint-uri
+// ale deciziilor care au deschis o datorie, în total cel mult `max`.
+export function adaugaCheckpoint(storage, state, eticheta, { decizie = null, datorie = false, recente = 5, max = 10 } = {}) {
   const lista = storage.citeste(CHEI.checkpointuri, []);
-  lista.push({ id: `c${state.luna}-${state.contoare.decizii}`, eticheta, luna: state.luna, varsta: varstaLa(state.luna), stare: cloneaza(state) });
-  while (lista.length > max) lista.shift();
-  storage.scrie(CHEI.checkpointuri, lista);
+  lista.push({ id: `c${state.luna}-${state.contoare.decizii}`, eticheta, decizie, datorie, luna: state.luna, varsta: varstaLa(state.luna), stare: cloneaza(state) });
+  const pastrate = new Set(lista.slice(-recente));
+  for (const cp of [...lista].reverse()) {
+    if (pastrate.size >= max) break;
+    if (cp.datorie) pastrate.add(cp);
+  }
+  storage.scrie(CHEI.checkpointuri, lista.filter((cp) => pastrate.has(cp)));
 }
 
 export function listaCheckpointuri(storage) {
@@ -215,6 +228,21 @@ export function listaCheckpointuri(storage) {
 export function incarcaCheckpoint(storage, id) {
   const cp = storage.citeste(CHEI.checkpointuri, []).find((c) => c.id === id);
   return cp ? cloneaza(cp.stare) : null;
+}
+
+// Finalurile descoperite sunt globale (colecția). Întoarce true dacă finalul e nou.
+export function deblocheazaFinal(storage, id) {
+  const lista = storage.citeste(CHEI.achievements, []);
+  if (lista.includes(id)) return false;
+  storage.scrie(CHEI.achievements, [...lista, id]);
+  return true;
+}
+
+// Clasament local: cele mai bune 10 vieți de pe acest dispozitiv, după averea în lei de azi.
+export function adaugaInClasament(storage, intrare) {
+  const lista = [...storage.citeste(CHEI.clasament, []), intrare].sort((a, b) => b.avereAzi - a.avereAzi).slice(0, 10);
+  storage.scrie(CHEI.clasament, lista);
+  return lista;
 }
 
 // Enciclopedia e globală (rămâne deblocată între vieți).

@@ -5,6 +5,7 @@
 import { dupaCale } from './util.js';
 import { CLASE_INVESTITII, TIPURI_PRODUSE } from './finance.js';
 import { SURSE_STARE } from './events.js';
+import { CONDITII_FINAL } from './finaluri.js';
 
 const FISIERE = {
   config: 'data/config.json',
@@ -12,6 +13,7 @@ const FISIERE = {
   joburi: 'data/jobs.json',
   concepte: 'data/concepts.json',
   indexEvenimente: 'data/events/index.json',
+  finaluri: 'data/endings.json',
 };
 
 // citeste(cale) -> Promise<string>; cale relativă la rădăcina proiectului
@@ -39,6 +41,7 @@ export async function incarcaContinut(citeste) {
   const joburiJson = (await citesteJson(FISIERE.joburi)) ?? { joburi: [] };
   const concepteJson = (await citesteJson(FISIERE.concepte)) ?? { concepte: [] };
   const index = (await citesteJson(FISIERE.indexEvenimente)) ?? { fisiere: [] };
+  const finaluriJson = (await citesteJson(FISIERE.finaluri)) ?? { finaluri: [] };
 
   const brute = [];
   for (const nume of index.fisiere ?? []) {
@@ -52,11 +55,11 @@ export async function incarcaContinut(citeste) {
     json.evenimente.forEach((ev, i) => brute.push({ ev, fisier, pozitie: i }));
   }
 
-  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute }, erori, avertismente);
+  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson }, erori, avertismente);
   return { ...rezultat, erori, avertismente };
 }
 
-export function construiesteContinut({ config, balans, joburiJson, concepteJson, brute }, erori = [], avertismente = []) {
+export function construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] } }, erori = [], avertismente = []) {
   valideazaConfig(config, FISIERE.config, erori);
 
   const joburi = new Map();
@@ -102,7 +105,19 @@ export function construiesteContinut({ config, balans, joburiJson, concepteJson,
   const start = balans?.start?.evenimentStart;
   if (start && !evenimente.has(start)) erori.push({ fisier: FISIERE.balans, camp: 'start.evenimentStart', mesaj: `evenimentul de start „${start}” lipsește sau e invalid` });
 
-  return { ctx: { config, balans, joburi, concepte, evenimente } };
+  const finaluri = new Map();
+  for (const f of finaluriJson.finaluri ?? []) {
+    const err = (camp, mesaj) => erori.push({ fisier: FISIERE.finaluri, id: f.id, camp, mesaj });
+    if (typeof f.id !== 'string') { err('id', 'lipsește id-ul'); continue; }
+    if (finaluri.has(f.id)) err('id', 'id duplicat');
+    for (const c of ['titlu', 'descriere', 'emoji']) if (typeof f[c] !== 'string') err(c, 'trebuie să fie text');
+    if (typeof f.prioritate !== 'number') err('prioritate', 'trebuie să fie un număr');
+    campuriNecunoscute(f.conditii ?? {}, CONDITII_FINAL, 'conditii', err);
+    if (!Array.isArray(f.conditii?.motiv)) err('conditii.motiv', 'listă de motive (ex. ["pensie"])');
+    finaluri.set(f.id, f);
+  }
+
+  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri } };
 }
 
 export function formateazaEroare(e) {
@@ -131,7 +146,7 @@ function valideazaConfig(nod, fisier, erori, cale = '') {
 const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'oferte', 'alegeri'];
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -249,7 +264,7 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
     if (!([-2, -1, 1, 2].includes(r.stilViata) || ids.includes(r.stilViata))) err(`${cale}.stilViata`, `+1 / -1 sau un nivel: ${ids.join(', ')}`);
   }
   if (r.etichete !== undefined && (!Array.isArray(r.etichete) || r.etichete.some((e) => typeof e !== 'string'))) err(`${cale}.etichete`, 'listă de etichete text (ex. ["inselatorie"])');
-  for (const c of ['cereMarire', 'promovare']) {
+  for (const c of ['cereMarire', 'promovare', 'retragere']) {
     if (r[c] !== undefined && r[c] !== true) err(`${cale}.${c}`, 'trebuie să fie true');
   }
   if (r.sursaPlata !== undefined && !SURSE_PLATA.includes(r.sursaPlata)) err(`${cale}.sursaPlata`, `valori permise: ${SURSE_PLATA.join(', ')}`);

@@ -166,6 +166,15 @@
     "sumaProtejataCont": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "suma din contul curent care nu poate fi poprită; valoare plauzibilă, de verificat în Codul de procedură civilă" }
   },
 
+  "pensie": {
+    "aniStagiuComplet": { "valoare": 35, "deVerificat": true, "sursa": "", "nota": "stagiul complet de cotizare" },
+    "rataInlocuireLaStagiuComplet": { "valoare": 0.45, "deVerificat": true, "sursa": "", "nota": "simplificare: pensia de stat ca procent din salariul brut mediu, la stagiu complet" }
+  },
+
+  "independenta": {
+    "rataRetragereAnuala": { "valoare": 0.04, "deVerificat": true, "sursa": "", "nota": "regula de ~4%: cât poți retrage anual din investiții fără să le epuizezi" }
+  },
+
   "investitii": {
     "_nota": "randamentAnual = creșterea medie anuală pe termen lung (nominală, în lei), inclusiv anii cu crash.",
     "etf": {

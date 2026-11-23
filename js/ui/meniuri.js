@@ -6,12 +6,12 @@ import { fluturas } from '../finance.js';
 import { cardDisponibil, contCurent, datorieProdus, fondUrgenta, plataMinimaCard } from '../finance.js';
 import { NUME_FACTURI } from '../events.js';
 import { cfg, inBani, varstaLa } from '../util.js';
-import { h, lei, procent } from './dom.js';
+import { ani, h, lei, procent } from './dom.js';
 import { confirma } from './ecrane.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 
 const TITLURI = {
-  banca: 'Bancă', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
+  meniu: 'Finventure', banca: 'Bancă', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
 };
 const IN_CURAND = {
   investitii: 'Aici vei putea cumpăra ETF-uri, acțiuni, titluri de stat, aur sau crypto și vei vedea cum crește (sau scade) portofoliul.',
@@ -35,6 +35,7 @@ function continutPanou(tab, o, reranda) {
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
   if (tab === 'cariera') return panouCariera(o, reranda);
   if (tab === 'cumparaturi') return panouCumparaturi(o, reranda);
+  if (tab === 'meniu') return panouMeniu(o);
   return [h('p', {}, IN_CURAND[tab]), h('p', { class: 'mic' }, 'Vine în curând.')];
 }
 
@@ -240,6 +241,27 @@ function panouCumparaturi({ state, ctx, laSchimbare }, reranda) {
       },
     }, n.nume, h('span', { class: 'mic' }, `~${lei(Math.round(baza * n.multiplicator))} pe lună`)))),
     h('p', { class: 'mic' }, 'Telefoane, mașini și alte cumpărături mari vin curând.'),
+  ];
+}
+
+// ---------- Meniul ⋯: colecția, clasamentul local, joc nou ----------
+
+const MOTIVE = { pensie: 'pensie', independenta: 'independență', faliment: 'faliment', burnout: 'burnout', renuntare: 'renunțare' };
+
+function panouMeniu({ ctx, colectie, laJocNou }) {
+  const deblocate = new Set(colectie.finaluri);
+  const toate = [...ctx.finaluri.values()].sort((a, b) => b.prioritate - a.prioritate);
+  return [
+    h('h3', { class: 'sectiune-titlu' }, `Finaluri descoperite: ${deblocate.size}/${toate.length}`),
+    h('ul', { class: 'concept-lista' }, toate.map((f) => h('li', {}, deblocate.has(f.id)
+      ? h('details', { class: 'concept' }, h('summary', {}, `${f.emoji} ${f.titlu}`), h('p', {}, f.descriere))
+      : h('div', { class: 'concept final-blocat' }, h('span', { 'aria-hidden': 'true' }, '🔒 '), '???')))),
+    h('h3', { class: 'sectiune-titlu' }, 'Cele mai bune vieți pe acest dispozitiv'),
+    colectie.clasament.length
+      ? h('ol', { class: 'clasament' }, colectie.clasament.map((c) => h('li', {},
+        h('strong', {}, c.nume), ` · ${c.final ?? MOTIVE[c.motiv]} la ${ani(c.varsta)} · ${Math.round(c.avereAzi).toLocaleString('ro-RO')} lei de azi`)))
+      : h('p', { class: 'mic' }, 'Încă nicio viață terminată.'),
+    h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => { inchideStrat(); laJocNou(); } }, 'Joc nou')),
   ];
 }
 

@@ -9,6 +9,8 @@ import { hashSeed } from './rng.js';
 import { areFlag, avereNeta, cheltuieliLunare } from './state.js';
 import { areJobFullTime, contractCurent } from './cariera.js';
 import { inLei, varstaLa } from './util.js';
+import { rezumatViata } from './bilant.js';
+import { alegeFinal } from './finaluri.js';
 
 // ---------- Generator aleator al strategiei (separat de RNG-ul jocului) ----------
 
@@ -288,6 +290,7 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
   const medii = { inflatie: [], etf: [], salariu: [], salariuReal: [] };
   const aparitii = Object.fromEntries([...ctx.evenimente.keys()].map((id) => [id, 0]));
   const alegeriVazute = new Set();
+  const finaluriColectie = {};
 
   for (let i = 0; i < n; i++) {
     const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn });
@@ -306,12 +309,14 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     for (const [id, luni] of Object.entries(state.istoricEvenimente)) aparitii[id] += luni.length;
 
     const motiv = state.final?.motiv ?? 'neterminat';
+    const fc = ctx.finaluri?.size ? alegeFinal(ctx.finaluri, rezumatViata(state, ctx)) : null;
+    if (fc) finaluriColectie[fc.titlu] = (finaluriColectie[fc.titlu] ?? 0) + 1;
     finaluri[motiv] = (finaluri[motiv] ?? 0) + 1;
     const varsta = varstaLa(state.final?.luna ?? state.luna);
     varste.toate.push(varsta);
     averi.push(inLei(avereNeta(state)));
     averiAzi.push(inLei(avereNeta(state)) / state.indicePreturi);
-    if (motiv !== 'pensie' && motiv !== 'neterminat') {
+    if (!['pensie', 'independenta', 'neterminat'].includes(motiv)) {
       varste.gameOver.push(varsta);
       const lant = state.final.cauza ? lantDecizii(state, state.final.cauza) : [];
       const radacina = lant[0] ? `${lant[0].eveniment} › ${lant[0].alegere}` : 'fără decizie în lanț (ex. venit prea mic)';
@@ -340,6 +345,7 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     avereMedianaAzi: mediana(averiAzi),
     mediiAnuale: Object.fromEntries(Object.entries(medii).map(([k, xs]) => [k, xs.length ? Math.round((xs.reduce((s, x) => s + x, 0) / xs.length) * 10000) / 100 : null])),
     cauzeGameOver: Object.entries(cauze).sort((a, b) => b[1] - a[1]),
+    finaluriColectie: Object.entries(finaluriColectie).sort((a, b) => b[1] - a[1]),
     evenimenteNeaparute: Object.entries(aparitii).filter(([, k]) => k === 0).map(([id]) => id),
     alegeriNealese: toateAlegerile.filter((a) => !alegeriVazute.has(a)),
     aparitii,
@@ -355,8 +361,8 @@ function mediana(xs) {
 
 // ---------- Raport ----------
 
-const NUME_FINALURI = { pensie: 'pensie (65 de ani)', faliment: 'faliment personal', burnout: 'burnout', renuntare: 'renunțare', neterminat: 'neterminat' };
-const ORDINE_FINALURI = ['pensie', 'faliment', 'burnout', 'renuntare', 'neterminat'];
+const NUME_FINALURI = { independenta: 'independență financiară', pensie: 'pensie (65 de ani)', faliment: 'faliment personal', burnout: 'burnout', renuntare: 'renunțare', neterminat: 'neterminat' };
+const ORDINE_FINALURI = ['pensie', 'independenta', 'faliment', 'burnout', 'renuntare', 'neterminat'];
 
 // 3.200.000 -> „3,2 mil. lei”, 980.000 -> „980.000 lei”
 export function sumaMare(lei) {
@@ -371,8 +377,8 @@ export function formateazaRaport(rapoarte) {
   const linii = [
     `Simulare: ${lista.map((r) => `${r.n} × ${r.profil}`).join(', ')}`,
     '',
-    `${'Profil'.padEnd(10)}${ORDINE_FINALURI.slice(0, 4).map((m) => m.padStart(11)).join('')}   vârsta medie   avere mediană (în lei de azi)`,
-    ...lista.map((r) => `${r.profil.padEnd(10)}${ORDINE_FINALURI.slice(0, 4).map((m) => pct(r, m).padStart(11)).join('')}   ${String(r.varstaMedie).padStart(12)}   ${sumaMare(r.avereMediana)} (≈ ${sumaMare(r.avereMedianaAzi)} de azi)`),
+    `${'Profil'.padEnd(10)}${ORDINE_FINALURI.slice(0, 5).map((m) => m.padStart(12)).join('')}   vârsta medie   avere mediană (în lei de azi)`,
+    ...lista.map((r) => `${r.profil.padEnd(10)}${ORDINE_FINALURI.slice(0, 5).map((m) => pct(r, m).padStart(12)).join('')}   ${String(r.varstaMedie).padStart(12)}   ${sumaMare(r.avereMediana)} (≈ ${sumaMare(r.avereMedianaAzi)} de azi)`),
     '',
     'Medii anuale (pe viață): inflație / randament ETF / salariu nominal / salariu real',
     ...lista.map((r) => `${r.profil.padEnd(10)}${['inflatie', 'etf', 'salariu', 'salariuReal'].map((k) => `${r.mediiAnuale[k] ?? '-'}%`.padStart(9)).join('   ')}`),
@@ -381,6 +387,7 @@ export function formateazaRaport(rapoarte) {
     linii.push('', `── ${r.profil}: ${r.descriere}`,
       ...ORDINE_FINALURI.filter((m) => r.finaluri[m]).map((m) => `  ${NUME_FINALURI[m].padEnd(22)} ${String(r.finaluri[m]).padStart(5)}  ${pct(r, m)}`),
       `  vârsta medie la game over: ${r.varstaMedieGameOver ?? '-'}`,
+      `  finaluri colecționabile: ${r.finaluriColectie.map(([t, k]) => `${t} ${Math.round((k / r.n) * 100)}%`).join(', ')}`,
       '  cauze game over (prima decizie din lanț):',
       ...(r.cauzeGameOver.length ? r.cauzeGameOver.slice(0, 8).map(([c, k]) => `    ${String(k).padStart(5)}  ${c}`) : ['    (niciunul)']));
   }
@@ -399,7 +406,8 @@ export function raportJson(rapoarte, extra = {}) {
     profiluri: Object.fromEntries(rapoarte.map((r) => [r.profil, {
       descriere: r.descriere,
       n: r.n,
-      procente: Object.fromEntries(ORDINE_FINALURI.slice(0, 4).map((m) => [m, r.procente[m] ?? 0])),
+      procente: Object.fromEntries(ORDINE_FINALURI.slice(0, 5).map((m) => [m, r.procente[m] ?? 0])),
+      finaluriColectie: Object.fromEntries(r.finaluriColectie.map(([t, k]) => [t, Math.round((k / r.n) * 1000) / 10])),
       varstaMedie: r.varstaMedie,
       varstaMedieGameOver: r.varstaMedieGameOver,
       avereMedianaLei: r.avereMediana,

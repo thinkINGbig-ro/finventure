@@ -175,6 +175,21 @@
       "id": "credit-auto",
       "titlu": "Mașina: credit, leasing și costul real",
       "text": "O mașină costă mult mai mult decât prețul ei: RCA (asigurarea obligatorie), CASCO (opțională), revizii, benzină, parcare. Cu credit auto sau leasing plătești și dobândă, iar mașina pierde 15–20% din valoare în primul an. Calculează costul total pe lună, nu doar rata. Exemplu: o rată de 1.700 lei plus 600 lei pe lună pentru întreținere înseamnă 2.300 lei pe lună pentru o mașină."
+    },
+    {
+      "id": "buget",
+      "titlu": "Bugetul (regula 50/30/20)",
+      "text": "Un buget simplu împarte venitul net în trei: 50% pentru necesar (chirie, facturi, mâncare), 30% pentru dorințe (ieșiri, haine, hobby) și 20% pus deoparte (fond de urgență, investiții, datorii). Economisirea se face la începutul lunii, automat, nu cu ce rămâne la final. Exemplu: din 4.000 lei net, 2.000 lei pe necesar, 1.200 lei pe dorințe, 800 lei deoparte."
+    },
+    {
+      "id": "independenta-financiara",
+      "titlu": "Independența financiară",
+      "text": "Ești independent financiar când venitul din economii și investiții îți acoperă cheltuielile, fără salariu. O regulă des folosită: poți retrage cam 4% pe an din investiții fără să le epuizezi. De aici, ținta: cheltuielile anuale × 25. Exemplu: la 3.000 lei pe lună (36.000 pe an), îți trebuie în jur de 900.000 lei investiți."
+    },
+    {
+      "id": "pilonii-pensiei",
+      "titlu": "Pensia: Pilonii I, II și III",
+      "text": "Pilonul I e pensia de stat, plătită din contribuțiile celor care lucrează acum. Pilonul II e un cont al tău, alimentat dintr-o parte din CAS și investit de un fond privat. Pilonul III e opțional: pui bani în plus, uneori cu ajutorul angajatorului. Exemplu: 35 de ani de contract de muncă înseamnă o pensie de stat întreagă; anii la negru nu se pun la socoteală."
     }
   ]
 }

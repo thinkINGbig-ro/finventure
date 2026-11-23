@@ -130,7 +130,16 @@
     "pragRiscFurt": 5000
   },
 
+  "bilant": {
+    "pragFondLuni": 3,
+    "pragCheltuieli": 0.9,
+    "varstaMinPentruFond": 22,
+    "luniPlataPilon2": 240,
+    "tipareMax": 3
+  },
+
   "salvare": {
-    "checkpointuriMax": 5
+    "checkpointuriRecente": 5,
+    "checkpointuriMax": 10
   }
 }

@@ -1,0 +1,109 @@
+{
+  "_info": "Finalurile colecționabile. Se alege finalul cu prioritatea cea mai mare ale cărui condiții sunt îndeplinite. Condiții posibile: motiv (pensie, independenta, faliment, burnout, renuntare), varstaMax, avereAziMin, avereAziMax (lei de azi), venitPasivAcopera, varstaIndependentaMax, aniLuxMax, aniConfortabilMax, aniNegruMin, ifnMin, rateCumparaturiMin, socuriAbsorbiteMin.",
+  "finaluri": [
+    {
+      "id": "libertate-40",
+      "titlu": "Libertate la 40",
+      "emoji": "🕊️",
+      "descriere": "Ai devenit independent financiar înainte de 40 de ani. Munca a devenit o alegere, nu o obligație.",
+      "conditii": { "motiv": ["independenta", "pensie"], "varstaIndependentaMax": 40 },
+      "prioritate": 100
+    },
+    {
+      "id": "regele-ifn",
+      "titlu": "Regele IFN-urilor",
+      "emoji": "👑",
+      "descriere": "Trei sau mai multe credite rapide, unul peste altul. Coroana e grea, iar dobânzile și mai grele.",
+      "conditii": { "motiv": ["faliment"], "ifnMin": 3 },
+      "prioritate": 90
+    },
+    {
+      "id": "liber-sa-alegi",
+      "titlu": "Liber să alegi",
+      "emoji": "🌅",
+      "descriere": "Te-ai retras când investițiile au ajuns să-ți acopere cheltuielile. Restul vieții e al tău.",
+      "conditii": { "motiv": ["independenta"] },
+      "prioritate": 80
+    },
+    {
+      "id": "victima-reducerilor",
+      "titlu": "Victima reducerilor",
+      "emoji": "🛍️",
+      "descriere": "Rate fără dobândă, „plătești mai târziu”, încă o reducere… Fiecare părea mică. Împreună, nu.",
+      "conditii": { "motiv": ["faliment"], "rateCumparaturiMin": 3 },
+      "prioritate": 80
+    },
+    {
+      "id": "rentierul",
+      "titlu": "Rentierul",
+      "emoji": "🏛️",
+      "descriere": "La pensie, investițiile îți aduc mai mult decât cheltui. Banii tăi muncesc acum în locul tău.",
+      "conditii": { "motiv": ["pensie"], "venitPasivAcopera": true },
+      "prioritate": 70
+    },
+    {
+      "id": "minimalistul",
+      "titlu": "Minimalistul",
+      "emoji": "🌿",
+      "descriere": "Niciodată lux, rar confort, mereu ceva pus deoparte. Ai trăit simplu și ai ajuns departe.",
+      "conditii": { "motiv": ["pensie"], "aniLuxMax": 0, "aniConfortabilMax": 5, "avereAziMin": 300000 },
+      "prioritate": 65
+    },
+    {
+      "id": "milionar",
+      "titlu": "Milionar (în lei de azi)",
+      "emoji": "💎",
+      "descriere": "Peste un milion de lei la pensie, chiar și după inflație.",
+      "conditii": { "motiv": ["pensie"], "avereAziMin": 1000000 },
+      "prioritate": 60
+    },
+    {
+      "id": "faliment-tanar",
+      "titlu": "Faliment înainte de 25",
+      "emoji": "🧯",
+      "descriere": "Datoriile au luat-o înaintea ta foarte devreme. Vestea bună: la 25 de ani, totul se mai poate repara.",
+      "conditii": { "motiv": ["faliment"], "varstaMax": 25 },
+      "prioritate": 50
+    },
+    {
+      "id": "la-limita",
+      "titlu": "La limită",
+      "emoji": "🪙",
+      "descriere": "Ai ajuns la pensie, dar aproape fără nimic pus deoparte. Vei trăi din pensia de stat.",
+      "conditii": { "motiv": ["pensie"], "avereAziMax": 20000 },
+      "prioritate": 30
+    },
+    {
+      "id": "pensionar-linistit",
+      "titlu": "Pensionar liniștit",
+      "emoji": "🏖️",
+      "descriere": "O viață întreagă de muncă, cu bune și rele. Ai ajuns la pensie cu ceva pus deoparte.",
+      "conditii": { "motiv": ["pensie"] },
+      "prioritate": 10
+    },
+    {
+      "id": "faliment",
+      "titlu": "Faliment personal",
+      "emoji": "📉",
+      "descriere": "Datoriile au crescut mai repede decât puteai plăti, luni la rând, iar ce aveai nu le mai acoperea.",
+      "conditii": { "motiv": ["faliment"] },
+      "prioritate": 10
+    },
+    {
+      "id": "burnout",
+      "titlu": "Burnout",
+      "emoji": "🪫",
+      "descriere": "Ai tras prea tare, prea mult timp. Corpul a zis stop.",
+      "conditii": { "motiv": ["burnout"] },
+      "prioritate": 10
+    },
+    {
+      "id": "renuntare",
+      "titlu": "Ai renunțat la tot",
+      "emoji": "🌧️",
+      "descriere": "A fost prea mult deodată, prea multă vreme. Uneori, cel mai curajos pas e să ceri ajutor.",
+      "conditii": { "motiv": ["renuntare"] },
+      "prioritate": 10
+    }
+  ]
+}

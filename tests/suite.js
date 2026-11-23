@@ -7,7 +7,10 @@ import { fluturas, baniDisponibili, contCurent, fondUrgenta, pret } from '../js/
 import {
   adaugaCheckpoint, areFlag, cheltuieliLunare, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
 } from '../js/state.js';
-import { simuleazaVieti, strategieAleatoare } from '../js/simulare.js';
+import { PROFILURI, simuleazaViata, simuleazaVieti, strategieAleatoare } from '../js/simulare.js';
+import { calculeazaTipare } from '../js/tipare.js';
+import { estimeazaPensie, rezumatViata, venitPasivLunar } from '../js/bilant.js';
+import { alegeFinal } from '../js/finaluri.js';
 import { genereazaOferte, promovareDisponibila, schimbaJob } from '../js/cariera.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
 import { inBani, varstaLa } from '../js/util.js';
@@ -217,7 +220,7 @@ function teste(ctxBaza, incarcare) {
 
     'checkpoint înainte de o decizie-cheie'() {
       const storage = creeazaStorageMemorie();
-      const ctx = ctxNou({ persistenta: { checkpoint: (s, et) => adaugaCheckpoint(storage, s, et, 5) } });
+      const ctx = ctxNou({ persistenta: { checkpoint: (s, et, info) => adaugaCheckpoint(storage, s, et, info) } });
       const state = jocNou(ctx, { seed: 'cp' });
       alege(state, ctx, 'sabatic');
       const lista = listaCheckpointuri(storage);
@@ -484,6 +487,70 @@ function teste(ctxBaza, incarcare) {
       state.situatie.locuinta = 'chirieColegi';
       ruleazaAni(state, ctx, 1);
       ok(!state.recurente.some((r) => r.locuinta === 'acasa'), 'contribuția a dispărut după mutare');
+    },
+
+    'tiparele: riscantul primește tipare negative, prudentul pozitive, cu cifre'() {
+      let riscant = null;
+      for (let i = 0; i < 10 && !riscant; i++) {
+        const { state } = simuleazaViata(ctxNou(), `tip-r-${i}`, PROFILURI.riscant);
+        if (state.final?.motiv === 'faliment') riscant = state;
+      }
+      ok(riscant, 'o viață riscantă cu faliment');
+      const neg = calculeazaTipare(riscant, ctxBaza).negative;
+      ok(neg.length >= 1 && neg.length <= 3, `1–3 tipare negative (${neg.map((t) => t.id)})`);
+      ok(neg.every((t) => t.fapt && t.ceTrebuia && ctxBaza.concepte.has(t.concept)), 'fiecare are fapt, „ce trebuia” și un concept existent');
+
+      const { state: prudent } = simuleazaViata(ctxNou(), 'tip-p', PROFILURI.prudent);
+      const poz = calculeazaTipare(prudent, ctxBaza).pozitive;
+      const ids = poz.map((t) => t.id);
+      ok(ids.includes('investitii-regulate') || ids.includes('fond-constant'), `tipare pozitive: ${ids}`);
+      ok(poz.every((t) => /\d/.test(t.fapt) && ctxBaza.concepte.has(t.concept)), 'cu cifre și concept');
+      const pensie = estimeazaPensie(prudent, ctxBaza);
+      ok(pensie.pilon1 > 0 && pensie.aniContributie >= 10, `pensie estimată: ${pensie.pilon1} bani, ${pensie.aniContributie} ani`);
+      return `riscant: ${neg.map((t) => t.id).join(', ')} | prudent: ${ids.join(', ')}`;
+    },
+
+    'finalul colecționabil: cel mai specific se potrivește'() {
+      const baza = { motiv: 'faliment', varsta: 34, avereAzi: -5000, ifnLuate: 0, rateCumparaturi: 0, aniLux: 0, aniConfortabil: 0, socuriAbsorbite: 0, venitPasivAcopera: false, varstaIndependenta: null };
+      egal(alegeFinal(ctxBaza.finaluri, baza).id, 'faliment', 'faliment simplu');
+      egal(alegeFinal(ctxBaza.finaluri, { ...baza, ifnLuate: 3 }).id, 'regele-ifn', 'trei IFN-uri');
+      egal(alegeFinal(ctxBaza.finaluri, { ...baza, motiv: 'pensie', varsta: 65, avereAzi: 150000 }).id, 'pensionar-linistit', 'pensie obișnuită');
+      egal(alegeFinal(ctxBaza.finaluri, { ...baza, motiv: 'pensie', varsta: 65, avereAzi: 900000, varstaIndependenta: 39 }).id, 'libertate-40', 'independent la 39');
+    },
+
+    'checkpoint-uri: ultimele 5 + cele care au deschis o datorie, max. 10'() {
+      const storage = creeazaStorageMemorie();
+      const { state } = joc('cp-retinere');
+      for (let i = 0; i < 14; i++) {
+        state.contoare.decizii = i;
+        adaugaCheckpoint(storage, state, `cp ${i}`, { decizie: `d${i + 1}`, datorie: i % 3 === 0 });
+      }
+      const lista = listaCheckpointuri(storage);
+      ok(lista.length <= 10, `cel mult 10 (${lista.length})`);
+      ok(['d10', 'd11', 'd12', 'd13', 'd14'].every((d) => lista.some((c) => c.decizie === d)), 'ultimele 5 păstrate');
+      ok(lista.some((c) => c.decizie === 'd4' && c.datorie), 'un checkpoint mai vechi, de datorie, păstrat');
+    },
+
+    'o decizie care deschide o datorie primește checkpoint, iar reluarea redeschide cardul'() {
+      const storage = creeazaStorageMemorie();
+      const ctx = ctxNou({ persistenta: { checkpoint: (st, et, info) => adaugaCheckpoint(storage, st, et, info) } });
+      const state = jocNou(ctx, { seed: 'cp-datorie' });
+      alege(state, ctx, 'munca');
+      forteazaEveniment(state, ctx, 'telefon-rate'); // eveniment fără „checkpoint”, dar alegerea deschide un credit
+      const { rezultat } = alege(state, ctx, 'rate');
+      const cp = listaCheckpointuri(storage).find((c) => c.decizie === rezultat.decizie.id);
+      ok(cp?.datorie, 'checkpoint marcat ca datorie');
+      egal(incarcaCheckpoint(storage, cp.id).pendinte.eveniment, 'telefon-rate', 'reluarea redeschide decizia');
+    },
+
+    'independența financiară: când investițiile acoperă cheltuielile, poți să te retragi'() {
+      const { state, ctx } = jocCuJob('independenta');
+      state.produse.push({ id: 'inv', tip: 'investitie', clasa: 'etf', unitati: 100000000 / state.piete.etf, cost: 100000000, deschisLa: 0 });
+      ok(venitPasivLunar(state, ctx) >= cheltuieliLunare(state, ctx), 'venitul pasiv acoperă cheltuielile');
+      const opriri = consuma(state, ctx, avanseaza(state, ctx), strategieDin({ 'independenta-financiara': 'retrag' }));
+      ok(opriri.some((o) => o.eveniment === 'independenta-financiara'), 'evenimentul a apărut');
+      egal(state.final?.motiv, 'independenta', 'final: independență');
+      egal(alegeFinal(ctx.finaluri, rezumatViata(state, ctx)).id, 'libertate-40', 'la 19 ani: Libertate la 40');
     },
 
     'simulare pe profiluri: prudentul o duce mai bine decât riscantul'() {

@@ -6,7 +6,8 @@ import {
   baniDisponibili, cardDisponibil, fluturas, contCurent, creeazaProdus, datorieProdus, fondUrgenta,
   incaseaza, plataMinimaCard, plateste, pret, valoareProdus, valoareVanzare,
 } from './finance.js';
-import { actualizeazaDerivate, adaugaJurnal, areFlag, schimbaStil, seteazaFlag } from './state.js';
+import { actualizeazaDerivate, adaugaJurnal, areFlag, cheltuieliLunare, schimbaStil, seteazaFlag } from './state.js';
+import { inregistreazaDecizie, venitPasivLunar } from './bilant.js';
 import {
   areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
 } from './cariera.js';
@@ -44,6 +45,8 @@ const STARE = {
     const c = s.produse.find((p) => p.tip === 'contractMunca');
     return c ? fluturas(c.brut, c.contract, ctx).net : 0;
   },
+  venitPasiv: (s, _sel, ctx) => venitPasivLunar(s, ctx),
+  cheltuieli: (s, _sel, ctx) => cheltuieliLunare(s, ctx),
   datorieFacturi: (s) => gasesteProduse(s, 'factura').reduce((t, f) => t + f.restanta, 0),
   soldCard: (s) => gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0,
   minimCard: (s, _sel, ctx) => plataMinimaCard(gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0, ctx),
@@ -283,7 +286,7 @@ export function areUrmareScadenta(state) {
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -308,7 +311,13 @@ export function aplicaAlegere(state, ctx, oprire, idAlegere) {
     decizie.rezultat = alegere.rezultate.indexOf(r);
   }
 
+  // Pentru „Ce s-a întâmplat?”: ce scria pe card, la momentul deciziei.
+  const prim = ev.alegeri.find((a) => a.id === String(idAlegere).split('/')[0]);
+  decizie.titlu = ev.titlu ?? ev.id;
+  decizie.eticheta = [prim !== alegere ? prim.eticheta : null, alegere.eticheta].filter(Boolean).map((t) => textCuVariabile(t, vars)).join(' › ');
   const rezultat = aplicaPachet(state, ctx, pachet, vars, decizie.id, oprire);
+  decizie.jurnal = rezultat.jurnal;
+  inregistreazaDecizie(state, ev, String(idAlegere), pachet);
   actualizeazaDerivate(state, ctx);
   return { decizie, ...rezultat };
 }
@@ -369,6 +378,7 @@ function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
     state.recurente.push({ tip: r.tip, suma: inBani(val(r.suma)), luniRamase: r.luni ?? null, eticheta: r.eticheta, locuinta: r.locuinta ?? null, cauza: idDecizie });
   }
   if (p.stilViata !== undefined) schimbaStil(state, ctx, p.stilViata);
+  if (p.retragere) state.final = { tip: 'final', motiv: 'independenta', luna: state.luna, cauza: idDecizie };
   for (const f of p.flaguri ?? []) seteazaFlag(state, f);
   for (const f of p.stergeFlaguri ?? []) delete state.flaguri[f];
   for (const u of p.urmari ?? []) programeazaUrmare(state, ctx, u, idDecizie, vars);
@@ -409,7 +419,8 @@ function aplicaCariera(state, ctx, p, oprire, idDecizie) {
         lectie: 'Negocierea are și un risc: fără argumente (experiență, skill-uri), angajatorul poate alege pe altcineva.',
       };
     }
-    schimbaJob(state, ctx, { id: o.jobId, contract: o.contract, brut: r.brut }, idDecizie);
+    const nou = schimbaJob(state, ctx, { id: o.jobId, contract: o.contract, brut: r.brut }, idDecizie);
+    nou.plusNegociat = r.brut - o.brut;
     return r.rezultat === 'succes'
       ? { jurnal: `Ai negociat și te-ai angajat ${o.titlu} cu ${lei(inLei(r.brut))} brut, nu ${lei(inLei(o.brut))}.`, lectie: 'Ai cerut și ai primit. O mărire la angajare contează în fiecare an care urmează.' }
       : { jurnal: `Ai negociat, n-au cedat, dar te-ai angajat ${o.titlu} cu ${lei(inLei(r.brut))} brut.`, lectie: 'N-a mers de data asta, dar ai aflat limita lor. Să întrebi politicos nu te costă oferta de obicei.' };
@@ -452,6 +463,7 @@ export function deschideProdus(state, ctx, spec, cauza = null) {
 // Investiție de piață: comision de vânzare + impozit pe câștig.
 export function lichideaza(state, ctx, prod) {
   const suma = prod.tip === 'investitie' && prod.clasa !== 'titluriStat' ? valoareVanzare(prod, state, ctx).net : valoareProdus(prod, state);
+  if (prod.tip === 'investitie' && state.bilant) state.bilant.castigRealizat = (state.bilant.castigRealizat ?? 0) + (suma - (prod.cost ?? 0));
   incaseaza(state, suma);
   state.produse = state.produse.filter((p) => p !== prod);
   return suma;
