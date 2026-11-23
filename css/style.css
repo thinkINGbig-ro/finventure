@@ -264,8 +264,10 @@ button { cursor: pointer; }
 
 /* ---------- Toast-uri (lecții) ---------- */
 
+/* Deasupra butonului Avansează și SUB stratul cardurilor: lecția nu acoperă niciodată decizia următoare. */
+.subsol { position: relative; z-index: 5; }
 .toasturi {
-  position: absolute; left: 12px; right: 12px; top: 12px; z-index: 20;
+  position: absolute; left: 12px; right: 12px; bottom: calc(100% + 8px); z-index: 5;
   display: flex; flex-direction: column; gap: 8px; pointer-events: none;
 }
 .toast {
@@ -282,8 +284,8 @@ button { cursor: pointer; }
 .chip.nou::before { content: '✦ '; color: var(--accent); }
 .toast .btn-icon { min-width: 32px; min-height: 32px; font-size: 18px; }
 .toast.iese { animation: dispare .25s ease forwards; }
-@keyframes coboara { from { transform: translateY(-16px); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes dispare { to { transform: translateY(-16px); opacity: 0; } }
+@keyframes coboara { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes dispare { to { transform: translateY(16px); opacity: 0; } }
 
 /* ---------- Erori de conținut (pentru echipă) ---------- */
 

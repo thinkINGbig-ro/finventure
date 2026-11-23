@@ -1,6 +1,8 @@
 // Meniurile dintre „Avansează”-uri. Bancă și Concepte sunt funcționale; restul vin odată cu conținutul.
 
-import { actiune } from '../engine.js';
+import { actiune, sansaMarire } from '../engine.js';
+import { contractCurent, jobCurent } from '../cariera.js';
+import { fluturas } from '../finance.js';
 import { cardDisponibil, contCurent, datorieProdus, fondUrgenta, plataMinimaCard } from '../finance.js';
 import { NUME_FACTURI } from '../events.js';
 import { cfg, inBani, varstaLa } from '../util.js';
@@ -13,7 +15,6 @@ const TITLURI = {
 };
 const IN_CURAND = {
   investitii: 'Aici vei putea cumpăra ETF-uri, acțiuni, titluri de stat, aur sau crypto și vei vedea cum crește (sau scade) portofoliul.',
-  cariera: 'Aici vei putea să-ți faci CV-ul, să cauți joburi și să ceri o mărire.',
   educatie: 'Aici vei putea urma cursuri, un master sau o calificare nouă.',
   cumparaturi: 'Aici vei putea cumpăra telefon, mașină sau casă: cash, în rate sau cu credit.',
 };
@@ -33,6 +34,7 @@ export function deschidePanou(tab, optiuni) {
 function continutPanou(tab, o, reranda) {
   if (tab === 'banca') return panouBanca(o, reranda);
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
+  if (tab === 'cariera') return panouCariera(o, reranda);
   return [h('p', {}, IN_CURAND[tab]), h('p', { class: 'mic' }, 'Vine în curând.')];
 }
 
@@ -164,6 +166,56 @@ function produs(titlu, valoare, detalii, ...extra) {
     h('div', { class: 'produs-cap' }, h('span', {}, titlu), h('span', {}, valoare)),
     detalii ? h('div', { class: 'mic' }, detalii) : null,
     ...extra);
+}
+
+// ---------- Carieră ----------
+
+const NUME_CONTRACT = { cim: 'contract de muncă (CIM)', pfa: 'PFA', negru: 'la negru' };
+
+function panouCariera({ state, ctx, laSchimbare, laOprire }, reranda) {
+  const mesaj = h('p', { class: 'mesaj-actiune', role: 'status' });
+  const c = contractCurent(state);
+  const job = jobCurent(state, ctx);
+  const sectiuni = [mesaj];
+  if (c) {
+    const f = fluturas(c.brut, c.contract, ctx);
+    const ani = Math.floor((c.luniLucrate ?? 0) / 12);
+    const luni = (c.luniLucrate ?? 0) % 12;
+    sectiuni.push(produs(job.titlu[0].toUpperCase() + job.titlu.slice(1), `${lei(f.net)} net`,
+      `${lei(c.brut)} brut · ${NUME_CONTRACT[c.contract]} · ${job.program} · aici de ${ani ? `${ani} ani și ` : ''}${luni} luni`));
+    if (c.contract !== 'negru') {
+      const sansa = Math.round(sansaMarire(state, ctx) * 100);
+      sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', {
+        type: 'button', class: 'btn btn-secundar', onclick: () => {
+          const r = actiune(state, ctx, 'cereMarire');
+          laSchimbare();
+          reranda();
+          const m = document.querySelector('.panou .mesaj-actiune');
+          m.textContent = r.mesaj;
+          m.className = `mesaj-actiune ${r.ok && r.succes ? 'ok' : 'eroare'}`;
+        },
+      }, 'Cere o mărire')));
+      sectiuni.push(h('p', { class: 'mic' }, `Șanse estimate: cam ${sansa}%. Cresc cu skill-ul, reputația și timpul de la ultima mărire.`));
+    }
+  } else {
+    sectiuni.push(h('p', {}, 'N-ai job acum.'));
+  }
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Caută alt job'));
+  sectiuni.push(h('p', { class: 'mic' }, 'Îți faci CV-ul și primești până la 3 oferte. Un CV mai bun aduce oferte mai multe și mai bine plătite.'));
+  sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', {
+    type: 'button', class: 'btn btn-principal', onclick: () => {
+      const r = actiune(state, ctx, 'cautaJob');
+      if (!r.ok) {
+        const m = document.querySelector('.panou .mesaj-actiune');
+        m.textContent = r.mesaj;
+        m.className = 'mesaj-actiune eroare';
+        return;
+      }
+      inchideStrat();
+      laOprire?.(r.oprire);
+    },
+  }, 'Îmi fac CV-ul')));
+  return sectiuni;
 }
 
 // ---------- Enciclopedie ----------

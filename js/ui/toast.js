@@ -3,6 +3,7 @@
 
 import { $, h } from './dom.js';
 import { blocConcepte } from './concepte.js';
+import { stratDeschis } from './strat.js';
 
 const DURATA = 8000;
 
@@ -16,12 +17,14 @@ export function arataLectie({ lectie, concepteNoi = [] }, ctx) {
     h('div', { class: 'toast-text' }, lectie ?? 'Ai descoperit un concept nou.', blocConcepte(concepteNoi, ctx)),
     h('button', { type: 'button', class: 'btn-icon', 'aria-label': 'Închide lecția', onclick: inchide }, '×'));
 
-  let timer = setTimeout(inchide, DURATA);
+  // Cât timp e deschis un card (decizie, rezumat), lecția stă sub el și nu expiră.
+  const inchideCandELiber = () => (stratDeschis() ? (timer = setTimeout(inchideCandELiber, 1000)) : inchide());
+  let timer = setTimeout(inchideCandELiber, DURATA);
   const pauza = () => clearTimeout(timer);
   const reia = () => {
     if (toast.querySelector('[aria-expanded="true"]')) return; // un concept e deschis: rămâne
     clearTimeout(timer);
-    timer = setTimeout(inchide, DURATA / 2);
+    timer = setTimeout(inchideCandELiber, DURATA / 2);
   };
   toast.addEventListener('pointerenter', pauza);
   toast.addEventListener('pointerleave', reia);

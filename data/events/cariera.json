@@ -1,0 +1,270 @@
+{
+  "evenimente": [
+    {
+      "id": "cauta-job",
+      "titlu": "E timpul unui job adevărat",
+      "faza": [1, 2, 3, 4, 5],
+      "conditii": {
+        "varstaMin": 19,
+        "jobProgram": ["niciunul", "part-time"],
+        "inStudii": false,
+        "lipsaFlag": ["cautare_job"]
+      },
+      "pondere": 6,
+      "cooldownLuni": 6,
+      "text": "Fără un job full-time, banii nu prea ajung. Un prieten îți zice: „Fă-ți un CV ca lumea și trimite-l peste tot.”",
+      "alegeri": [
+        {
+          "id": "cv",
+          "eticheta": "Îmi fac CV-ul acum",
+          "flaguri": ["cautare_job:12"],
+          "urmari": [{ "eveniment": "cv-start", "dupaLuni": 0 }]
+        },
+        {
+          "id": "astept",
+          "eticheta": "Mai aștept, poate apare ceva",
+          "efecte": { "fericire": -2 },
+          "lectie": "Joburile bune rar vin singure. Un CV trimis azi e o ofertă peste o lună."
+        }
+      ]
+    },
+    {
+      "id": "cv-start",
+      "titlu": "CV-ul tău",
+      "doarUrmare": true,
+      "text": "Deschizi un șablon de CV. Recrutorii se uită în medie câteva secunde la un CV, așa că ce pui primul contează. Ce scoți în evidență?",
+      "alegeri": [
+        {
+          "id": "experienta",
+          "eticheta": "Experiența de muncă",
+          "cere": { "flag": ["experienta_munca"], "motiv": "N-ai încă 6 luni de muncă pe care să le treci." },
+          "flaguri": ["cv_experienta:12"],
+          "concepte": ["cv"],
+          "urmari": [{ "eveniment": "cv-limbi", "dupaLuni": 0 }]
+        },
+        {
+          "id": "proiecte",
+          "eticheta": "Proiectele mele (facultate, hobby)",
+          "cere": { "ascunse": { "skill": { "min": 45 } }, "motiv": "N-ai încă proiecte pe care să le arăți." },
+          "flaguri": ["cv_proiecte:12"],
+          "concepte": ["cv"],
+          "urmari": [{ "eveniment": "cv-limbi", "dupaLuni": 0 }]
+        },
+        {
+          "id": "voluntariat",
+          "eticheta": "Voluntariat și activități din liceu",
+          "flaguri": ["cv_voluntariat:12"],
+          "concepte": ["cv"],
+          "urmari": [{ "eveniment": "cv-limbi", "dupaLuni": 0 }]
+        },
+        {
+          "id": "umflat",
+          "eticheta": "Înfloresc puțin: „experiență vastă”",
+          "flaguri": ["cv_umflat:24"],
+          "concepte": ["cv"],
+          "lectie": "Un CV „înflorit” aduce oferte mai bune, dar angajatorii verifică. Ce scrii trebuie să poți susține.",
+          "urmari": [{ "eveniment": "cv-limbi", "dupaLuni": 0 }]
+        }
+      ]
+    },
+    {
+      "id": "cv-limbi",
+      "titlu": "Limbi străine",
+      "doarUrmare": true,
+      "text": "Ultima rubrică din CV: limbile străine. Multe firme cer engleză, iar unele plătesc în plus pentru a doua limbă.",
+      "alegeri": [
+        {
+          "id": "engleza",
+          "eticheta": "Engleză, nivel bun",
+          "cere": { "ascunse": { "skill": { "min": 40 } }, "motiv": "Engleza ta e încă la nivel de școală." },
+          "flaguri": ["cv_limbi:12"],
+          "urmari": [{ "eveniment": "oferte-job", "dupaLuni": 0 }]
+        },
+        {
+          "id": "scoala",
+          "eticheta": "Ce știu din școală, scris sincer",
+          "urmari": [{ "eveniment": "oferte-job", "dupaLuni": 0 }]
+        },
+        {
+          "id": "fluent",
+          "eticheta": "Scriu „fluent” la engleză și germană",
+          "flaguri": ["cv_umflat:24"],
+          "urmari": [{ "eveniment": "oferte-job", "dupaLuni": 0 }]
+        }
+      ]
+    },
+    {
+      "id": "oferte-job",
+      "titlu": "Au răspuns angajatorii",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "oferte": true,
+      "text": "Ai trimis CV-ul peste tot. Iată ce ți-a venit. Salariile sunt brute: pe card primești cam 58% din ele.",
+      "alegeri": [
+        {
+          "id": "oferta-1",
+          "eticheta": "{oferta1}",
+          "cere": { "areOferta": 1, "motiv": "Nimeni nu te-a chemat. CV-ul are nevoie de mai mult." },
+          "subalegeri": [
+            {
+              "id": "accept",
+              "eticheta": "Accept {brut1} lei brut",
+              "acceptaOferta": 1,
+              "concepte": ["brut-net"],
+              "urmari": [{ "eveniment": "verificare-cv", "dupaLuni": [3, 9], "probabilitate": 0.5 }]
+            },
+            {
+              "id": "negociez",
+              "eticheta": "Negociez salariul",
+              "negociazaOferta": 1,
+              "concepte": ["negociere-salariu"],
+              "urmari": [{ "eveniment": "verificare-cv", "dupaLuni": [3, 9], "probabilitate": 0.5 }]
+            }
+          ]
+        },
+        {
+          "id": "oferta-2",
+          "eticheta": "{oferta2}",
+          "cere": { "areOferta": 2, "motiv": "A doua ofertă n-a venit. Un CV mai puternic aduce mai multe." },
+          "subalegeri": [
+            {
+              "id": "accept",
+              "eticheta": "Accept {brut2} lei brut",
+              "acceptaOferta": 2,
+              "concepte": ["brut-net"],
+              "urmari": [{ "eveniment": "verificare-cv", "dupaLuni": [3, 9], "probabilitate": 0.5 }]
+            },
+            {
+              "id": "negociez",
+              "eticheta": "Negociez salariul",
+              "negociazaOferta": 2,
+              "concepte": ["negociere-salariu"],
+              "urmari": [{ "eveniment": "verificare-cv", "dupaLuni": [3, 9], "probabilitate": 0.5 }]
+            }
+          ]
+        },
+        {
+          "id": "oferta-3",
+          "eticheta": "{oferta3}",
+          "cere": { "areOferta": 3, "motiv": "A treia ofertă n-a venit. Experiența și proiectele ajută." },
+          "subalegeri": [
+            {
+              "id": "accept",
+              "eticheta": "Accept {brut3} lei brut",
+              "acceptaOferta": 3,
+              "concepte": ["brut-net"],
+              "urmari": [{ "eveniment": "verificare-cv", "dupaLuni": [3, 9], "probabilitate": 0.5 }]
+            },
+            {
+              "id": "negociez",
+              "eticheta": "Negociez salariul",
+              "negociazaOferta": 3,
+              "concepte": ["negociere-salariu"],
+              "urmari": [{ "eveniment": "verificare-cv", "dupaLuni": [3, 9], "probabilitate": 0.5 }]
+            }
+          ]
+        },
+        {
+          "id": "mai-caut",
+          "eticheta": "Mai caut",
+          "efecte": { "fericire": -3 },
+          "urmari": [{ "eveniment": "cv-start", "dupaLuni": 3 }],
+          "lectie": "Uneori merită să aștepți o ofertă mai bună. Dar fiecare lună fără salariu se plătește din economii."
+        }
+      ]
+    },
+    {
+      "id": "verificare-cv",
+      "titlu": "Te-au prins?",
+      "doarUrmare": true,
+      "conditii": { "flag": ["cv_umflat"], "jobProgram": ["full-time"] },
+      "text": "Șefa îți întinde un contract în engleză: „Tu ești fluent, nu? Îl verifici până diseară?”",
+      "alegeri": [
+        {
+          "id": "recunosc",
+          "eticheta": "Recunosc că am exagerat în CV",
+          "efecte": { "reputatie": -10, "fericire": -3 },
+          "stergeFlaguri": ["cv_umflat"],
+          "concepte": ["cv"],
+          "lectie": "Ai pierdut puțină încredere, dar ți-ai păstrat jobul. Un CV sincer nu te pune în situația asta.",
+          "jurnal": "Ai recunoscut că ai exagerat în CV."
+        },
+        {
+          "id": "ma-descurc",
+          "eticheta": "Mă descurc cumva cu un traducător online",
+          "stergeFlaguri": ["cv_umflat"],
+          "rezultate": [
+            {
+              "pondere": 1,
+              "efecte": { "energie": -10 },
+              "jurnal": "Ai stat toată noaptea cu traducătorul. A mers, de data asta."
+            },
+            {
+              "pondere": 1,
+              "efecte": { "reputatie": -25, "fericire": -10 },
+              "job": null,
+              "concepte": ["cv"],
+              "lectie": "Minciuna din CV te-a costat jobul și reputația. Recrutorii din același domeniu vorbesc între ei.",
+              "jurnal": "Te-au prins că ai mințit în CV. Ai fost concediat."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evaluare-anuala",
+      "titlu": "Evaluarea anuală",
+      "faza": [3, 4, 5],
+      "conditii": { "jobProgram": ["full-time"] },
+      "pondere": 4,
+      "cooldownLuni": 12,
+      "text": "Evaluarea anuală cu șefa. Ți-a lăudat munca. Prețurile au crescut față de anul trecut, salariul tău aproape deloc.",
+      "alegeri": [
+        {
+          "id": "marire",
+          "eticheta": "Cer o mărire",
+          "cereMarire": true,
+          "concepte": ["negociere-salariu", "puterea-de-cumparare"]
+        },
+        {
+          "id": "multumit",
+          "eticheta": "Nu cer nimic, e ok așa",
+          "concepte": ["puterea-de-cumparare"],
+          "lectie": "Dacă salariul crește mai încet decât prețurile, în fiecare an îți permiți mai puțin cu aceiași bani."
+        },
+        {
+          "id": "alt-job",
+          "eticheta": "Încep să-mi caut alt job",
+          "cere": { "lipsaFlag": ["cautare_job"], "motiv": "Ai căutat de curând." },
+          "flaguri": ["cautare_job:12"],
+          "urmari": [{ "eveniment": "cv-start", "dupaLuni": 0 }]
+        }
+      ]
+    },
+    {
+      "id": "promovare",
+      "titlu": "O promovare",
+      "faza": [3, 4, 5],
+      "conditii": { "promovareDisponibila": true },
+      "pondere": 8,
+      "cooldownLuni": 12,
+      "checkpoint": true,
+      "text": "Șeful te cheamă: „Vrem să-ți dăm mai multă responsabilitate. Și un salariu pe măsură.”",
+      "alegeri": [
+        {
+          "id": "accept",
+          "eticheta": "Accept promovarea",
+          "promovare": true,
+          "efecte": { "energie": -5, "fericire": 4, "reputatie": 5 },
+          "lectie": "Promovarea aduce un salariu mai mare și o carieră care crește mai repede decât inflația."
+        },
+        {
+          "id": "raman",
+          "eticheta": "Prefer să rămân unde sunt",
+          "efecte": { "fericire": 2 },
+          "lectie": "Liniștea are și ea valoare. Dar salariul tău va crește de acum mai încet."
+        }
+      ]
+    }
+  ]
+}

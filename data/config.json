@@ -24,9 +24,26 @@
   },
 
   "salarii": {
+    "_nota": "Brut lunar, full-time, nivel de intrare pe piața din România (medii orientative, nu oferte reale).",
     "barista": { "valoare": 2025, "deVerificat": true, "sursa": "", "nota": "brut lunar, part-time 4h" },
-    "curier": { "valoare": 4300, "deVerificat": true, "sursa": "", "nota": "brut lunar, full-time" },
-    "asistentBirou": { "valoare": 5000, "deVerificat": true, "sursa": "", "nota": "brut lunar, full-time, junior" },
+    "curier": { "valoare": 4300, "deVerificat": true, "sursa": "" },
+    "vanzator": { "valoare": 4200, "deVerificat": true, "sursa": "" },
+    "sefTura": { "valoare": 5300, "deVerificat": true, "sursa": "" },
+    "operatorCallCenter": { "valoare": 4800, "deVerificat": true, "sursa": "" },
+    "coordonatorEchipa": { "valoare": 6500, "deVerificat": true, "sursa": "" },
+    "tehnician": { "valoare": 5200, "deVerificat": true, "sursa": "" },
+    "tehnicianSenior": { "valoare": 6800, "deVerificat": true, "sursa": "" },
+    "asistentBirou": { "valoare": 5000, "deVerificat": true, "sursa": "" },
+    "officeManager": { "valoare": 6600, "deVerificat": true, "sursa": "" },
+    "contabilJunior": { "valoare": 5800, "deVerificat": true, "sursa": "" },
+    "contabil": { "valoare": 8000, "deVerificat": true, "sursa": "" },
+    "contabilSenior": { "valoare": 11000, "deVerificat": true, "sursa": "" },
+    "marketingJunior": { "valoare": 5500, "deVerificat": true, "sursa": "" },
+    "specialistMarketing": { "valoare": 7800, "deVerificat": true, "sursa": "" },
+    "managerMarketing": { "valoare": 11500, "deVerificat": true, "sursa": "" },
+    "programatorJunior": { "valoare": 7500, "deVerificat": true, "sursa": "" },
+    "programator": { "valoare": 11500, "deVerificat": true, "sursa": "" },
+    "programatorSenior": { "valoare": 16500, "deVerificat": true, "sursa": "" },
     "cresterePrinInflatie": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "fără negociere, salariul crește anual cu această fracție din inflație" }
   },
 

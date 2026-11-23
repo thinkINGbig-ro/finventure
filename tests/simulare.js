@@ -1,10 +1,10 @@
-// Simulare de echilibru:  node tests/simulare.js [--n 1000] [--seed sim]
-// Raportează distribuția finalurilor, vârsta medie la final, cauzele de game over,
-// evenimentele care nu apar niciodată și alegerile pe care nu le alege nimeni.
-import { readFile } from 'node:fs/promises';
+// Simulare de echilibru, pe profiluri de jucător:
+//   node tests/simulare.js [--n 500] [--profil aleator,prudent,riscant] [--seed sim] [--json raport.json]
+// --n = vieți per profil. --json scrie procentele pe profil într-un fișier (pentru grafice).
+import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { formateazaEroare, incarcaContinut } from '../js/content.js';
-import { formateazaRaport, simuleazaVieti } from '../js/simulare.js';
+import { PROFILURI, formateazaRaport, raportJson, simuleazaVieti } from '../js/simulare.js';
 
 const arg = (nume, implicit) => {
   const i = process.argv.indexOf(`--${nume}`);
@@ -19,8 +19,17 @@ if (erori.length) {
   console.error('');
 }
 
-const n = Number(arg('n', 1000));
+const n = Number(arg('n', 500));
+const seed = arg('seed', 'sim');
+const profiluri = arg('profil', Object.keys(PROFILURI).join(',')).split(',');
 const start = Date.now();
-const raport = simuleazaVieti(ctx, { n, seed: arg('seed', 'sim') });
-console.log(formateazaRaport(raport));
+const rapoarte = profiluri.map((profil) => simuleazaVieti(ctx, { n, seed, profil }));
+console.log(formateazaRaport(rapoarte));
 console.log(`\n(${((Date.now() - start) / 1000).toFixed(1)} s)`);
+
+const fisierJson = arg('json');
+if (fisierJson) {
+  const json = raportJson(rapoarte, { generat: new Date().toISOString(), seed, vietiPeProfil: n, evenimente: ctx.evenimente.size });
+  await writeFile(fisierJson, JSON.stringify(json, null, 2) + '\n');
+  console.log(`Raport JSON scris în ${fisierJson}`);
+}

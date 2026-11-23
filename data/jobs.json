@@ -1,35 +1,32 @@
 {
-  "_info": "Salariile stau în config.json (salarii.<cheie>). Aici: descrierea jobului și efectul lunar asupra stărilor.",
+  "_info": "Salariile stau în config.json (salarii.<cheie>). Aici: descrierea jobului, cerințele, efectul lunar asupra stărilor și scara de promovare (urmator). inOferte = poate apărea printre cele 3 oferte după CV. crestere = ce scrie la „șanse de creștere” în ofertă.",
   "joburi": [
-    {
-      "id": "barista",
-      "titlu": "barista",
-      "program": "part-time",
-      "salariu": "salarii.barista",
-      "energieLunara": -2,
-      "fericireLunara": 0,
-      "skillAnual": 2,
-      "contracte": ["cim", "negru"]
-    },
-    {
-      "id": "curier",
-      "titlu": "curier",
-      "program": "full-time",
-      "salariu": "salarii.curier",
-      "energieLunara": -4,
-      "fericireLunara": -1,
-      "skillAnual": 2,
-      "contracte": ["cim", "pfa", "negru"]
-    },
-    {
-      "id": "asistent-birou",
-      "titlu": "asistent de birou",
-      "program": "full-time",
-      "salariu": "salarii.asistentBirou",
-      "energieLunara": -3,
-      "fericireLunara": 0,
-      "skillAnual": 4,
-      "contracte": ["cim"]
-    }
+    { "id": "barista", "titlu": "barista", "program": "part-time", "salariu": "salarii.barista", "energieLunara": -2, "fericireLunara": 0, "skillAnual": 2, "reputatieAnual": 1, "contracte": ["cim", "negru"] },
+
+    { "id": "curier", "titlu": "curier", "program": "full-time", "salariu": "salarii.curier", "energieLunara": -4, "fericireLunara": -1, "skillAnual": 2, "reputatieAnual": 1, "contracte": ["cim", "pfa", "negru"], "inOferte": true, "cerinte": { "studiiMin": "liceu" }, "crestere": "mică" },
+
+    { "id": "vanzator", "titlu": "vânzător", "program": "full-time", "salariu": "salarii.vanzator", "energieLunara": -3, "fericireLunara": -1, "skillAnual": 2, "reputatieAnual": 2, "contracte": ["cim", "negru"], "inOferte": true, "cerinte": { "studiiMin": "liceu" }, "crestere": "medie", "urmator": "sef-tura", "luniPanaLaPromovare": 24 },
+    { "id": "sef-tura", "titlu": "șef de tură", "program": "full-time", "salariu": "salarii.sefTura", "energieLunara": -4, "fericireLunara": 0, "skillAnual": 3, "reputatieAnual": 3, "contracte": ["cim"], "cerinte": { "studiiMin": "liceu", "skillMin": 40 }, "crestere": "medie" },
+
+    { "id": "operator-call-center", "titlu": "operator call center", "program": "full-time", "salariu": "salarii.operatorCallCenter", "energieLunara": -4, "fericireLunara": -1, "skillAnual": 3, "reputatieAnual": 2, "contracte": ["cim"], "inOferte": true, "cerinte": { "studiiMin": "liceu", "skillMin": 35 }, "crestere": "medie", "urmator": "coordonator-echipa", "luniPanaLaPromovare": 24 },
+    { "id": "coordonator-echipa", "titlu": "coordonator de echipă", "program": "full-time", "salariu": "salarii.coordonatorEchipa", "energieLunara": -4, "fericireLunara": 0, "skillAnual": 3, "reputatieAnual": 3, "contracte": ["cim"], "cerinte": { "studiiMin": "liceu", "skillMin": 45 }, "crestere": "medie" },
+
+    { "id": "tehnician", "titlu": "tehnician service", "program": "full-time", "salariu": "salarii.tehnician", "energieLunara": -3, "fericireLunara": 0, "skillAnual": 4, "reputatieAnual": 2, "contracte": ["cim", "pfa"], "inOferte": true, "cerinte": { "studiiMin": "profesionala" }, "crestere": "medie", "urmator": "tehnician-senior", "luniPanaLaPromovare": 36 },
+    { "id": "tehnician-senior", "titlu": "tehnician senior", "program": "full-time", "salariu": "salarii.tehnicianSenior", "energieLunara": -3, "fericireLunara": 1, "skillAnual": 3, "reputatieAnual": 3, "contracte": ["cim", "pfa"], "cerinte": { "studiiMin": "profesionala", "skillMin": 50 }, "crestere": "medie" },
+
+    { "id": "asistent-birou", "titlu": "asistent de birou", "program": "full-time", "salariu": "salarii.asistentBirou", "energieLunara": -3, "fericireLunara": 0, "skillAnual": 4, "reputatieAnual": 2, "contracte": ["cim"], "inOferte": true, "cerinte": { "studiiMin": "liceu", "skillMin": 35 }, "crestere": "medie", "urmator": "office-manager", "luniPanaLaPromovare": 36 },
+    { "id": "office-manager", "titlu": "office manager", "program": "full-time", "salariu": "salarii.officeManager", "energieLunara": -3, "fericireLunara": 1, "skillAnual": 3, "reputatieAnual": 3, "contracte": ["cim"], "cerinte": { "studiiMin": "liceu", "skillMin": 50 }, "crestere": "medie" },
+
+    { "id": "contabil-junior", "titlu": "contabil junior", "program": "full-time", "salariu": "salarii.contabilJunior", "energieLunara": -3, "fericireLunara": 0, "skillAnual": 4, "reputatieAnual": 2, "contracte": ["cim"], "inOferte": true, "cerinte": { "studiiMin": "licenta", "skillMin": 45 }, "crestere": "mare", "urmator": "contabil", "luniPanaLaPromovare": 30 },
+    { "id": "contabil", "titlu": "contabil", "program": "full-time", "salariu": "salarii.contabil", "energieLunara": -3, "fericireLunara": 0, "skillAnual": 3, "reputatieAnual": 3, "contracte": ["cim", "pfa"], "cerinte": { "studiiMin": "licenta", "skillMin": 55 }, "crestere": "mare", "urmator": "contabil-senior", "luniPanaLaPromovare": 48 },
+    { "id": "contabil-senior", "titlu": "contabil senior", "program": "full-time", "salariu": "salarii.contabilSenior", "energieLunara": -4, "fericireLunara": 1, "skillAnual": 2, "reputatieAnual": 3, "contracte": ["cim", "pfa"], "cerinte": { "studiiMin": "licenta", "skillMin": 65 }, "crestere": "medie" },
+
+    { "id": "marketing-junior", "titlu": "specialist marketing junior", "program": "full-time", "salariu": "salarii.marketingJunior", "energieLunara": -3, "fericireLunara": 1, "skillAnual": 4, "reputatieAnual": 3, "contracte": ["cim"], "inOferte": true, "cerinte": { "studiiMin": "licenta", "skillMin": 40 }, "crestere": "mare", "urmator": "specialist-marketing", "luniPanaLaPromovare": 30 },
+    { "id": "specialist-marketing", "titlu": "specialist marketing", "program": "full-time", "salariu": "salarii.specialistMarketing", "energieLunara": -3, "fericireLunara": 1, "skillAnual": 3, "reputatieAnual": 3, "contracte": ["cim", "pfa"], "cerinte": { "studiiMin": "licenta", "skillMin": 55 }, "crestere": "mare", "urmator": "manager-marketing", "luniPanaLaPromovare": 48 },
+    { "id": "manager-marketing", "titlu": "manager de marketing", "program": "full-time", "salariu": "salarii.managerMarketing", "energieLunara": -4, "fericireLunara": 1, "skillAnual": 2, "reputatieAnual": 3, "contracte": ["cim"], "cerinte": { "studiiMin": "licenta", "skillMin": 65 }, "crestere": "medie" },
+
+    { "id": "programator-junior", "titlu": "programator junior", "program": "full-time", "salariu": "salarii.programatorJunior", "energieLunara": -3, "fericireLunara": 1, "skillAnual": 5, "reputatieAnual": 2, "contracte": ["cim", "pfa"], "inOferte": true, "cerinte": { "studiiMin": "licenta", "skillMin": 55 }, "crestere": "mare", "urmator": "programator", "luniPanaLaPromovare": 24 },
+    { "id": "programator", "titlu": "programator", "program": "full-time", "salariu": "salarii.programator", "energieLunara": -3, "fericireLunara": 1, "skillAnual": 4, "reputatieAnual": 3, "contracte": ["cim", "pfa"], "cerinte": { "studiiMin": "licenta", "skillMin": 65 }, "crestere": "mare", "urmator": "programator-senior", "luniPanaLaPromovare": 48 },
+    { "id": "programator-senior", "titlu": "programator senior", "program": "full-time", "salariu": "salarii.programatorSenior", "energieLunara": -4, "fericireLunara": 1, "skillAnual": 2, "reputatieAnual": 3, "contracte": ["cim", "pfa"], "cerinte": { "studiiMin": "licenta", "skillMin": 75 }, "crestere": "medie" }
   ]
 }

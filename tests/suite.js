@@ -8,6 +8,7 @@ import {
   adaugaCheckpoint, areFlag, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
 } from '../js/state.js';
 import { simuleazaVieti, strategieAleatoare } from '../js/simulare.js';
+import { genereazaOferte, promovareDisponibila, schimbaJob } from '../js/cariera.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
 import { inBani, varstaLa } from '../js/util.js';
 
@@ -165,12 +166,12 @@ function teste(ctxBaza, incarcare) {
       ok(salariu?.date.fluturas.net > 0, 'momentul „primul salariu”, cu fluturașul atașat');
     },
 
-    'în 30 de ani, niciun an nu are peste 4 opriri'() {
+    'în 30 de ani, niciun an nu are peste 4 opriri (lanțurile imediate, ca CV-ul, nu se numără)'() {
       const { state, ctx } = joc('plafon');
       alege(state, ctx, 'munca');
       const opriri = ruleazaAni(state, ctx, 30, strategieAleatoare(7));
       const peAn = {};
-      for (const o of opriri.filter((x) => x.tip === 'eveniment')) peAn[varstaLa(o.luna)] = (peAn[varstaLa(o.luna)] ?? 0) + 1;
+      for (const o of opriri.filter((x) => x.tip === 'eveniment' && !x.inLant)) peAn[varstaLa(o.luna)] = (peAn[varstaLa(o.luna)] ?? 0) + 1;
       ok(Object.values(peAn).every((n) => n <= 4), `an cu prea multe opriri: ${JSON.stringify(peAn)}`);
     },
 
@@ -372,6 +373,82 @@ function teste(ctxBaza, incarcare) {
       const f = fluturas(gasesteProdus(state, 'contractMunca').brut, 'cim', ctx);
       ok(moment.date.retinut <= Math.round(f.net * 0.3334), 'reținerea respectă limita');
       verificaInvarianti(state);
+    },
+
+    'CV: cv-start → limbi → oferte, în lanț imediat, iar oferta acceptată devine contractul'() {
+      const { state, ctx } = jocFaraVenit('cv');
+      const r = actiune(state, ctx, 'cautaJob');
+      ok(r.ok, r.mesaj);
+      egal(r.oprire.eveniment, 'cv-start', 'primul pas');
+      const pas2 = alege(state, ctx, 'voluntariat').oprire;
+      egal(pas2?.eveniment, 'cv-limbi', 'al doilea pas vine imediat');
+      ok(pas2.inLant, 'marcat ca lanț (nu consumă din plafonul anului)');
+      const pas3 = alege(state, ctx, 'scoala').oprire;
+      egal(pas3?.eveniment, 'oferte-job', 'ofertele vin imediat');
+      ok(state.pendinte.oferte.length >= 1, 'cel puțin o ofertă');
+      ok(alegerePeCale(pas3, 'oferta-3').disponibil === (state.pendinte.oferte.length >= 3), 'a treia ofertă e disponibilă doar dacă există');
+      const oferta = state.pendinte.oferte[0];
+      alege(state, ctx, 'oferta-1/accept');
+      const c = gasesteProdus(state, 'contractMunca');
+      egal(c.jobId, oferta.jobId, 'jobul din ofertă');
+      egal(c.brut, oferta.brut, 'salariul din ofertă');
+      ok(!actiune(state, ctx, 'cautaJob').ok, 'nu poți căuta din nou imediat');
+    },
+
+    'un CV mai bun aduce mai multe oferte'() {
+      const { state, ctx } = jocFaraVenit('cv-bun');
+      const slab = genereazaOferte(state, ctx).length;
+      state.situatie.nivelStudii = 'licenta';
+      state.ascunse.skill = 70;
+      state.ascunse.reputatie = 30;
+      seteazaFlag(state, 'cv_proiecte:12');
+      const bune = genereazaOferte(state, ctx);
+      ok(bune.length === 3 && bune.length > slab, `oferte: slab ${slab}, bun ${bune.length}`);
+    },
+
+    'negocierea: succes, refuz sau ofertă retrasă, cu jurnal'() {
+      const rezultate = new Set();
+      for (let i = 0; i < 30; i++) {
+        const { state, ctx } = jocFaraVenit(`neg-${i}`);
+        state.ascunse.skill = 50;
+        actiune(state, ctx, 'cautaJob');
+        alege(state, ctx, 'voluntariat');
+        alege(state, ctx, 'scoala');
+        const brutOferta = state.pendinte.oferte[0].brut;
+        alege(state, ctx, 'oferta-1/negociez');
+        const c = gasesteProdus(state, 'contractMunca');
+        rezultate.add(!c ? 'retras' : c.brut > brutOferta ? 'succes' : 'refuzat');
+        ok(state.jurnal.at(-1).text.includes('negociat'), 'rezultatul apare în jurnal');
+      }
+      ok(rezultate.has('succes') && rezultate.size >= 2, `rezultate: ${[...rezultate]}`);
+    },
+
+    'mărirea: nu mai des de o dată pe an; promovarea urcă pe scara jobului'() {
+      const { state, ctx } = jocFaraVenit('marire');
+      schimbaJob(state, ctx, { id: 'vanzator', contract: 'cim' });
+      const c = gasesteProdus(state, 'contractMunca');
+      ok(!actiune(state, ctx, 'cereMarire').ok, 'prea devreme');
+      c.luniDeLaMarire = 24;
+      const r = actiune(state, ctx, 'cereMarire');
+      ok(r.ok && typeof r.succes === 'boolean', 'cererea s-a făcut');
+      ok(!promovareDisponibila(state, ctx), 'fără vechime: fără promovare');
+      c.luniVechime = 24;
+      state.ascunse.skill = 45;
+      ok(promovareDisponibila(state, ctx), 'cu vechime și skill: promovare disponibilă');
+      const brutVechi = gasesteProdus(state, 'contractMunca').brut;
+      forteazaEveniment(state, ctx, 'promovare');
+      alege(state, ctx, 'accept');
+      const nou = gasesteProdus(state, 'contractMunca');
+      egal(nou.jobId, 'sef-tura', 'noul post');
+      ok(nou.brut >= Math.round(brutVechi * 1.1) - 5000, 'salariu cu cel puțin ~10% mai mare');
+    },
+
+    'simulare pe profiluri: prudentul o duce mai bine decât riscantul'() {
+      const prudent = simuleazaVieti(ctxNou(), { n: 15, seed: 'prof', profil: 'prudent', laSfarsitDeAn: verificaInvarianti });
+      const riscant = simuleazaVieti(ctxNou(), { n: 15, seed: 'prof', profil: 'riscant', laSfarsitDeAn: verificaInvarianti });
+      ok((prudent.procente.pensie ?? 0) >= (riscant.procente.pensie ?? 0), 'prudent ≥ riscant la pensie');
+      ok(prudent.avereMediana > riscant.avereMediana, 'prudentul are avere mai mare');
+      return `pensie: prudent ${prudent.procente.pensie ?? 0}%, riscant ${riscant.procente.pensie ?? 0}%`;
     },
 
     'simulare: 40 de vieți cu alegeri aleatoare, până la final, fără erori'() {

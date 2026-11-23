@@ -22,6 +22,7 @@ import {
   FLAG_FACTURA, NUME_FACTURI, alegeEvenimentAleator, aplicaAlegere, creeazaOprireEveniment, deschideProdus, descrieOprire,
   extrageUrmareScadenta, gasesteProduse, inchideCredit, inchideFactura, lichideaza, planificaSloturi, programeazaUrmare, ramburseaza,
 } from './events.js';
+import { areJobFullTime, cereMarire, contractCurent, sansaMarire } from './cariera.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -60,6 +61,9 @@ export function alege(state, ctx, idAlegere) {
   ctx.persistenta?.concepte?.(rezultat.concepteNoi);
   state.pendinte = null;
   verificaFinal(state, ctx);
+  // Lanț imediat (urmări cu dupaLuni: 0): următorul card apare acum, fără să consume o oprire din an.
+  const imediata = state.final ? null : extrageUrmareScadenta(state, ctx, { doarImediate: true });
+  if (imediata) return { rezultat, oprire: seteazaPendinte(state, ctx, { ...imediata, inLant: true }) };
   return { rezultat, oprire: ruleaza(state, ctx) };
 }
 
@@ -373,6 +377,10 @@ function proceseazaSalariu(state, ctx, contract) {
   state.stat.energie += job.energieLunara;
   state.stat.fericire += job.fericireLunara;
   state.ascunse.skill += job.skillAnual / 12;
+  state.ascunse.reputatie += (job.reputatieAnual ?? 0) / 12;
+  contract.luniLucrate = (contract.luniLucrate ?? 0) + 1;
+  contract.luniDeLaMarire = (contract.luniDeLaMarire ?? 0) + 1;
+  if (contract.luniLucrate === bal(ctx, 'cariera.luniPentruExperienta')) seteazaFlag(state, 'experienta_munca');
 
   if (!state.momente.primulSalariu) adaugaMoment(state, 'primulSalariu', { fluturas: f, job: job.titlu }, ['brut-net']);
   if (retinut > 0 && !state.momente.primaPoprire) adaugaMoment(state, 'primaPoprire', { retinut, net: f.net }, ['poprire']);
@@ -386,6 +394,8 @@ function finalizeazaStudii(state, ctx) {
   state.ascunse.skill += info.skillLaFinal;
   seteazaFlag(state, `absolvent_${info.nivel}`);
   adaugaJurnal(state, info.nivel === 'licenta' ? 'Ai terminat facultatea!' : 'Ai terminat școala și ai o calificare.');
+  // Cu diploma în mână: CV-ul și primele oferte full-time.
+  if (!areJobFullTime(state, ctx)) programeazaUrmare(state, ctx, { eveniment: bal(ctx, 'cariera.evenimentCV'), dupaLuni: 1 }, null);
 }
 
 // Penalizare lunară care nu coboară statistica sub „podea” (ce e deja sub podea rămâne neatins).
@@ -569,6 +579,8 @@ function verificaFinal(state, ctx, { lunar = false } = {}) {
 
 const CAMPURI_SETABILE = { cardCredit: ['plata', 'cumparaturiPeCard'], contEconomii: ['fondUrgenta'], depozit: ['reinnoire'] };
 
+export { sansaMarire };
+
 export function actiune(state, ctx, tip, param = {}) {
   if (state.pendinte?.tip === 'eveniment' || state.final) return { ok: false, mesaj: 'Termină întâi decizia curentă.' };
   const prod = param.id ? state.produse.find((p) => p.id === param.id) : null;
@@ -625,6 +637,39 @@ export function actiune(state, ctx, tip, param = {}) {
       if (baniDisponibili(state) < datorieProdus(prod)) return { ok: false, mesaj: 'Nu ai destui bani să achiți tot.' };
       rez = { ok: true, suma: ramburseaza(state, prod) };
       break;
+    }
+    case 'cumpara': {
+      // Cumpărături din meniu: { suma (lei), eticheta, fericire?, peCard? }
+      if (!(suma > 0)) return { ok: false, mesaj: 'Sumă invalidă.' };
+      const card = gasesteProduse(state, 'cardCredit')[0];
+      const sursa = param.peCard && card ? 'cardCredit' : 'portofel';
+      const disponibil = sursa === 'cardCredit' ? cardDisponibil(card) : baniDisponibili(state);
+      if (disponibil < suma) return { ok: false, mesaj: sursa === 'cardCredit' ? 'Limita cardului nu ajunge.' : 'Nu ai destui bani.' };
+      plateste(state, suma, sursa);
+      state.stat.fericire = Math.min(100, state.stat.fericire + (param.fericire ?? 0));
+      if (param.eticheta) adaugaJurnal(state, `Ai cumpărat ${param.eticheta} (${formateazaLei(inLei(suma))} lei${sursa === 'cardCredit' ? ', cu cardul de credit' : ''}).`);
+      rez = { ok: true };
+      break;
+    }
+    case 'cereMarire': {
+      const c = contractCurent(state);
+      if (!c) return { ok: false, mesaj: 'N-ai job.' };
+      if (c.contract === 'negru') return { ok: false, mesaj: 'La negru nu există mărire „oficială”. Patronul râde.' };
+      const r = cereMarire(state, ctx);
+      if (r.preaDevreme) return { ok: false, mesaj: r.text };
+      adaugaJurnal(state, r.text);
+      rez = { ok: true, succes: r.succes, mesaj: r.text };
+      break;
+    }
+    case 'cautaJob': {
+      // Deschide imediat CV-ul; jocul continuă cu oprirea întoarsă aici.
+      if (state.an) return { ok: false, mesaj: 'Poți căuta alt job între ani.' };
+      if (areFlag(state, 'cautare_job')) return { ok: false, mesaj: 'Ai căutat de curând. Mai așteaptă puțin.' };
+      seteazaFlag(state, 'cautare_job:12');
+      const ev = ctx.evenimente.get(bal(ctx, 'cariera.evenimentCV'));
+      state.pendinte = creeazaOprireEveniment(ev, state, ctx);
+      persista(state, ctx);
+      return { ok: true, oprire: oprireCurenta(state, ctx) };
     }
     default:
       return { ok: false, mesaj: `Acțiune necunoscută: ${tip}` };

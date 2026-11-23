@@ -1,4 +1,9 @@
 {
   "_info": "Lista fișierelor cu evenimente din data/events/. Un fișier nou trebuie adăugat aici ca să fie încărcat.",
-  "fisiere": ["faza1.json", "urgente.json", "facturi.json"]
+  "fisiere": [
+    "faza1.json",
+    "urgente.json",
+    "facturi.json",
+    "cariera.json"
+  ]
 }

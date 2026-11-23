@@ -100,6 +100,21 @@
       "id": "restante-facturi",
       "titlu": "Restanțele la facturi",
       "text": "O factură neplătită la termen devine restanță, iar furnizorul adaugă penalități lunare. Urmează somația, apoi deconectarea (la utilități) sau evacuarea (la chirie). După câteva luni, datoria poate ajunge la o firmă de recuperare și apoi la executor. Exemplu: 300 lei restanță la utilități, cu 3% penalitate pe lună, ajung la aproape 1.000 lei în 3 luni dacă nu plătești nici facturile noi."
+    },
+    {
+      "id": "cv",
+      "titlu": "CV-ul",
+      "text": "CV-ul e prima impresie pe care o faci unui angajator, de obicei în câteva secunde. Pune la început ce te recomandă cel mai bine: experiența, proiectele sau voluntariatul. Fii sincer: ce scrii trebuie să poți demonstra la interviu și la job. Exemplu: un CV cu un proiect real poate aduce o ofertă cu 500 lei brut în plus față de unul gol."
+    },
+    {
+      "id": "negociere-salariu",
+      "titlu": "Negocierea salariului",
+      "text": "Prima ofertă nu e mereu ultima. Mulți angajatori lasă loc de negociere, mai ales dacă vii cu argumente: experiență, skill-uri, o altă ofertă. Riscul există, dar e mic dacă ceri politicos și realist. Exemplu: 300 lei în plus pe lună la angajare înseamnă 3.600 lei pe an, an de an, plus măririle calculate de la o bază mai mare."
+    },
+    {
+      "id": "puterea-de-cumparare",
+      "titlu": "Puterea de cumpărare",
+      "text": "Puterea de cumpărare arată câte lucruri îți permiți cu banii tăi. Dacă prețurile cresc cu 5% pe an și salariul cu 2%, de fapt câștigi mai puțin în fiecare an. De aceea contează măririle și schimbarea jobului. Exemplu: cu 3.000 lei net azi și o inflație de 5%, peste 5 ani îți trebuie aproximativ 3.830 lei ca să cumperi aceleași lucruri."
     }
   ]
 }

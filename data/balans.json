@@ -58,6 +58,48 @@
 
   "locuintaDupaEvacuare": "acasa",
 
+  "cariera": {
+    "evenimentCV": "cv-start",
+    "nivelStudii": { "liceu": 0, "profesionala": 1, "licenta": 2 },
+    "cv": {
+      "_info": "Scorul CV-ului = skill + reputație/2 + bonusuri. Decide câte oferte primești și cât de bune sunt.",
+      "bonusFlaguri": { "cv_experienta": 12, "cv_proiecte": 10, "cv_voluntariat": 6, "cv_limbi": 8, "cv_umflat": 14, "experienta_munca": 6 },
+      "bonusStudii": { "liceu": 0, "profesionala": 4, "licenta": 10 },
+      "pragOferte": [25, 45, 65],
+      "skillInPlusDacaUmflat": 10
+    },
+    "oferte": {
+      "variatieSalariu": 0.08,
+      "bonusSalariuLaScor100": 0.10,
+      "sansaPfa": 0.15,
+      "orase": ["București", "Cluj-Napoca", "Iași", "Timișoara", "Brașov", "remote"],
+      "beneficii": ["tichete de masă", "abonament medical", "Pilon III plătit de firmă", "bonus anual"]
+    },
+    "negociere": {
+      "sansaBaza": 0.45,
+      "pondereSkill": 0.006,
+      "pondereReputatie": 0.004,
+      "sansaMin": 0.15,
+      "sansaMax": 0.85,
+      "cresteMin": 0.06,
+      "cresteMax": 0.15,
+      "sansaRetragereLaEsec": 0.35
+    },
+    "marire": {
+      "sansaBaza": 0.25,
+      "pondereSkill": 0.006,
+      "pondereReputatie": 0.005,
+      "pondereLuniDeLaMarire": 0.015,
+      "sansaMin": 0.1,
+      "sansaMax": 0.85,
+      "cresteMin": 0.05,
+      "cresteMax": 0.12,
+      "luniMinimeIntreMariri": 12
+    },
+    "promovare": { "crestereMinima": 0.10 },
+    "luniPentruExperienta": 6
+  },
+
   "faze": {
     "varstaMinima": { "2": 19, "3": 25, "4": 28, "5": 35 },
     "faza4VarstaMin": 25,

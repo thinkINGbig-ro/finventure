@@ -98,6 +98,7 @@ async function porneste() {
       if (ocupat) return;
       deschidePanou(tab.dataset.tab, {
         state, ctx, conceptGlobale: storage.citeste(CHEI.concepte, []), laSchimbare: randeaza,
+        laOprire: (oprire) => ruleaza(oprire), // ex. CV-ul pornit din meniul Carieră
       });
     });
   }

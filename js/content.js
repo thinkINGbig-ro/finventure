@@ -128,9 +128,10 @@ function valideazaConfig(nod, fisier, erori, cale = '') {
 
 // ---------- Evenimente ----------
 
-const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'alegeri'];
+const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'oferte', 'alegeri'];
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
-  'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal'];
+  'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -171,6 +172,9 @@ function valideazaEveniment(ev, err, warn, cv, fisier) {
   }
 
   const vars = new Set(Object.keys(ev.variabile ?? {}));
+  if (ev.oferte !== undefined && typeof ev.oferte !== 'boolean') err('oferte', 'trebuie să fie true sau false');
+  // Cu "oferte": true, motorul generează variabilele {oferta1..3} (text) și {brut1..3} (lei).
+  if (ev.oferte) for (let i = 1; i <= 3; i++) vars.add(`oferta${i}`).add(`brut${i}`);
   for (const [nume, def] of Object.entries(ev.variabile ?? {})) {
     const camp = `variabile.${nume}`;
     if (typeof def === 'number') continue;
@@ -236,6 +240,12 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
   if (r.efecte !== undefined) {
     campuriNecunoscute(r.efecte, CAMPURI_EFECTE, `${cale}.efecte`, err);
     for (const [k, v] of Object.entries(r.efecte)) num(v, `efecte.${k}`);
+  }
+  for (const c of ['acceptaOferta', 'negociazaOferta']) {
+    if (r[c] !== undefined && ![1, 2, 3].includes(r[c])) err(`${cale}.${c}`, 'trebuie să fie 1, 2 sau 3 (a câta ofertă)');
+  }
+  for (const c of ['cereMarire', 'promovare']) {
+    if (r[c] !== undefined && r[c] !== true) err(`${cale}.${c}`, 'trebuie să fie true');
   }
   if (r.sursaPlata !== undefined && !SURSE_PLATA.includes(r.sursaPlata)) err(`${cale}.sursaPlata`, `valori permise: ${SURSE_PLATA.join(', ')}`);
   for (const [c, re, ex] of [['flaguri', RE_FLAG, '„nume” sau „nume:12”'], ['stergeFlaguri', RE_FLAG_NUME, '„nume”']]) {
@@ -325,7 +335,13 @@ function valideazaConditii(cond, cale, err, cv, vars) {
   if (!cond || typeof cond !== 'object' || Array.isArray(cond)) return err(cale, 'trebuie să fie un obiect');
   const liste = ['faza', 'flag', 'lipsaFlag', 'areProdus', 'lipsaProdus', 'job', 'studii', 'locuinta'];
   const numerice = ['numerarMin', 'baniMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
-  campuriNecunoscute(cond, [...liste, ...numerice, 'varstaMin', 'varstaMax', 'stat', 'ascunse', 'poateRambursa', 'sau', 'motiv'], cale, err);
+  campuriNecunoscute(cond, [...liste, ...numerice, 'varstaMin', 'varstaMax', 'stat', 'ascunse', 'poateRambursa', 'sau', 'motiv',
+    'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila'], cale, err);
+  if (cond.areOferta !== undefined && ![1, 2, 3].includes(cond.areOferta)) err(`${cale}.areOferta`, 'trebuie să fie 1, 2 sau 3');
+  if (cond.jobProgram !== undefined && (!Array.isArray(cond.jobProgram) || cond.jobProgram.some((p) => !['part-time', 'full-time', 'niciunul'].includes(p)))) {
+    err(`${cale}.jobProgram`, 'listă cu „part-time”, „full-time” sau „niciunul”');
+  }
+  for (const c of ['inStudii', 'promovareDisponibila']) if (cond[c] !== undefined && typeof cond[c] !== 'boolean') err(`${cale}.${c}`, 'trebuie să fie true sau false');
   for (const c of liste) {
     if (cond[c] !== undefined && !Array.isArray(cond[c])) err(`${cale}.${c}`, 'trebuie să fie o listă (ex. ["datorie_ifn"])');
   }

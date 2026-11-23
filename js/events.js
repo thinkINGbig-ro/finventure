@@ -7,6 +7,9 @@ import {
   incaseaza, plataMinimaCard, plateste, pret, valoareProdus, valoareVanzare,
 } from './finance.js';
 import { actualizeazaDerivate, adaugaJurnal, areFlag, seteazaFlag } from './state.js';
+import {
+  areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
+} from './cariera.js';
 
 // ---------- Produse după selector ----------
 // Selector: „cardCredit”, „credit:ifn” (tip:furnizor), „contCurent:tineri” (tip:pachet), „investitie:etf” (tip:clasa)
@@ -71,7 +74,7 @@ export function rezolvaValoare(v, vars, ctx) {
 }
 
 export function textCuVariabile(text, vars) {
-  return text.replace(/\{(\w+)\}/g, (tot, nume) => (nume in vars ? formateazaLei(vars[nume]) : tot));
+  return text.replace(/\{(\w+)\}/g, (tot, nume) => (nume in vars ? (typeof vars[nume] === 'string' ? vars[nume] : formateazaLei(vars[nume])) : tot));
 }
 
 // ---------- Condiții ----------
@@ -141,6 +144,10 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
       if (!p) return `Nu ai ${NUME_PRODUSE[sel.split(':')[0]] ?? sel}.`;
       return baniDisponibili(state) >= datorieProdus(p) || `Nu ai ${lei(inLei(datorieProdus(p)))} disponibili.`;
     },
+    areOferta: (n) => vars[`brut${n}`] != null || 'CV-ul n-a convins destui angajatori pentru încă o ofertă.',
+    jobProgram: (lista) => lista.includes(jobCurent(state, ctx)?.program ?? 'niciunul') || 'Nu se potrivește cu programul tău de lucru.',
+    inStudii: (da) => !!state.situatie.studii === da || (da ? 'Nu ești la studii.' : 'Încă ești la studii.'),
+    promovareDisponibila: (da) => promovareDisponibila(state, ctx) === da || 'Nu e momentul pentru o promovare.',
     sau: (variante) => variante.some((c) => motivNeindeplinire(c, state, ctx, vars) == null) || 'Nu e cazul acum.',
   };
   for (const [cheie, valoare] of Object.entries(cond)) {
@@ -178,7 +185,18 @@ export function alegeEvenimentAleator(state, ctx) {
 
 // Construiește oprirea pentru un eveniment (variabilele se fixează acum, ca textul să nu se schimbe).
 export function creeazaOprireEveniment(ev, state, ctx, { cauza = null, variabile = {} } = {}) {
-  return { tip: 'eveniment', eveniment: ev.id, luna: state.luna, variabile: rezolvaVariabile(ev, state, ctx, variabile), cauza };
+  const oprire = { tip: 'eveniment', eveniment: ev.id, luna: state.luna, variabile: rezolvaVariabile(ev, state, ctx, variabile), cauza };
+  if (ev.oferte) adaugaOferte(oprire, state, ctx);
+  return oprire;
+}
+
+// Evenimentele cu "oferte": true primesc 0–3 oferte generate din CV, ca variabile {oferta1}, {brut1} ...
+function adaugaOferte(oprire, state, ctx) {
+  oprire.oferte = genereazaOferte(state, ctx);
+  oprire.oferte.forEach((o, i) => {
+    oprire.variabile[`oferta${i + 1}`] = descriereOferta(o);
+    oprire.variabile[`brut${i + 1}`] = Math.round(o.brut / 100);
+  });
 }
 
 // Ce vede UI-ul: textul final și alegerile, cu cele indisponibile marcate.
@@ -222,21 +240,25 @@ export function programeazaUrmare(state, ctx, spec, cauza, vars = {}) {
   const dupa = Array.isArray(spec.dupaLuni) ? intreg(state, 'evenimente', spec.dupaLuni[0], spec.dupaLuni[1]) : (spec.dupaLuni ?? 1);
   const variabile = {};
   for (const [k, v] of Object.entries(spec.variabile ?? {})) variabile[k] = rezolvaValoare(v, vars, ctx);
-  state.urmari.push({ eveniment: spec.eveniment, luna: state.luna + dupa, probabilitate: spec.probabilitate ?? 1, variabile, cauza });
+  // dupaLuni: 0 = lanț imediat (ex. pașii CV-ului): cardul următor apare direct după decizie.
+  state.urmari.push({ eveniment: spec.eveniment, luna: state.luna + dupa, probabilitate: spec.probabilitate ?? 1, variabile, cauza, imediat: dupa === 0 });
 }
 
 // Prima urmare scadentă care trece de probabilitate și de condiții (urmările ignoră faza și cooldown-ul).
-export function extrageUrmareScadenta(state, ctx) {
+export function extrageUrmareScadenta(state, ctx, { doarImediate = false } = {}) {
   state.urmari.sort((a, b) => a.luna - b.luna);
-  while (state.urmari.length && state.urmari[0].luna <= state.luna) {
-    const u = state.urmari.shift();
+  for (;;) {
+    const i = state.urmari.findIndex((u) => u.luna <= state.luna && (!doarImediate || u.imediat));
+    if (i < 0) return null;
+    const [u] = state.urmari.splice(i, 1);
     const ev = ctx.evenimente.get(u.eveniment);
     if (!ev || !sansa(state, 'evenimente', u.probabilitate)) continue;
     const vars = rezolvaVariabile(ev, state, ctx, u.variabile);
     if (!conditiiIndeplinite(ev.conditii, state, ctx, vars)) continue;
-    return { tip: 'eveniment', eveniment: ev.id, luna: state.luna, variabile: vars, cauza: u.cauza };
+    const oprire = { tip: 'eveniment', eveniment: ev.id, luna: state.luna, variabile: vars, cauza: u.cauza };
+    if (ev.oferte) adaugaOferte(oprire, state, ctx);
+    return oprire;
   }
-  return null;
 }
 
 export function areUrmareScadenta(state) {
@@ -246,7 +268,8 @@ export function areUrmareScadenta(state) {
 // ---------- Aplicarea unei alegeri ----------
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
-  'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal'];
+  'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -271,12 +294,12 @@ export function aplicaAlegere(state, ctx, oprire, idAlegere) {
     decizie.rezultat = alegere.rezultate.indexOf(r);
   }
 
-  const rezultat = aplicaPachet(state, ctx, pachet, vars, decizie.id);
+  const rezultat = aplicaPachet(state, ctx, pachet, vars, decizie.id, oprire);
   actualizeazaDerivate(state, ctx);
   return { decizie, ...rezultat };
 }
 
-function aplicaPachet(state, ctx, p, vars, idDecizie) {
+function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   const val = (v) => rezolvaValoare(v, vars, ctx);
   const rezultat = { lectie: null, concepteNoi: [], jurnal: null, neplatit: 0 };
 
@@ -315,6 +338,7 @@ function aplicaPachet(state, ctx, p, vars, idDecizie) {
     }
   }
   if (p.job !== undefined) schimbaJob(state, ctx, p.job, idDecizie);
+  const mesajeCariera = aplicaCariera(state, ctx, p, oprire, idDecizie);
   if (p.situatie) aplicaSituatie(state, ctx, p.situatie, idDecizie);
   for (const r of p.recurente ?? []) {
     state.recurente.push({ tip: r.tip, suma: inBani(val(r.suma)), luniRamase: r.luni ?? null, eticheta: r.eticheta, cauza: idDecizie });
@@ -334,7 +358,45 @@ function aplicaPachet(state, ctx, p, vars, idDecizie) {
     adaugaJurnal(state, rezultat.jurnal);
   }
   if (p.lectie) rezultat.lectie = textCuVariabile(p.lectie, vars);
+  // Rezultatul negocierii / măririi se știe abia acum: jurnalul și lecția vin din motor.
+  if (mesajeCariera) {
+    adaugaJurnal(state, mesajeCariera.jurnal);
+    rezultat.jurnal = mesajeCariera.jurnal;
+    if (mesajeCariera.lectie) rezultat.lectie = mesajeCariera.lectie;
+  }
   return rezultat;
+}
+
+function aplicaCariera(state, ctx, p, oprire, idDecizie) {
+  const oferta = (n) => oprire.oferte?.[n - 1];
+  if (p.acceptaOferta) {
+    const o = oferta(p.acceptaOferta);
+    schimbaJob(state, ctx, { id: o.jobId, contract: o.contract, brut: o.brut }, idDecizie);
+    return { jurnal: `Te-ai angajat ${o.titlu}, cu ${lei(inLei(o.brut))} brut (${o.oras}).` };
+  }
+  if (p.negociazaOferta) {
+    const o = oferta(p.negociazaOferta);
+    const r = negociaza(state, ctx, o);
+    if (r.rezultat === 'retras') {
+      return {
+        jurnal: `Ai negociat pentru postul de ${o.titlu}, dar firma și-a retras oferta.`,
+        lectie: 'Negocierea are și un risc: fără argumente (experiență, skill-uri), angajatorul poate alege pe altcineva.',
+      };
+    }
+    schimbaJob(state, ctx, { id: o.jobId, contract: o.contract, brut: r.brut }, idDecizie);
+    return r.rezultat === 'succes'
+      ? { jurnal: `Ai negociat și te-ai angajat ${o.titlu} cu ${lei(inLei(r.brut))} brut, nu ${lei(inLei(o.brut))}.`, lectie: 'Ai cerut și ai primit. O mărire la angajare contează în fiecare an care urmează.' }
+      : { jurnal: `Ai negociat, n-au cedat, dar te-ai angajat ${o.titlu} cu ${lei(inLei(r.brut))} brut.`, lectie: 'N-a mers de data asta, dar ai aflat limita lor. Să întrebi politicos nu te costă oferta de obicei.' };
+  }
+  if (p.cereMarire) {
+    const r = cereMarire(state, ctx);
+    return {
+      jurnal: r.text,
+      lectie: r.succes ? 'Fără mărire, inflația îți mănâncă din salariu în fiecare an. Ai cerut la momentul potrivit.' : 'Un „nu” azi nu e definitiv. Crește-ți skill-urile și mai încearcă, sau caută o ofertă mai bună.',
+    };
+  }
+  if (p.promovare && promovareDisponibila(state, ctx)) return { jurnal: promoveaza(state, ctx, idDecizie).text };
+  return null;
 }
 
 function rezolvaSpec(spec, val) {
@@ -410,14 +472,6 @@ export function inchideCredit(state, credit) {
   if (credit.stadiu === 'activ') {
     adaugaJurnal(state, `Ai terminat de plătit creditul de ${lei(inLei(credit.sumaInitiala))}. Ai dat înapoi în total ${lei(inLei(credit.totalPlatit))}.`);
   }
-}
-
-function schimbaJob(state, ctx, spec, cauza) {
-  state.produse = state.produse.filter((p) => p.tip !== 'contractMunca');
-  if (!spec) return;
-  const job = ctx.joburi.get(spec.id);
-  const brut = pret(state, ctx, job.salariu);
-  state.produse.push(creeazaProdus({ tip: 'contractMunca', jobId: job.id, contract: spec.contract, brut, cauza }, state, ctx));
 }
 
 function aplicaSituatie(state, ctx, sit, idDecizie) {
