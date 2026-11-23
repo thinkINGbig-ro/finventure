@@ -1,7 +1,8 @@
 // Ecrane dedicate: momentele-cheie (primul salariu cu fluturașul, prima rată, prima poprire,
 // primul an pe plus), rezumatul anului și finalul (versiunea simplă; Faza D adaugă „Ce s-a întâmplat?”).
 
-import { procent, ani, h, lei, leiExact } from './dom.js';
+import { procent, ani, h, lei, leiCuAzi, leiExact } from './dom.js';
+import { nivelStil } from '../state.js';
 import { blocConcepte } from './concepte.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 
@@ -78,10 +79,14 @@ export function arataMoment(oprire, ctx) {
 
 // ---------- Rezumatul anului ----------
 
-export function arataRezumat(r, state) {
+export function arataRezumat(r, state, ctx) {
   const pusDeoparte = r.avereFinal - r.avereStart;
   const evenimenteAn = state.jurnal.filter((j) => j.varsta === r.varsta).map((j) => j.text);
   const cheltuieli = r.cheltuieliTrai + r.rate + r.comisioane;
+  const pctVenit = r.venituri > 0 ? Math.round((cheltuieli / r.venituri) * 100) : null;
+  const stil = nivelStil(ctx, r.stilViata);
+  const anterior = r.stilAnterior && nivelStil(ctx, r.stilAnterior);
+  const difStil = r.cheltuieliStilAnterior ? r.cheltuieliStil - r.cheltuieliStilAnterior : 0;
   const continut = [
     h('span', { class: 'card-cand' }, `Anul tău la ${ani(r.varsta)}`),
     h('h2', {}, pusDeoparte >= 0 ? 'Un an pe plus' : 'Un an pe minus'),
@@ -94,6 +99,9 @@ export function arataRezumat(r, state) {
       r.dobanziPrimite ? rand('Dobânzi primite', `+ ${lei(r.dobanziPrimite)}`) : null,
       r.castigInvestitii ? rand('Investiții', `${r.castigInvestitii >= 0 ? '+' : '−'} ${lei(Math.abs(r.castigInvestitii))}`) : null,
       rand(pusDeoparte >= 0 ? 'Averea ta a crescut cu' : 'Averea ta a scăzut cu', lei(Math.abs(pusDeoparte)), 'total'))),
+    h('p', {}, `Stil de viață: ${stil?.nume ?? r.stilViata}.`, pctVenit != null ? ` Ai cheltuit ${pctVenit}% din venit.` : ''),
+    anterior && difStil ? h('p', { class: 'mic' }, `Cu stilul ${anterior.nume.toLowerCase()} de dinainte, ai fi cheltuit cu ${lei(Math.abs(difStil))} ${difStil > 0 ? 'mai puțin' : 'mai mult'} anul ăsta.`) : null,
+    h('p', { class: 'mic' }, `Averea ta netă: ${leiCuAzi(r.avereFinal, r.indicePreturi)}.`),
     h('p', { class: 'mic' },
       `Ai cheltuit în total ${lei(cheltuieli)}.`,
       r.inflatie ? ` Prețurile au crescut cu ${procent(r.inflatie)} (inflație).` : '',
@@ -113,7 +121,7 @@ const FINALURI = {
   renuntare: ['🌧️', 'Ai renunțat la tot', 'A fost prea mult deodată. Uneori, cel mai curajos pas e să ceri ajutor.'],
 };
 
-export function arataFinal(oprire, rezumatFin) {
+export function arataFinal(oprire, rezumatFin, indicePreturi) {
   const [emoji, titlu, text] = FINALURI[oprire.motiv] ?? ['🏁', 'Final', ''];
   return arataCard([
     h('span', { class: 'emoji-mare', 'aria-hidden': 'true' }, emoji),
@@ -121,7 +129,8 @@ export function arataFinal(oprire, rezumatFin) {
     h('p', {}, text),
     h('table', { class: 'tabel' }, h('tbody', {},
       rand('Vârsta', ani(oprire.varsta)),
-      rand('Avere netă', lei(rezumatFin.avereNeta), 'total'))),
+      rand('Avere netă', leiCuAzi(rezumatFin.avereNeta, indicePreturi), 'total'))),
+    indicePreturi >= 1.05 ? h('p', { class: 'mic' }, `„Lei de azi” = cât valorează suma la prețurile de când ai început jocul. Prețurile au crescut de ${indicePreturi.toLocaleString('ro-RO', { maximumFractionDigits: 1 })} ori.`) : null,
   ], { buton: 'Joc nou', eticheta: titlu });
 }
 

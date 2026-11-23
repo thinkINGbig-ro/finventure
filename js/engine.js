@@ -16,7 +16,7 @@ import {
   proceseazaTitluri, randamentLunar, rataLunara, valoareProdus,
 } from './finance.js';
 import {
-  actualizeazaDerivate, adaugaJurnal, areFlag, avereNeta, creeazaStare, datoriiTotale, expiraFlaguri, seteazaFlag,
+  actualizeazaDerivate, adaugaJurnal, areFlag, avereNeta, creeazaStare, datoriiTotale, expiraFlaguri, multiplicatorStil, schimbaStil, seteazaFlag,
 } from './state.js';
 import {
   FLAG_FACTURA, NUME_FACTURI, alegeEvenimentAleator, aplicaAlegere, creeazaOprireEveniment, deschideProdus, descrieOprire,
@@ -172,12 +172,14 @@ function inceputAn(state, ctx) {
     ac: {
       venituri: 0, taxe: 0, cheltuieliTrai: 0, rate: 0, dobanziPlatite: 0, dobanziPrimite: 0,
       comisioane: 0, castigInvestitii: 0, retinutPoprire: 0, neplatit: 0, luniCuLipsuri: 0,
+      cheltuieliStil: 0, cheltuieliStilAnterior: 0,
     },
   };
 }
 
 function incheieAn(state, ctx) {
   const an = state.an;
+  if (an.inflatie > 0 && !state.concepte.includes('puterea-de-cumparare')) state.concepte.push('puterea-de-cumparare');
   const areInvestitii = gasesteProduse(state, 'investitie').length > 0;
   if (areInvestitii && an.ac.castigInvestitii > 0 && !state.momente.primulAnPePlus) {
     adaugaMoment(state, 'primulAnPePlus', { castig: an.ac.castigInvestitii }, ['dobanda-compusa']);
@@ -191,6 +193,9 @@ function incheieAn(state, ctx) {
     ...an.ac,
     avereStart: an.avereStart,
     avereFinal: avereNeta(state),
+    indicePreturi: state.indicePreturi,
+    stilViata: state.stilViata,
+    stilAnterior: state.stilAnterior,
   });
   state.an = null;
 }
@@ -232,7 +237,8 @@ export function proceseazaLuna(state, ctx) {
     }
     if (r.luniRamase != null) r.luniRamase -= 1;
   }
-  state.recurente = state.recurente.filter((r) => r.luniRamase == null || r.luniRamase > 0);
+  // Recurențele legate de o locuință (ex. contribuția extra la părinți) se opresc când te muți.
+  state.recurente = state.recurente.filter((r) => (r.luniRamase == null || r.luniRamase > 0) && (!r.locuinta || r.locuinta === state.situatie.locuinta));
 
   // 3. Studii: taxa la începutul fiecărui an de studiu
   const studii = state.situatie.studii;
@@ -250,7 +256,10 @@ export function proceseazaLuna(state, ctx) {
 
   // 4. Mâncare și transport primele (cumpărăturile pot trece pe cardul de credit).
   // Ce nu se poate plăti aici înseamnă lipsuri, nu datorie.
-  const mancare = pret(state, ctx, 'costTrai.mancareTransport');
+  const mancareBaza = pret(state, ctx, 'costTrai.mancareTransport');
+  const mancare = Math.round(mancareBaza * multiplicatorStil(state, ctx));
+  ac.cheltuieliStil += mancare;
+  if (state.stilAnterior) ac.cheltuieliStilAnterior += Math.round(mancareBaza * multiplicatorStil(state, ctx, state.stilAnterior));
   let peCard = 0;
   const card = gasesteProduse(state, 'cardCredit')[0];
   if (card?.cumparaturiPeCard) {
@@ -326,7 +335,8 @@ export function proceseazaLuna(state, ctx) {
     ac.luniCuLipsuri += 1;
   }
   // Izolarea și epuizarea n-au podea: doar cumulul lor poate duce Fericirea la 0.
-  const { izolare, epuizare } = lunar.penalizari;
+  const { izolare, epuizare, acasaTarziu } = lunar.penalizari;
+  if (state.situatie.locuinta === 'acasa' && varstaLa(state.luna) >= acasaTarziu.varstaMin) penalizeaza(state, acasaTarziu);
   if (state.ascunse.retea < izolare.prag) penalizeaza(state, izolare);
   if (state.stat.energie < epuizare.prag) penalizeaza(state, epuizare);
 
@@ -565,9 +575,14 @@ function verificaFinal(state, ctx, { lunar = false } = {}) {
   }
 
   let motiv = null;
+  if (lunar) {
+    // Renunțarea cere Fericire 0 câteva luni la rând: un șoc singur trece (Fericirea revine spre țintă);
+    // doar cumulul (izolare, epuizare: penalizări fără podea) o poate ține jos.
+    state.contoare.luniFericireZero = state.stat.fericire <= 0 ? (state.contoare.luniFericireZero ?? 0) + 1 : 0;
+  }
   if (state.contoare.luniFaliment >= g.falimentLuni) motiv = 'faliment';
   else if (state.stat.energie <= 0) motiv = 'burnout';
-  else if (state.stat.fericire <= 0) motiv = 'renuntare';
+  else if ((state.contoare.luniFericireZero ?? 0) >= g.renuntareLuni) motiv = 'renuntare';
   if (!motiv) return;
 
   // Decizia care a pornit cea mai mare datorie: de aici pornește „Ce s-a întâmplat?”.
@@ -649,6 +664,13 @@ export function actiune(state, ctx, tip, param = {}) {
       state.stat.fericire = Math.min(100, state.stat.fericire + (param.fericire ?? 0));
       if (param.eticheta) adaugaJurnal(state, `Ai cumpărat ${param.eticheta} (${formateazaLei(inLei(suma))} lei${sursa === 'cardCredit' ? ', cu cardul de credit' : ''}).`);
       rez = { ok: true };
+      break;
+    }
+    case 'stilViata': {
+      const r = schimbaStil(state, ctx, param.nivel);
+      if (!r.schimbat) return { ok: false, mesaj: 'Ăsta e deja stilul tău.' };
+      adaugaJurnal(state, `Ai trecut la un stil de viață ${r.nivel.nume.toLowerCase()}.`);
+      rez = { ok: true, sus: r.sus };
       break;
     }
     case 'cereMarire': {

@@ -3,7 +3,7 @@
     {
       "id": "urgenta-2000",
       "titlu": "Ai nevoie urgent de bani",
-      "faza": [2, 3, 4],
+      "faza": [2, 3, 4, 5],
       "conditii": { "varstaMin": 19, "lipsaFlag": ["urgenta_recenta"] },
       "pondere": 3,
       "checkpoint": true,
@@ -24,6 +24,14 @@
               "concepte": ["fond-urgenta"],
               "lectie": "Exact pentru asta există fondul de urgență. Pune-l la loc cât poți de repede.",
               "jurnal": "Ai plătit reparația laptopului din fondul de urgență."
+            },
+            {
+              "id": "cont",
+              "eticheta": "Plătesc din contul curent",
+              "cere": { "baniMin": "{suma}" },
+              "efecte": { "numerar": "-{suma}" },
+              "flaguri": ["urgenta_recenta:12"],
+              "jurnal": "Ai plătit reparația din cont."
             },
             {
               "id": "depozit",

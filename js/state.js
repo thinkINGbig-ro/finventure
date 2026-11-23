@@ -8,7 +8,7 @@ import { CHEI } from './storage.js';
 export const VERSIUNE_SALVARE = 1;
 
 export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
-  const s = bal(ctx, 'start');
+  const s = { ...bal(ctx, 'start'), stilViata: bal(ctx, 'stilViata.start') };
   const state = {
     versiune: VERSIUNE_SALVARE,
     seed: String(seed),
@@ -25,6 +25,8 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     produse: [],
     recurente: [],
     situatie: { studii: null, nivelStudii: 'liceu', locuinta: 'acasa', cauzaLocuinta: null },
+    stilViata: s.stilViata,
+    stilAnterior: null, // nivelul de dinainte de ultima schimbare (pentru rezumatul anului)
     pensie: { luniContributie: 0, pilon2: 0 },
     indicePreturi: 1,
     piete: Object.fromEntries(CLASE_PIATA.map((c) => [c, 100])),
@@ -77,11 +79,33 @@ export function expiraFlaguri(state) {
 // ---------- Valori derivate ----------
 
 export function cheltuieliLunare(state, ctx) {
-  let total = pret(state, ctx, 'costTrai.mancareTransport');
+  let total = Math.round(pret(state, ctx, 'costTrai.mancareTransport') * multiplicatorStil(state, ctx));
   for (const suma of Object.values(facturiLunare(state, ctx))) total += suma;
   for (const r of state.recurente) if (r.tip === 'cheltuiala') total += r.suma;
   for (const p of state.produse) if (p.tip === 'credit' && p.stadiu === 'activ') total += Math.min(p.rata, p.rest);
   return total;
+}
+
+export function nivelStil(ctx, id) {
+  return bal(ctx, 'stilViata.niveluri').find((n) => n.id === id);
+}
+
+export function multiplicatorStil(state, ctx, id = state.stilViata) {
+  return nivelStil(ctx, id)?.multiplicator ?? 1;
+}
+
+// Schimbă stilul de viață (id sau +1/-1). Întoarce { schimbat, sus, nivel }.
+export function schimbaStil(state, ctx, tinta) {
+  const niveluri = bal(ctx, 'stilViata.niveluri');
+  const i = niveluri.findIndex((n) => n.id === state.stilViata);
+  const j = typeof tinta === 'number' ? clamp(i + tinta, 0, niveluri.length - 1) : niveluri.findIndex((n) => n.id === tinta);
+  if (j < 0 || j === i) return { schimbat: false, nivel: niveluri[i] };
+  state.stilAnterior = state.stilViata;
+  state.stilViata = niveluri[j].id;
+  // Adaptarea hedonică: efectul se estompează singur, pentru că Fericirea revine lunar spre țintă.
+  const efect = bal(ctx, j > i ? 'stilViata.fericireLaCrestere' : 'stilViata.fericireLaScadere');
+  state.stat.fericire = clamp(state.stat.fericire + efect, 0, 100);
+  return { schimbat: true, sus: j > i, nivel: niveluri[j] };
 }
 
 export function datoriiTotale(state) {

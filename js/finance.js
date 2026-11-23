@@ -279,11 +279,16 @@ export function proceseazaTitluri(t) {
 }
 
 // Randament lunar pentru o clasă de piață, dintr-o normală standard z.
+// randamentAnual = creșterea medie pe termen lung (anualizată), INCLUSIV anii cu crash:
+// tendința lunară scade cât „costă” în medie crash-urile, ca să nu fie numărate de două ori.
 export function randamentLunar(clasa, z, ctx, crash) {
   const mu = cfg(ctx, `investitii.${clasa}.randamentAnual`);
   const sigma = cfg(ctx, `investitii.${clasa}.volatilitateAnuala`);
-  let factor = Math.exp((mu - (sigma * sigma) / 2) / 12 + (sigma / Math.sqrt(12)) * z);
-  if (crash) factor *= 1 + cfg(ctx, `investitii.${clasa}.socCrash`);
+  const soc = cfg(ctx, `investitii.${clasa}.socCrash`);
+  const pCrash = cfg(ctx, 'investitii.probabilitateCrashAnual');
+  const tendinta = (Math.log(1 + mu) - pCrash * Math.log(1 + soc)) / 12;
+  let factor = Math.exp(tendinta + (sigma / Math.sqrt(12)) * z);
+  if (crash) factor *= 1 + soc;
   return factor;
 }
 

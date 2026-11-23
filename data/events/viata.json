@@ -1,0 +1,521 @@
+{
+  "evenimente": [
+    {
+      "id": "mutare",
+      "titlu": "Te muți?",
+      "faza": [2, 3, 4, 5],
+      "conditii": { "varstaMin": 22, "locuinta": ["acasa"], "jobProgram": ["full-time"], "lipsaFlag": ["amanat_mutarea"] },
+      "pondere": 4,
+      "cooldownLuni": 12,
+      "checkpoint": true,
+      "variabile": { "garantieSingur": 4000, "garantieColegi": 1000 },
+      "text": "Ai salariu, dar dormi tot în camera din copilărie. Te gândești să te muți.",
+      "alegeri": [
+        {
+          "id": "singur",
+          "eticheta": "Închiriez o garsonieră doar pentru mine",
+          "cere": {
+            "baniMin": "{garantieSingur}",
+            "motiv": "N-ai {garantieSingur} lei pentru garanție și prima chirie."
+          },
+          "efecte": { "numerar": "-{garantieSingur}", "fericire": 10 },
+          "situatie": { "locuinta": "chirieSingur" },
+          "concepte": ["garantie-chirie"],
+          "lectie": "Independența costă: chirie, utilități, garanție. Pune-le în buget înainte să semnezi contractul.",
+          "jurnal": "Te-ai mutat singur, într-o garsonieră."
+        },
+        {
+          "id": "colegi",
+          "eticheta": "O cameră într-un apartament cu colegi",
+          "cere": { "baniMin": "{garantieColegi}", "motiv": "N-ai {garantieColegi} lei pentru garanție." },
+          "efecte": { "numerar": "-{garantieColegi}", "fericire": 5, "retea": 5 },
+          "situatie": { "locuinta": "chirieColegi" },
+          "concepte": ["garantie-chirie"],
+          "lectie": "Cu colegi plătești cam jumătate. Contează doar să vă înțelegeți la facturi.",
+          "jurnal": "Te-ai mutat într-un apartament cu colegi."
+        },
+        {
+          "id": "raman",
+          "eticheta": "Mai stau acasă și strâng bani",
+          "efecte": { "fericire": -2 },
+          "flaguri": ["amanat_mutarea:12"],
+          "lectie": "Acasă economisești mult. Dar spațiul și liniștea ta au și ele un preț, care crește cu vârsta."
+        }
+      ]
+    },
+    {
+      "id": "parinti-contributie",
+      "titlu": "Vorba de la masă",
+      "faza": [3, 4, 5],
+      "conditii": {
+        "varstaMin": 25,
+        "locuinta": ["acasa"],
+        "jobProgram": ["full-time"],
+        "lipsaFlag": ["contributie_extra"]
+      },
+      "pondere": 5,
+      "maxAparitii": 1,
+      "variabile": { "suma": 700 },
+      "text": "Părinții, la masă: „Câștigi bine acum. Ar fi corect să pui și tu mai mult la cheltuielile casei.”",
+      "alegeri": [
+        {
+          "id": "contribui",
+          "eticheta": "Contribui cu {suma} lei în plus pe lună",
+          "recurente": [
+            {
+              "tip": "cheltuiala",
+              "suma": "{suma}",
+              "eticheta": "Contribuție la casa părinților",
+              "locuinta": "acasa"
+            }
+          ],
+          "flaguri": ["contributie_extra"],
+          "efecte": { "retea": 5 },
+          "lectie": "Tot mai puțin decât o chirie, dar nu mai e „gratis”. Ăsta e costul real al traiului acasă.",
+          "jurnal": "Ai început să contribui mai mult la casa părinților."
+        },
+        {
+          "id": "mut",
+          "eticheta": "Le spun că mă mut",
+          "efecte": { "retea": 2 },
+          "urmari": [{ "eveniment": "mutare", "dupaLuni": 0 }]
+        },
+        {
+          "id": "refuz",
+          "eticheta": "Le explic că nu pot",
+          "efecte": { "retea": -10, "fericire": -5 },
+          "flaguri": ["contributie_extra"],
+          "jurnal": "Atmosfera de acasă s-a răcit."
+        }
+      ]
+    },
+    {
+      "id": "lipsa-spatiu",
+      "titlu": "Prea mulți într-o casă",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 26, "locuinta": ["acasa"] },
+      "pondere": 3,
+      "cooldownLuni": 24,
+      "text": "Fratele tău s-a mutat înapoi acasă. Acum împărțiți camera, iar seara n-ai unde să stai liniștit.",
+      "alegeri": [
+        { "id": "rezist", "eticheta": "Rezist, e temporar", "efecte": { "fericire": -6, "energie": -3 } },
+        {
+          "id": "caut",
+          "eticheta": "Încep să caut chirie",
+          "stergeFlaguri": ["amanat_mutarea"],
+          "urmari": [{ "eveniment": "mutare", "dupaLuni": 0 }]
+        }
+      ]
+    },
+    {
+      "id": "salariu-mare",
+      "titlu": "Toți colegii o fac",
+      "faza": [3, 4, 5],
+      "conditii": { "jobProgram": ["full-time"], "stilViata": ["modest", "confortabil"], "lipsaFlag": ["stil_recent"] },
+      "pondere": 4,
+      "cooldownLuni": 24,
+      "text": "Colegii merg zilnic la restaurant, își iau haine noi și comandă taxi. Salariul tău ar permite și ție.",
+      "alegeri": [
+        {
+          "id": "upgrade",
+          "eticheta": "Merit: trec la un stil mai bun",
+          "stilViata": 1,
+          "flaguri": ["stil_recent:24"],
+          "etichete": ["stilSus"],
+          "concepte": ["stil-de-viata"],
+          "lectie": "Bucuria lucrurilor noi trece în câteva luni, cheltuiala rămâne în fiecare lună. Asta e adaptarea hedonică."
+        },
+        {
+          "id": "ocazii",
+          "eticheta": "Doar la ocazii, restul pun deoparte",
+          "efecte": { "fericire": 3 },
+          "flaguri": ["stil_recent:24"],
+          "etichete": ["stilJos"],
+          "concepte": ["stil-de-viata"],
+          "lectie": "Ai lăsat economiile să crească, nu cheltuielile. Diferența, pusă deoparte lună de lună, se adună."
+        }
+      ]
+    },
+    {
+      "id": "reducere-stil",
+      "titlu": "Unde se duc banii?",
+      "faza": [2, 3, 4, 5],
+      "conditii": { "stilViata": ["confortabil", "lux"], "stat": { "bani": { "max": 40 } } },
+      "pondere": 4,
+      "cooldownLuni": 18,
+      "text": "Te uiți pe extrasul de cont: jumătate din salariu pleacă pe ieșiri, livrări și haine. Iar luna asta nu ajung banii.",
+      "alegeri": [
+        {
+          "id": "tai",
+          "eticheta": "Tai din cheltuieli",
+          "stilViata": -1,
+          "etichete": ["stilJos"],
+          "concepte": ["stil-de-viata"],
+          "lectie": "Primele luni sunt grele, apoi te obișnuiești. Adaptarea merge în ambele sensuri."
+        },
+        {
+          "id": "las",
+          "eticheta": "Las așa, trăiesc o singură dată",
+          "efecte": { "fericire": 2 },
+          "etichete": ["stilSus"],
+          "lectie": "Dacă cheltuiești mai mult decât câștigi, diferența o plătești mai târziu, cu dobândă."
+        }
+      ]
+    },
+    {
+      "id": "telefon-rate",
+      "titlu": "Telefonul cel nou",
+      "faza": [1, 2, 3, 4],
+      "conditii": { "lipsaFlag": ["telefon_nou"] },
+      "pondere": 3,
+      "cooldownLuni": 36,
+      "variabile": { "pret": 5000 },
+      "text": "A apărut noul telefon: {pret} lei. Magazinul îl dă „în 24 de rate fără dobândă”.",
+      "alegeri": [
+        {
+          "id": "rate",
+          "eticheta": "Îl iau în 24 de rate",
+          "produsNou": {
+            "tip": "credit",
+            "furnizor": "magazin",
+            "suma": "{pret}",
+            "dae": "config:rateMagazin.dae",
+            "luni": 24
+          },
+          "efecte": { "numerar": "-{pret}", "fericire": 8 },
+          "flaguri": ["telefon_nou:36"],
+          "etichete": ["rate"],
+          "concepte": ["rate-fara-dobanda"],
+          "lectie": "Fără dobândă nu înseamnă gratis: ai legat 2 ani din buget de un telefon. Și dacă întârzii o rată, apar penalitățile.",
+          "jurnal": "Ți-ai luat telefonul nou, în 24 de rate."
+        },
+        {
+          "id": "cash",
+          "eticheta": "Îl plătesc pe loc",
+          "cere": { "baniMin": "{pret}" },
+          "efecte": { "numerar": "-{pret}", "fericire": 8 },
+          "flaguri": ["telefon_nou:36"],
+          "etichete": ["stilSus"],
+          "lectie": "Fără rate, fără griji. Dar uită-te cât din economii a plecat pe un obiect care se învechește în 2 ani.",
+          "jurnal": "Ți-ai luat telefonul nou, cash."
+        },
+        {
+          "id": "pastrez",
+          "eticheta": "Al meu merge foarte bine",
+          "efecte": { "fericire": -2 },
+          "flaguri": ["telefon_nou:12"],
+          "lectie": "Un telefon de 2 ani face aproape tot ce face unul nou. Diferența de preț rămâne la tine."
+        }
+      ]
+    },
+    {
+      "id": "bnpl",
+      "titlu": "Plătești mai târziu?",
+      "faza": [1, 2, 3, 4],
+      "pondere": 3,
+      "cooldownLuni": 18,
+      "variabile": { "suma": 1200 },
+      "text": "Ai haine de {suma} lei în coș. La plată: „Cumpără acum, plătește în 4 rate, fără dobândă”.",
+      "alegeri": [
+        {
+          "id": "rate",
+          "eticheta": "Plătesc în 4 rate",
+          "produsNou": { "tip": "credit", "furnizor": "bnpl", "suma": "{suma}", "dae": "config:bnpl.dae", "luni": 4 },
+          "efecte": { "numerar": "-{suma}", "fericire": 5 },
+          "etichete": ["rate"],
+          "concepte": ["bnpl"],
+          "lectie": "BNPL face orice cumpărătură să pară mică. Patru rate mici la patru magazine fac o rată mare.",
+          "jurnal": "Ai cumpărat haine cu „plătește mai târziu”."
+        },
+        {
+          "id": "cash",
+          "eticheta": "Le iau doar dacă am banii acum",
+          "cere": { "baniMin": "{suma}" },
+          "efecte": { "numerar": "-{suma}", "fericire": 4 },
+          "etichete": ["stilSus"]
+        },
+        {
+          "id": "golesc",
+          "eticheta": "Golesc coșul",
+          "efecte": { "fericire": -1 },
+          "concepte": ["bnpl"],
+          "lectie": "Regula de 48 de ore: dacă după două zile încă vrei lucrul ăla, abia atunci îl cumperi."
+        }
+      ]
+    },
+    {
+      "id": "abonamente",
+      "titlu": "Abonamentele uitate",
+      "faza": [2, 3, 4, 5],
+      "pondere": 3,
+      "maxAparitii": 2,
+      "cooldownLuni": 36,
+      "variabile": { "suma": 120 },
+      "text": "Pe extras: streaming, muzică și o aplicație de fitness pe care n-ai mai deschis-o din martie. În total, {suma} lei pe lună.",
+      "alegeri": [
+        {
+          "id": "las",
+          "eticheta": "Le las, sunt bani mărunți",
+          "recurente": [{ "tip": "cheltuiala", "suma": "{suma}", "eticheta": "Abonamente" }],
+          "etichete": ["stilSus"],
+          "concepte": ["abonamente"],
+          "lectie": "Puțin pe lună înseamnă mult pe an. Verifică-ți extrasul măcar o dată pe lună."
+        },
+        {
+          "id": "tai",
+          "eticheta": "Le anulez pe cele pe care nu le folosesc",
+          "efecte": { "fericire": -1 },
+          "concepte": ["abonamente"],
+          "lectie": "Ai tăiat o cheltuială care se repeta lunar. Asta valorează mai mult decât o reducere de o singură dată."
+        }
+      ]
+    },
+    {
+      "id": "crypto-hype",
+      "titlu": "Moneda care face x3",
+      "faza": [2, 3, 4, 5],
+      "pondere": 3,
+      "cooldownLuni": 36,
+      "variabile": { "mult": 3000, "putin": 300 },
+      "text": "Un coleg îți arată telefonul: „Am făcut x3 în două luni pe o monedă nouă. Mai e timp, intră și tu!”",
+      "alegeri": [
+        {
+          "id": "mult",
+          "eticheta": "Bag {mult} lei",
+          "cere": { "baniMin": "{mult}" },
+          "produsNou": { "tip": "investitie", "clasa": "crypto", "suma": "{mult}" },
+          "etichete": ["investitieRiscanta"],
+          "concepte": ["risc-randament"],
+          "lectie": "Ce poate crește de 3 ori poate și să scadă cu 70%. Investește doar ce-ți permiți să pierzi.",
+          "jurnal": "Ai cumpărat crypto de {mult} lei."
+        },
+        {
+          "id": "putin",
+          "eticheta": "Bag doar {putin} lei, cât îmi permit să pierd",
+          "cere": { "baniMin": "{putin}" },
+          "produsNou": { "tip": "investitie", "clasa": "crypto", "suma": "{putin}" },
+          "concepte": ["risc-randament"],
+          "lectie": "O sumă mică, pe care o poți pierde liniștit: așa se încearcă o investiție riscantă.",
+          "jurnal": "Ai cumpărat crypto de {putin} lei, de curiozitate."
+        },
+        {
+          "id": "nu",
+          "eticheta": "Nu mă bag",
+          "concepte": ["risc-randament"],
+          "lectie": "Frica de a rata ocazia (FOMO) e cel mai scump sfat financiar. Când toată lumea intră, de obicei e târziu."
+        }
+      ]
+    },
+    {
+      "id": "pariuri",
+      "titlu": "Pariul pe meci",
+      "faza": [1, 2, 3, 4, 5],
+      "pondere": 3,
+      "cooldownLuni": 24,
+      "variabile": { "miza": 100 },
+      "text": "Gașca pariază pe meciul de diseară. „Pune și tu {miza} lei, e cotă mare!”",
+      "alegeri": [
+        {
+          "id": "pariez",
+          "eticheta": "Pun {miza} lei",
+          "cere": { "baniMin": "{miza}" },
+          "etichete": ["pariu"],
+          "rezultate": [
+            {
+              "pondere": 4,
+              "efecte": { "numerar": "-{miza}", "fericire": -3 },
+              "concepte": ["pariuri"],
+              "lectie": "Casele de pariuri câștigă pe termen lung: cotele sunt calculate exact pentru asta.",
+              "jurnal": "Ai pierdut pariul de {miza} lei."
+            },
+            {
+              "pondere": 3,
+              "efecte": { "numerar": "{miza}", "fericire": 5 },
+              "flaguri": ["pariuri_castig:6"],
+              "urmari": [{ "eveniment": "pariuri-escaladare", "dupaLuni": 2 }],
+              "concepte": ["pariuri"],
+              "lectie": "Ai câștigat, și tocmai asta e capcana: un câștig la început te face să crezi că ai „mână bună”.",
+              "jurnal": "Ai câștigat pariul! Gașca zice că ai mână bună."
+            }
+          ]
+        },
+        {
+          "id": "nu",
+          "eticheta": "Mă uit la meci fără pariu",
+          "concepte": ["pariuri"],
+          "lectie": "Meciul e la fel de bun și fără bani pe el."
+        }
+      ]
+    },
+    {
+      "id": "pariuri-escaladare",
+      "titlu": "Încă unul, mai mare",
+      "doarUrmare": true,
+      "conditii": { "flag": ["pariuri_castig"] },
+      "variabile": { "miza": 1000 },
+      "text": "După câștigul de data trecută, te gândești: „Dacă puneam mai mult, acum aveam mult mai mulți bani…”",
+      "alegeri": [
+        {
+          "id": "pariez",
+          "eticheta": "Pun {miza} lei de data asta",
+          "cere": { "baniMin": "{miza}" },
+          "etichete": ["pariu"],
+          "stergeFlaguri": ["pariuri_castig"],
+          "rezultate": [
+            {
+              "pondere": 7,
+              "efecte": { "numerar": "-{miza}", "fericire": -10 },
+              "concepte": ["pariuri"],
+              "lectie": "„Recuperez data viitoare” e gândul care transformă un hobby într-o datorie.",
+              "jurnal": "Ai pierdut {miza} lei la pariuri."
+            },
+            {
+              "pondere": 3,
+              "efecte": { "numerar": "{miza}", "fericire": 6 },
+              "concepte": ["pariuri"],
+              "lectie": "Ai câștigat din nou, dar pe termen lung matematica e de partea casei de pariuri.",
+              "jurnal": "Ai câștigat {miza} lei la pariuri."
+            }
+          ]
+        },
+        {
+          "id": "opresc",
+          "eticheta": "Mă opresc cât sunt pe plus",
+          "stergeFlaguri": ["pariuri_castig"],
+          "concepte": ["pariuri"],
+          "lectie": "Cea mai bună strategie la pariuri e să știi când să te oprești. Cel mai bine, înainte să începi."
+        }
+      ]
+    },
+    {
+      "id": "concediere",
+      "titlu": "Restructurare",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 23, "jobProgram": ["full-time"] },
+      "pondere": 2,
+      "cooldownLuni": 60,
+      "checkpoint": true,
+      "variabile": { "compensatie": "stare:salariuNet*2" },
+      "text": "Firma face restructurări și ești pe listă. Primești o compensație de {compensatie} lei. De mâine n-ai job.",
+      "alegeri": [
+        {
+          "id": "caut",
+          "eticheta": "Încep imediat să caut",
+          "job": null,
+          "efecte": { "numerar": "{compensatie}", "fericire": -8 },
+          "flaguri": ["cautare_job:12"],
+          "urmari": [{ "eveniment": "cv-start", "dupaLuni": 1 }],
+          "concepte": ["fond-urgenta"],
+          "lectie": "Exact pentru asta e fondul de urgență: lunile dintre două joburi.",
+          "jurnal": "Ai fost concediat în urma unei restructurări."
+        },
+        {
+          "id": "pauza",
+          "eticheta": "Iau o pauză de două luni",
+          "job": null,
+          "efecte": { "numerar": "{compensatie}", "fericire": 2, "energie": 15 },
+          "flaguri": ["cautare_job:12"],
+          "urmari": [{ "eveniment": "cv-start", "dupaLuni": 3 }],
+          "concepte": ["fond-urgenta"],
+          "lectie": "O pauză poate fi bună, dacă ai din ce trăi. Fără fond de urgență, pauza se plătește cu datorii.",
+          "jurnal": "Ai fost concediat și ți-ai luat o pauză."
+        }
+      ]
+    },
+    {
+      "id": "problema-sanatate",
+      "titlu": "O problemă de sănătate",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 25 },
+      "pondere": 2,
+      "cooldownLuni": 48,
+      "checkpoint": true,
+      "variabile": { "suma": 6000 },
+      "text": "Ai o problemă de sănătate. La stat, programarea e peste 4 luni. La privat, rezolvi săptămâna asta, cu {suma} lei.",
+      "alegeri": [
+        {
+          "id": "din-banii-mei",
+          "eticheta": "Merg la privat, din banii mei",
+          "subalegeri": [
+            {
+              "id": "fond",
+              "eticheta": "Din fondul de urgență",
+              "cere": { "fondUrgentaMin": "{suma}" },
+              "sursaPlata": "fondUrgenta",
+              "efecte": { "numerar": "-{suma}" },
+              "concepte": ["fond-urgenta"],
+              "lectie": "Fondul de urgență a făcut exact ce trebuia. Pune-l la loc în lunile următoare.",
+              "jurnal": "Ai plătit tratamentul din fondul de urgență."
+            },
+            {
+              "id": "cont",
+              "eticheta": "Din contul curent",
+              "cere": { "baniMin": "{suma}" },
+              "efecte": { "numerar": "-{suma}" },
+              "jurnal": "Ai plătit tratamentul din cont."
+            },
+            {
+              "id": "card",
+              "eticheta": "Cu cardul de credit",
+              "cere": { "cardDisponibilMin": "{suma}" },
+              "sursaPlata": "cardCredit",
+              "efecte": { "numerar": "-{suma}" },
+              "urmari": [{ "eveniment": "card-scadenta", "dupaLuni": 1 }],
+              "jurnal": "Ai plătit tratamentul cu cardul de credit."
+            }
+          ]
+        },
+        {
+          "id": "ma-imprumut",
+          "eticheta": "Merg la privat, cu un împrumut",
+          "subalegeri": [
+            {
+              "id": "banca",
+              "eticheta": "Credit de nevoi personale la bancă",
+              "cere": {
+                "ascunse": { "scorCredit": { "min": 45 } },
+                "motiv": "Banca te refuză din cauza istoricului de credit."
+              },
+              "produsNou": {
+                "tip": "credit",
+                "furnizor": "banca",
+                "suma": "{suma}",
+                "dae": "config:creditNevoiPersonale.dae",
+                "luni": 24
+              },
+              "efecte": { "numerar": "-{suma}" },
+              "concepte": ["dae"],
+              "lectie": "Un credit de la bancă e mult mai ieftin decât unul de la IFN, dar îl primești doar cu un istoric curat.",
+              "jurnal": "Ai luat un credit de nevoi personale pentru tratament."
+            },
+            {
+              "id": "ifn",
+              "eticheta": "Credit rapid de la IFN",
+              "produsNou": {
+                "tip": "credit",
+                "furnizor": "ifn",
+                "suma": "{suma}",
+                "dae": "config:ifn.dae",
+                "luni": 12,
+                "laRestanta": "ifn-restanta",
+                "flag": "datorie_ifn"
+              },
+              "efecte": { "numerar": "-{suma}" },
+              "concepte": ["ifn", "dae"],
+              "lectie": "Pe 12 luni, la un IFN, dai înapoi mult mai mult decât ai luat. Compară mereu cu oferta unei bănci.",
+              "jurnal": "Ai luat un credit IFN pentru tratament."
+            }
+          ]
+        },
+        {
+          "id": "astept",
+          "eticheta": "Aștept programarea la stat",
+          "efecte": { "energie": -15, "fericire": -8 },
+          "concepte": ["asigurare-sanatate"],
+          "lectie": "CASS-ul din salariu îți dă dreptul la tratament gratuit la stat. Uneori aștepți, dar nu plătești.",
+          "jurnal": "Ai așteptat programarea la stat. A durat, dar te-ai tratat gratuit."
+        }
+      ]
+    }
+  ]
+}

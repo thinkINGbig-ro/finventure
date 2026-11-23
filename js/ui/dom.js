@@ -24,6 +24,19 @@ export const $ = (sel, rad = document) => rad.querySelector(sel);
 export const lei = (bani) => `${formateazaLei(Math.round(inLei(bani)))} lei`;
 export const leiExact = (bani) => `${formateazaLei(inLei(bani))} lei`;
 
+// 3.200.000 lei -> „3,2 mil. lei”; sub un milion, suma întreagă.
+export function leiMare(bani) {
+  const v = inLei(bani);
+  if (Math.abs(v) >= 1e6) return `${(v / 1e6).toLocaleString('ro-RO', { maximumFractionDigits: 1 })} mil. lei`;
+  return lei(bani);
+}
+
+// „3,2 mil. lei (≈ 980.000 lei de azi)”, când inflația a schimbat vizibil valoarea banilor.
+export function leiCuAzi(bani, indicePreturi) {
+  if (!indicePreturi || indicePreturi < 1.05) return leiMare(bani);
+  return `${leiMare(bani)} (≈ ${leiMare(Math.round(bani / indicePreturi))} de azi)`;
+}
+
 // „18 ani”, „19 ani”, „20 de ani”, „101 ani”: „de” pentru numerele terminate în 20–99 (și 0 > 0).
 export function ani(n) {
   const r = n % 100;

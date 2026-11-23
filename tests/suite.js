@@ -5,7 +5,7 @@ import { actiune, alege, avanseaza, continua, forteazaEveniment, jocNou } from '
 import { lantDecizii, gasesteProdus } from '../js/events.js';
 import { fluturas, baniDisponibili, contCurent, fondUrgenta, pret } from '../js/finance.js';
 import {
-  adaugaCheckpoint, areFlag, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
+  adaugaCheckpoint, areFlag, cheltuieliLunare, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
 } from '../js/state.js';
 import { simuleazaVieti, strategieAleatoare } from '../js/simulare.js';
 import { genereazaOferte, promovareDisponibila, schimbaJob } from '../js/cariera.js';
@@ -229,11 +229,13 @@ function teste(ctxBaza, incarcare) {
 
     'alegeri în doi pași: grupul arată sub-alegerile, cu motive, și cere calea completă'() {
       const { state, ctx } = jocCuJob('grup');
+      state.numerar = 0;
+      contCurent(state).sold = 0; // fără bani: nici „din contul curent” nu merge
       const o = forteazaEveniment(state, ctx, 'urgenta-2000');
       ok(o.alegeri.length <= 4, 'max. 4 pe primul ecran');
       const banii = alegerePeCale(o, 'din-banii-mei');
       ok(banii.grup, '„Din banii mei” e un grup');
-      ok(!banii.disponibil, 'fără fond, depozit sau card: grupul e indisponibil');
+      ok(!banii.disponibil, 'fără bani, fond, depozit sau card: grupul e indisponibil');
       egal(banii.motiv, 'Nicio variantă nu e posibilă acum.', 'motivul grupului');
       egal(alegerePeCale(o, 'din-banii-mei/card').motiv, 'Nu ai card de credit.', 'motivul sub-alegerii rămâne vizibil');
       egal(alegerePeCale(o, 'ma-imprumut/ifn').cale, 'ma-imprumut/ifn', 'calea sub-alegerii');
@@ -441,6 +443,31 @@ function teste(ctxBaza, incarcare) {
       const nou = gasesteProdus(state, 'contractMunca');
       egal(nou.jobId, 'sef-tura', 'noul post');
       ok(nou.brut >= Math.round(brutVechi * 1.1) - 5000, 'salariu cu cel puțin ~10% mai mare');
+    },
+
+    'stilul de viață: costă lunar, iar bucuria se estompează (adaptarea hedonică)'() {
+      const { state, ctx } = jocCuJob('stil');
+      const costModest = cheltuieliLunare(state, ctx);
+      const f0 = state.stat.fericire;
+      ok(actiune(state, ctx, 'stilViata', { nivel: 'lux' }).ok, 'trecerea la lux');
+      ok(cheltuieliLunare(state, ctx) > costModest, 'luxul costă mai mult pe lună');
+      const dupaSalt = state.stat.fericire;
+      ok(dupaSalt > f0, 'bucurie imediată');
+      ruleazaAni(state, ctx, 1, strategieDin({}, primaDisponibila));
+      const ramas = state.stat.fericire - f0;
+      ok(ramas < (dupaSalt - f0) / 2, `efectul s-a estompat (rămas ${ramas.toFixed(1)} din ${(dupaSalt - f0).toFixed(1)})`);
+      ok(actiune(state, ctx, 'stilViata', { nivel: 'modest' }).ok, 'revenirea la modest');
+      ok(state.stat.fericire < 100 && state.stilAnterior === 'lux', 'stilul anterior e reținut pentru rezumat');
+    },
+
+    'contribuția la părinți se oprește când te muți'() {
+      const { state, ctx } = jocCuJob('contributie');
+      forteazaEveniment(state, ctx, 'parinti-contributie');
+      alege(state, ctx, 'contribui');
+      ok(state.recurente.some((r) => r.locuinta === 'acasa'), 'contribuția există');
+      state.situatie.locuinta = 'chirieColegi';
+      ruleazaAni(state, ctx, 1);
+      ok(!state.recurente.some((r) => r.locuinta === 'acasa'), 'contribuția a dispărut după mutare');
     },
 
     'simulare pe profiluri: prudentul o duce mai bine decât riscantul'() {

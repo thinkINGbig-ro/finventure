@@ -63,10 +63,10 @@ async function porneste() {
           await arataMoment(oprire, ctx);
           oprire = continua(state, ctx);
         } else if (oprire.tip === 'rezumat') {
-          await arataRezumat(oprire, state);
+          await arataRezumat(oprire, state, ctx);
           oprire = continua(state, ctx);
         } else if (oprire.tip === 'final') {
-          await arataFinal(oprire, rezumatFinanciar(state, ctx));
+          await arataFinal(oprire, rezumatFinanciar(state, ctx), state.indicePreturi);
           state = incepeDinNou();
           oprire = oprireCurenta(state, ctx);
         } else {

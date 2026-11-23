@@ -125,9 +125,15 @@ export function cereMarire(state, ctx) {
   if (!c) return { succes: false, text: 'N-ai de la cine să ceri o mărire: n-ai job.' };
   if ((c.luniDeLaMarire ?? 0) < p.luniMinimeIntreMariri) return { succes: false, text: 'Ai cerut o mărire de curând. Mai așteaptă.', preaDevreme: true };
   const brutVechi = c.brut;
+  // Peste un anumit nivel față de piață, firma nu mai dă măriri: crești doar prin promovare sau alt job.
+  const plafon = pret(state, ctx, ctx.joburi.get(c.jobId).salariu) * p.maxPestePiata;
+  if (c.brut >= plafon) {
+    c.luniDeLaMarire = 0;
+    return { succes: false, brutVechi, brutNou: brutVechi, peste: true, text: 'Ești deja plătit peste piață pentru postul ăsta. Ca să câștigi mai mult: promovare sau alt job.' };
+  }
   if (aleator(state, R) < sansaMarire(state, ctx)) {
     const crestere = p.cresteMin + aleator(state, R) * (p.cresteMax - p.cresteMin);
-    c.brut = Math.round((c.brut * (1 + crestere)) / 5000) * 5000;
+    c.brut = Math.min(Math.round(plafon / 5000) * 5000, Math.round((c.brut * (1 + crestere)) / 5000) * 5000);
     c.luniDeLaMarire = 0;
     state.ascunse.reputatie = clamp(state.ascunse.reputatie + 2, 0, 100);
     return { succes: true, brutVechi, brutNou: c.brut, text: `Ai primit mărirea: de la ${lei(brutVechi)} la ${lei(c.brut)} lei brut.` };

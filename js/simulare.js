@@ -55,6 +55,10 @@ function trasaturi(def) {
     if ((x.flaguri ?? []).some((f) => f.startsWith('cv_umflat'))) pune('minciuna');
     if (x.cereMarire) pune('marire');
     if (x.promovare) pune('promovare');
+    for (const e of x.etichete ?? []) pune(e);
+    if (typeof x.stilViata === 'number') pune(x.stilViata > 0 ? 'stilSus' : 'stilJos');
+    if (x.situatie?.locuinta === 'chirieSingur') pune('chirieScumpa');
+    if (x.situatie?.locuinta === 'chirieColegi') pune('chirieIeftina');
     if ((x.urmari ?? []).some((u) => u.eveniment === 'cv-start')) pune('cautaJob');
     for (const k of ['viitor', 'skill', 'retea', 'fericire', 'energie', 'reputatie']) {
       const v = x.efecte?.[k];
@@ -118,6 +122,7 @@ function meniuPrudent(state, ctx) {
   if (fondUrgenta(state) >= 6 * lunar && deInvestit > 50000) {
     actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(Math.round(deInvestit * 0.7)) });
   }
+  if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
   cereMarireAnual(state, ctx);
   return cautaJobDacaTrebuie(state, ctx);
 }
@@ -125,6 +130,7 @@ function meniuPrudent(state, ctx) {
 // Riscant: card de credit pe minim cu cumpărăturile pe el, cheltuie aproape tot, nu economisește.
 function meniuRiscant(state, ctx, rnd) {
   asiguraCont(state, ctx);
+  if (areJobFullTime(state, ctx)) actiune(state, ctx, 'stilViata', { nivel: 'lux' });
   let card = gasesteProduse(state, 'cardCredit')[0];
   if (!card) {
     const r = actiune(state, ctx, 'deschide', { tip: 'cardCredit' });
@@ -147,6 +153,7 @@ function meniuAleator(state, ctx, rnd) {
   if (rnd() < 0.3) meniuPrudent(state, ctx);
   if (rnd() < 0.15) meniuRiscant(state, ctx, rnd);
   if (rnd() < 0.3) cereMarireAnual(state, ctx);
+  if (rnd() < 0.15) actiune(state, ctx, 'stilViata', { nivel: ['modest', 'confortabil', 'lux'][Math.floor(rnd() * 3)] });
   return rnd() < 0.5 ? cautaJobDacaTrebuie(state, ctx) : null;
 }
 
@@ -167,6 +174,7 @@ export const PROFILURI = {
       ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, negociaza: 4, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
       fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
       viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15,
+      inselatorie: -15, pariu: -6, stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
     }),
     meniu: meniuPrudent,
   },
@@ -176,6 +184,7 @@ export const PROFILURI = {
     alege: alegePrinScor({
       ifn: 8, credit: 3, negru: 6, cim: -2, cardMinim: 6, cardIntegral: -4, ramburseaza: -5, fond: -4, card: 4, studii: -3,
       minciuna: 5, marire: -1, cautaJob: 1, ignora: 4, fericire: 0.4, viitor: -0.3, energie: 0.1,
+      inselatorie: 3, pariu: 6, stilSus: 6, stilJos: -4, rate: 5, investitieRiscanta: 6, chirieScumpa: 3,
     }),
     meniu: meniuRiscant,
   },
@@ -204,13 +213,19 @@ export function simuleazaViata(ctx, seed, profil = PROFILURI.aleator, { aniMax =
       }
     }
   };
+  let primulSalariu = null; // primul salariu full-time: { brut, luna, indice }
+  const noteazaSalariu = () => {
+    const c = contractCurent(state);
+    if (!primulSalariu && c && areJobFullTime(state, ctx)) primulSalariu = { brut: c.brut, luna: state.luna, indice: state.indicePreturi };
+  };
   consuma(avanseaza(state, ctx));
   for (let an = 0; an < aniMax && !state.final; an++) {
     consuma(profil.meniu(state, ctx, rnd)); // acțiunile din meniuri pot deschide un card (ex. CV-ul)
     consuma(avanseaza(state, ctx));
+    noteazaSalariu();
     laSfarsitDeAn?.(state);
   }
-  return { state, alese };
+  return { state, alese, primulSalariu };
 }
 
 export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator', aniMax = 60, laSfarsitDeAn } = {}) {
@@ -219,11 +234,24 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
   const cauze = {};
   const varste = { toate: [], gameOver: [] };
   const averi = [];
+  const averiAzi = [];
+  const medii = { inflatie: [], etf: [], salariu: [], salariuReal: [] };
   const aparitii = Object.fromEntries([...ctx.evenimente.keys()].map((id) => [id, 0]));
   const alegeriVazute = new Set();
 
   for (let i = 0; i < n; i++) {
-    const { state, alese } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn });
+    const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn });
+    const ani = state.luna / 12;
+    if (ani >= 5) {
+      medii.inflatie.push(Math.pow(state.indicePreturi, 1 / ani) - 1);
+      medii.etf.push(Math.pow(state.piete.etf / 100, 1 / ani) - 1);
+      const c = contractCurent(state);
+      const aniSalariu = primulSalariu ? (state.luna - primulSalariu.luna) / 12 : 0;
+      if (c && aniSalariu >= 5) {
+        medii.salariu.push(Math.pow(c.brut / primulSalariu.brut, 1 / aniSalariu) - 1);
+        medii.salariuReal.push(Math.pow((c.brut / state.indicePreturi) / (primulSalariu.brut / primulSalariu.indice), 1 / aniSalariu) - 1);
+      }
+    }
     alese.forEach((a) => alegeriVazute.add(a));
     for (const [id, luni] of Object.entries(state.istoricEvenimente)) aparitii[id] += luni.length;
 
@@ -232,6 +260,7 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     const varsta = varstaLa(state.final?.luna ?? state.luna);
     varste.toate.push(varsta);
     averi.push(inLei(avereNeta(state)));
+    averiAzi.push(inLei(avereNeta(state)) / state.indicePreturi);
     if (motiv !== 'pensie' && motiv !== 'neterminat') {
       varste.gameOver.push(varsta);
       const lant = state.final.cauza ? lantDecizii(state, state.final.cauza) : [];
@@ -258,6 +287,8 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     varstaMedie: medie(varste.toate),
     varstaMedieGameOver: medie(varste.gameOver),
     avereMediana: mediana(averi),
+    avereMedianaAzi: mediana(averiAzi),
+    mediiAnuale: Object.fromEntries(Object.entries(medii).map(([k, xs]) => [k, xs.length ? Math.round((xs.reduce((s, x) => s + x, 0) / xs.length) * 10000) / 100 : null])),
     cauzeGameOver: Object.entries(cauze).sort((a, b) => b[1] - a[1]),
     evenimenteNeaparute: Object.entries(aparitii).filter(([, k]) => k === 0).map(([id]) => id),
     alegeriNealese: toateAlegerile.filter((a) => !alegeriVazute.has(a)),
@@ -277,14 +308,24 @@ function mediana(xs) {
 const NUME_FINALURI = { pensie: 'pensie (65 de ani)', faliment: 'faliment personal', burnout: 'burnout', renuntare: 'renunțare', neterminat: 'neterminat' };
 const ORDINE_FINALURI = ['pensie', 'faliment', 'burnout', 'renuntare', 'neterminat'];
 
+// 3.200.000 -> „3,2 mil. lei”, 980.000 -> „980.000 lei”
+export function sumaMare(lei) {
+  if (lei == null) return '-';
+  if (Math.abs(lei) >= 1e6) return `${(lei / 1e6).toLocaleString('ro-RO', { maximumFractionDigits: 1 })} mil. lei`;
+  return `${Math.round(lei).toLocaleString('ro-RO')} lei`;
+}
+
 export function formateazaRaport(rapoarte) {
   const lista = Array.isArray(rapoarte) ? rapoarte : [rapoarte];
   const pct = (r, m) => `${(r.procente[m] ?? 0).toFixed(1)}%`;
   const linii = [
     `Simulare: ${lista.map((r) => `${r.n} × ${r.profil}`).join(', ')}`,
     '',
-    `${'Profil'.padEnd(10)}${ORDINE_FINALURI.slice(0, 4).map((m) => m.padStart(11)).join('')}   vârsta medie   avere mediană`,
-    ...lista.map((r) => `${r.profil.padEnd(10)}${ORDINE_FINALURI.slice(0, 4).map((m) => pct(r, m).padStart(11)).join('')}   ${String(r.varstaMedie).padStart(12)}   ${(r.avereMediana ?? 0).toLocaleString('ro-RO').padStart(13)} lei`),
+    `${'Profil'.padEnd(10)}${ORDINE_FINALURI.slice(0, 4).map((m) => m.padStart(11)).join('')}   vârsta medie   avere mediană (în lei de azi)`,
+    ...lista.map((r) => `${r.profil.padEnd(10)}${ORDINE_FINALURI.slice(0, 4).map((m) => pct(r, m).padStart(11)).join('')}   ${String(r.varstaMedie).padStart(12)}   ${sumaMare(r.avereMediana)} (≈ ${sumaMare(r.avereMedianaAzi)} de azi)`),
+    '',
+    'Medii anuale (pe viață): inflație / randament ETF / salariu nominal / salariu real',
+    ...lista.map((r) => `${r.profil.padEnd(10)}${['inflatie', 'etf', 'salariu', 'salariuReal'].map((k) => `${r.mediiAnuale[k] ?? '-'}%`.padStart(9)).join('   ')}`),
   ];
   for (const r of lista) {
     linii.push('', `── ${r.profil}: ${r.descriere}`,
@@ -312,6 +353,8 @@ export function raportJson(rapoarte, extra = {}) {
       varstaMedie: r.varstaMedie,
       varstaMedieGameOver: r.varstaMedieGameOver,
       avereMedianaLei: r.avereMediana,
+      avereMedianaLeiDeAzi: r.avereMedianaAzi,
+      mediiAnualeProcent: r.mediiAnuale,
       cauzeGameOver: r.cauzeGameOver.slice(0, 10).map(([cauza, numar]) => ({ cauza, numar })),
     }])),
   };

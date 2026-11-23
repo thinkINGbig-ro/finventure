@@ -3,10 +3,10 @@
 import { bal, clamp, dupaCale, formateazaLei, inBani, inLei, varstaLa } from './util.js';
 import { aleator, alegePonderat, intreg, sansa } from './rng.js';
 import {
-  baniDisponibili, cardDisponibil, contCurent, creeazaProdus, datorieProdus, fondUrgenta,
+  baniDisponibili, cardDisponibil, fluturas, contCurent, creeazaProdus, datorieProdus, fondUrgenta,
   incaseaza, plataMinimaCard, plateste, pret, valoareProdus, valoareVanzare,
 } from './finance.js';
-import { actualizeazaDerivate, adaugaJurnal, areFlag, seteazaFlag } from './state.js';
+import { actualizeazaDerivate, adaugaJurnal, areFlag, schimbaStil, seteazaFlag } from './state.js';
 import {
   areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
 } from './cariera.js';
@@ -33,6 +33,10 @@ const STARE = {
   fondUrgenta: (s) => fondUrgenta(s),
   datorie: (s, sel) => (gasesteProdus(s, sel) ? datorieProdus(gasesteProdus(s, sel)) : 0),
   restanta: (s, sel) => gasesteProdus(s, sel)?.restanta ?? 0,
+  salariuNet: (s, _sel, ctx) => {
+    const c = s.produse.find((p) => p.tip === 'contractMunca');
+    return c ? fluturas(c.brut, c.contract, ctx).net : 0;
+  },
   datorieFacturi: (s) => gasesteProduse(s, 'factura').reduce((t, f) => t + f.restanta, 0),
   soldCard: (s) => gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0,
   minimCard: (s, _sel, ctx) => plataMinimaCard(gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0, ctx),
@@ -147,6 +151,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     areOferta: (n) => vars[`brut${n}`] != null || 'CV-ul n-a convins destui angajatori pentru încă o ofertă.',
     jobProgram: (lista) => lista.includes(jobCurent(state, ctx)?.program ?? 'niciunul') || 'Nu se potrivește cu programul tău de lucru.',
     inStudii: (da) => !!state.situatie.studii === da || (da ? 'Nu ești la studii.' : 'Încă ești la studii.'),
+    stilViata: (lista) => lista.includes(state.stilViata) || 'Nu se potrivește cu stilul tău de viață.',
     promovareDisponibila: (da) => promovareDisponibila(state, ctx) === da || 'Nu e momentul pentru o promovare.',
     sau: (variante) => variante.some((c) => motivNeindeplinire(c, state, ctx, vars) == null) || 'Nu e cazul acum.',
   };
@@ -269,7 +274,7 @@ export function areUrmareScadenta(state) {
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -341,8 +346,9 @@ function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   const mesajeCariera = aplicaCariera(state, ctx, p, oprire, idDecizie);
   if (p.situatie) aplicaSituatie(state, ctx, p.situatie, idDecizie);
   for (const r of p.recurente ?? []) {
-    state.recurente.push({ tip: r.tip, suma: inBani(val(r.suma)), luniRamase: r.luni ?? null, eticheta: r.eticheta, cauza: idDecizie });
+    state.recurente.push({ tip: r.tip, suma: inBani(val(r.suma)), luniRamase: r.luni ?? null, eticheta: r.eticheta, locuinta: r.locuinta ?? null, cauza: idDecizie });
   }
+  if (p.stilViata !== undefined) schimbaStil(state, ctx, p.stilViata);
   for (const f of p.flaguri ?? []) seteazaFlag(state, f);
   for (const f of p.stergeFlaguri ?? []) delete state.flaguri[f];
   for (const u of p.urmari ?? []) programeazaUrmare(state, ctx, u, idDecizie, vars);

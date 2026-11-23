@@ -1,0 +1,87 @@
+{
+  "evenimente": [
+    {
+      "id": "phishing-colet",
+      "titlu": "Coletul blocat",
+      "faza": [1, 2, 3, 4, 5],
+      "conditii": { "areProdus": ["contCurent"] },
+      "pondere": 3,
+      "cooldownLuni": 36,
+      "variabile": { "pierdere": "stare:bani*0.5" },
+      "text": "SMS: „Coletul dvs. este blocat în depozit. Plătiți taxa de 2,99 lei aici: posta-colet-ro.xyz”",
+      "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "Plătesc, sunt doar 2,99 lei",
+          "etichete": ["inselatorie"],
+          "efecte": { "numerar": "-{pierdere}", "fericire": -10 },
+          "concepte": ["phishing"],
+          "lectie": "Site-ul fals ți-a luat datele cardului și ți-a golit contul. Datele cardului nu se pun niciodată în link-uri primite prin SMS.",
+          "jurnal": "Ai căzut în plasa unui SMS fals: au dispărut {pierdere} lei din cont."
+        },
+        {
+          "id": "verific",
+          "eticheta": "Verific direct pe site-ul curierului",
+          "concepte": ["phishing"],
+          "lectie": "Nu exista niciun colet. Ai evitat o țeapă clasică: adresa site-ului nu era a curierului."
+        }
+      ]
+    },
+    {
+      "id": "job-avans",
+      "titlu": "Job de acasă, 6.000 lei",
+      "faza": [1, 2, 3],
+      "conditii": { "jobProgram": ["niciunul", "part-time"] },
+      "pondere": 3,
+      "maxAparitii": 1,
+      "variabile": { "taxa": 500 },
+      "text": "Anunț: „Muncă de acasă, 6.000 lei pe lună, fără experiență. Plătești doar {taxa} lei pentru kitul de start.”",
+      "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "Plătesc kitul",
+          "cere": { "baniMin": "{taxa}" },
+          "etichete": ["inselatorie"],
+          "efecte": { "numerar": "-{taxa}", "fericire": -8 },
+          "concepte": ["inselatorii"],
+          "lectie": "Un angajator adevărat nu-ți cere bani ca să te angajeze. Kitul n-a venit niciodată.",
+          "jurnal": "Ai plătit {taxa} lei pentru un „job de acasă” care nu exista."
+        },
+        {
+          "id": "tepa",
+          "eticheta": "E o țeapă, trec mai departe",
+          "concepte": ["inselatorii"],
+          "lectie": "Bine văzut: când tu plătești ca să fii angajat, e aproape sigur o înșelătorie."
+        }
+      ]
+    },
+    {
+      "id": "investitie-garantata",
+      "titlu": "Randament garantat",
+      "faza": [2, 3, 4, 5],
+      "conditii": { "varstaMin": 20 },
+      "pondere": 2,
+      "maxAparitii": 1,
+      "variabile": { "suma": 5000 },
+      "text": "Un „consultant” pe Instagram: „Randament garantat de 10% pe lună. Ai {suma} lei? Îi dublezi în 8 luni.”",
+      "alegeri": [
+        {
+          "id": "trimit",
+          "eticheta": "Trimit {suma} lei",
+          "cere": { "baniMin": "{suma}" },
+          "etichete": ["inselatorie"],
+          "efecte": { "numerar": "-{suma}", "fericire": -15 },
+          "concepte": ["inselatorii", "risc-randament"],
+          "lectie": "Nimeni nu poate garanta 10% pe lună. Un randament mare și „garantat” e semnul clasic al unei scheme Ponzi.",
+          "jurnal": "„Consultantul” a dispărut, cu {suma} lei de-ai tăi cu tot."
+        },
+        {
+          "id": "raportez",
+          "eticheta": "Raportez contul și trec mai departe",
+          "concepte": ["inselatorii"],
+          "lectie": "Randament mare + „garantat” + grabă = înșelătorie. Investițiile reale vin cu riscuri scrise negru pe alb."
+        }
+      ]
+    }
+  ]
+}

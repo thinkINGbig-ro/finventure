@@ -16,7 +16,6 @@ const TITLURI = {
 const IN_CURAND = {
   investitii: 'Aici vei putea cumpăra ETF-uri, acțiuni, titluri de stat, aur sau crypto și vei vedea cum crește (sau scade) portofoliul.',
   educatie: 'Aici vei putea urma cursuri, un master sau o calificare nouă.',
-  cumparaturi: 'Aici vei putea cumpăra telefon, mașină sau casă: cash, în rate sau cu credit.',
 };
 
 // optiuni: { state, ctx, conceptGlobale: string[], laSchimbare: () => void }
@@ -35,6 +34,7 @@ function continutPanou(tab, o, reranda) {
   if (tab === 'banca') return panouBanca(o, reranda);
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
   if (tab === 'cariera') return panouCariera(o, reranda);
+  if (tab === 'cumparaturi') return panouCumparaturi(o, reranda);
   return [h('p', {}, IN_CURAND[tab]), h('p', { class: 'mic' }, 'Vine în curând.')];
 }
 
@@ -216,6 +216,31 @@ function panouCariera({ state, ctx, laSchimbare, laOprire }, reranda) {
     },
   }, 'Îmi fac CV-ul')));
   return sectiuni;
+}
+
+// ---------- Cumpărături: stilul de viață ----------
+
+function panouCumparaturi({ state, ctx, laSchimbare }, reranda) {
+  const niveluri = ctx.balans.stilViata.niveluri;
+  const baza = Math.round(cfg(ctx, 'costTrai.mancareTransport') * state.indicePreturi * 100);
+  const mesaj = h('p', { class: 'mesaj-actiune', role: 'status' });
+  return [
+    mesaj,
+    h('h3', { class: 'sectiune-titlu' }, 'Stilul tău de viață'),
+    h('p', { class: 'mic' }, 'Cât cheltui lunar pe mâncare, ieșiri, haine și transport. Un stil mai bun te bucură câteva luni, apoi te obișnuiești cu el. Cheltuiala însă rămâne.'),
+    h('div', { class: 'nivel-stil' }, niveluri.map((n) => h('button', {
+      type: 'button', class: 'btn btn-secundar', 'aria-pressed': String(n.id === state.stilViata),
+      onclick: () => {
+        const r = actiune(state, ctx, 'stilViata', { nivel: n.id });
+        laSchimbare();
+        reranda();
+        const m = document.querySelector('.panou .mesaj-actiune');
+        m.textContent = r.ok ? (r.sus ? 'Te bucuri de noul stil. O să te obișnuiești repede cu el.' : 'Primele luni o să fie mai greu, apoi te obișnuiești.') : r.mesaj;
+        m.className = `mesaj-actiune ${r.ok ? 'ok' : 'eroare'}`;
+      },
+    }, n.nume, h('span', { class: 'mic' }, `~${lei(Math.round(baza * n.multiplicator))} pe lună`)))),
+    h('p', { class: 'mic' }, 'Telefoane, mașini și alte cumpărături mari vin curând.'),
+  ];
 }
 
 // ---------- Enciclopedie ----------

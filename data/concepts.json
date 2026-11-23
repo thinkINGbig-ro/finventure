@@ -113,8 +113,58 @@
     },
     {
       "id": "puterea-de-cumparare",
-      "titlu": "Puterea de cumpărare",
-      "text": "Puterea de cumpărare arată câte lucruri îți permiți cu banii tăi. Dacă prețurile cresc cu 5% pe an și salariul cu 2%, de fapt câștigi mai puțin în fiecare an. De aceea contează măririle și schimbarea jobului. Exemplu: cu 3.000 lei net azi și o inflație de 5%, peste 5 ani îți trebuie aproximativ 3.830 lei ca să cumperi aceleași lucruri."
+      "titlu": "Inflația și puterea de cumpărare",
+      "text": "Inflația înseamnă că prețurile cresc în timp, așa că aceeași sumă cumpără tot mai puțin. Puterea de cumpărare arată câte lucruri îți permiți cu banii tăi. Dacă prețurile cresc cu 5% pe an și salariul cu 2%, de fapt câștigi mai puțin în fiecare an. De aceea contează măririle, investițiile și sumele exprimate „în lei de azi”. Exemplu: cu 3.000 lei azi și o inflație de 5%, peste 5 ani îți trebuie aproximativ 3.830 lei ca să cumperi aceleași lucruri."
+    },
+    {
+      "id": "stil-de-viata",
+      "titlu": "Stilul de viață și adaptarea hedonică",
+      "text": "Când câștigi mai mult, e tentant să cheltui mai mult: restaurante, haine, taxiuri. Bucuria noului stil trece în câteva luni (adaptarea hedonică), dar cheltuiala rămâne în fiecare lună. Așa ajungi să câștigi dublu și să nu-ți rămână nimic. Exemplu: dacă din 2.000 lei de mărire pui deoparte jumătate, ai 12.000 lei în plus pe an, iar viața ți se schimbă aproape la fel de mult."
+    },
+    {
+      "id": "garantie-chirie",
+      "titlu": "Garanția la chirie",
+      "text": "Când închiriezi, proprietarul îți cere de obicei o garanție (1–2 chirii) plus prima lună în avans. Garanția îți revine la mutare, dacă nu ai stricat nimic și ai plătit tot. Citește contractul: durata, preavizul, cine plătește reparațiile. Exemplu: la o chirie de 2.000 lei, ai nevoie de 4.000–6.000 lei doar ca să intri în casă."
+    },
+    {
+      "id": "rate-fara-dobanda",
+      "titlu": "Rate fără dobândă",
+      "text": "Magazinele oferă „rate fără dobândă” ca să cumperi mai scump decât ți-ai permite pe loc. Nu plătești dobândă, dar îți legi o parte din buget pentru luni sau ani. Dacă întârzii, apar penalități, iar uneori există comisioane ascunse. Exemplu: un telefon de 5.000 lei în 24 de rate înseamnă cam 210 lei pe lună timp de doi ani."
+    },
+    {
+      "id": "bnpl",
+      "titlu": "Cumpără acum, plătește mai târziu (BNPL)",
+      "text": "BNPL împarte o cumpărătură în câteva rate mici, de obicei fără dobândă dacă plătești la timp. Pericolul e că fiecare cumpărătură pare mică, iar ratele de la mai multe magazine se adună. Întârzierile aduc penalități și pot ajunge la Biroul de Credit. Exemplu: 4 cumpărături de câte 1.200 lei în 4 rate înseamnă 1.200 lei de plătit lunar."
+    },
+    {
+      "id": "abonamente",
+      "titlu": "Abonamentele și cheltuielile recurente",
+      "text": "Cheltuielile care se repetă lunar sunt cele mai ușor de uitat: streaming, aplicații, sală. Una singură pare nimic, dar împreună pot fi o sumă serioasă pe an. Verifică extrasul măcar o dată pe lună și anulează ce nu folosești. Exemplu: 120 lei pe lună în abonamente înseamnă 1.440 lei pe an."
+    },
+    {
+      "id": "risc-randament",
+      "titlu": "Risc și randament",
+      "text": "Cu cât o investiție poate aduce mai mult, cu atât poate și să piardă mai mult. Depozitele și titlurile de stat cresc puțin dar sigur, acțiunile și ETF-urile mai mult dar cu ani pe minus, iar crypto poate crește sau scădea cu zeci de procente într-o lună. Investește în ce înțelegi, pe termen lung, și doar bani de care nu ai nevoie curând. Exemplu: 1.000 lei în crypto pot ajunge la 3.000 sau la 300 într-un an."
+    },
+    {
+      "id": "pariuri",
+      "titlu": "Pariurile",
+      "text": "La pariuri, cotele sunt calculate astfel încât, pe termen lung, casa de pariuri să câștige. Un câștig la început e periculos, pentru că te face să crezi că ai „mână bună”. Pierderile se recuperează rar, iar încercările de a le recupera duc la miză tot mai mare. Exemplu: dacă pariezi 100 lei pe săptămână, pierzi în medie mii de lei pe an."
+    },
+    {
+      "id": "phishing",
+      "titlu": "Phishing",
+      "text": "Phishing-ul înseamnă mesaje false (SMS, e-mail) care par de la curier, bancă sau o instituție și te trimit pe un site copiat. Scopul e să-ți ia datele cardului sau parola. Verifică adresa site-ului și nu introduce niciodată datele cardului dintr-un link primit. Exemplu: „Plătiți 2,99 lei taxa de livrare” poate costa tot soldul contului."
+    },
+    {
+      "id": "inselatorii",
+      "titlu": "Înșelătoriile financiare",
+      "text": "Semnele unei înșelătorii: îți cer bani în avans ca să te angajeze, îți promit randamente mari și „garantate”, te grăbesc să decizi. Nicio investiție reală nu poate garanta 10% pe lună. Dacă sună prea bine ca să fie adevărat, de obicei nu e. Exemplu: o „schemă Ponzi” plătește primii investitori din banii celor noi, până se prăbușește."
+    },
+    {
+      "id": "asigurare-sanatate",
+      "titlu": "Asigurarea de sănătate (CASS)",
+      "text": "Din salariu se reține CASS, adică 10% din brut, pentru asigurarea de sănătate. Ea îți dă dreptul la consultații, analize și tratament gratuit la stat, uneori cu timp de așteptare. Fără contract de muncă (la negru) nu ești asigurat automat. Exemplu: o operație care la privat costă 10.000 lei poate fi gratuită la stat, dacă ești asigurat."
     }
   ]
 }

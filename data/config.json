@@ -135,6 +135,14 @@
     "luniFaraDobanda": { "valoare": 1, "deVerificat": true, "sursa": "", "nota": "unele IFN oferă prima lună fără dobândă la primul credit" }
   },
 
+  "rateMagazin": {
+    "dae": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "„rate fără dobândă” la magazine; în realitate pot exista comisioane" }
+  },
+
+  "bnpl": {
+    "dae": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "cumpără acum, plătește mai târziu: 0% dacă plătești la timp" }
+  },
+
   "creditNevoiPersonale": {
     "dae": { "valoare": 0.12, "deVerificat": true, "sursa": "" }
   },
@@ -154,6 +162,7 @@
   },
 
   "investitii": {
+    "_nota": "randamentAnual = creșterea medie anuală pe termen lung (nominală, în lei), inclusiv anii cu crash.",
     "etf": {
       "randamentAnual": { "valoare": 0.07, "deVerificat": true, "sursa": "" },
       "volatilitateAnuala": { "valoare": 0.16, "deVerificat": true, "sursa": "" },

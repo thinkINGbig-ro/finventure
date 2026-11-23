@@ -2,6 +2,7 @@
 
 import { baniDisponibili } from '../finance.js';
 import { varstaLa } from '../util.js';
+import { nivelStil } from '../state.js';
 import { $, ani, h, lei } from './dom.js';
 
 const BARE = [
@@ -40,6 +41,7 @@ export function creeazaEcranPrincipal(ctx) {
     ].filter(Boolean).join(' · ') || 'fără job';
     $('#nume').textContent = state.nume;
     $('#varsta').textContent = `${ani(varsta)} · ${ocupatie}`;
+    $('#stil').textContent = `Stil: ${nivelStil(ctx, state.stilViata)?.nume ?? state.stilViata}`;
 
     const bani = baniDisponibili(state);
     $('#bani-total').textContent = lei(bani);

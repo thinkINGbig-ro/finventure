@@ -131,7 +131,7 @@ function valideazaConfig(nod, fisier, erori, cale = '') {
 const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'oferte', 'alegeri'];
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -244,6 +244,11 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
   for (const c of ['acceptaOferta', 'negociazaOferta']) {
     if (r[c] !== undefined && ![1, 2, 3].includes(r[c])) err(`${cale}.${c}`, 'trebuie să fie 1, 2 sau 3 (a câta ofertă)');
   }
+  if (r.stilViata !== undefined) {
+    const ids = (cv.balans?.stilViata?.niveluri ?? []).map((n) => n.id);
+    if (!([-2, -1, 1, 2].includes(r.stilViata) || ids.includes(r.stilViata))) err(`${cale}.stilViata`, `+1 / -1 sau un nivel: ${ids.join(', ')}`);
+  }
+  if (r.etichete !== undefined && (!Array.isArray(r.etichete) || r.etichete.some((e) => typeof e !== 'string'))) err(`${cale}.etichete`, 'listă de etichete text (ex. ["inselatorie"])');
   for (const c of ['cereMarire', 'promovare']) {
     if (r[c] !== undefined && r[c] !== true) err(`${cale}.${c}`, 'trebuie să fie true');
   }
@@ -282,7 +287,8 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
     if (!Array.isArray(r.recurente)) err(`${cale}.recurente`, 'trebuie să fie o listă');
     else r.recurente.forEach((x, i) => {
       const c = `${cale}.recurente[${i}]`;
-      campuriNecunoscute(x, ['tip', 'suma', 'luni', 'eticheta'], c, err);
+      campuriNecunoscute(x, ['tip', 'suma', 'luni', 'eticheta', 'locuinta'], c, err);
+      if (x.locuinta !== undefined && dupaCale(cv.config, `locuinte.${x.locuinta}`) === undefined) err(`${c}.locuinta`, `„${x.locuinta}” nu există în config.locuinte`);
       if (!['venit', 'cheltuiala'].includes(x.tip)) err(`${c}.tip`, 'trebuie să fie „venit” sau „cheltuiala”');
       verificaNumar(x.suma, `${c}.suma`, err, cv, vars);
       if (x.luni !== undefined && !(Number.isInteger(x.luni) && x.luni > 0)) err(`${c}.luni`, 'trebuie să fie un număr întreg > 0');
@@ -336,7 +342,8 @@ function valideazaConditii(cond, cale, err, cv, vars) {
   const liste = ['faza', 'flag', 'lipsaFlag', 'areProdus', 'lipsaProdus', 'job', 'studii', 'locuinta'];
   const numerice = ['numerarMin', 'baniMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
   campuriNecunoscute(cond, [...liste, ...numerice, 'varstaMin', 'varstaMax', 'stat', 'ascunse', 'poateRambursa', 'sau', 'motiv',
-    'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila'], cale, err);
+    'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata'], cale, err);
+  if (cond.stilViata !== undefined && !Array.isArray(cond.stilViata)) err(`${cale}.stilViata`, 'listă de niveluri (ex. ["modest"])');
   if (cond.areOferta !== undefined && ![1, 2, 3].includes(cond.areOferta)) err(`${cale}.areOferta`, 'trebuie să fie 1, 2 sau 3');
   if (cond.jobProgram !== undefined && (!Array.isArray(cond.jobProgram) || cond.jobProgram.some((p) => !['part-time', 'full-time', 'niciunul'].includes(p)))) {
     err(`${cale}.jobProgram`, 'listă cu „part-time”, „full-time” sau „niciunul”');

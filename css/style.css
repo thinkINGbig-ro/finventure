@@ -308,3 +308,12 @@ select {
 }
 .panou-corp .mesaj-actiune { position: sticky; top: 0; z-index: 1; background: var(--bg-2); margin: 0; padding: 4px 0; }
 .panou-corp .mesaj-actiune:empty { padding: 0; min-height: 0; }
+
+.stil-chip {
+  display: inline-block; margin-top: 4px; padding: 2px 10px; border-radius: 99px;
+  background: var(--bg-3); color: var(--text-2); font-size: 12px; font-weight: 500;
+}
+.nivel-stil { display: flex; flex-direction: column; gap: 8px; }
+.nivel-stil .btn { width: 100%; text-align: left; border-radius: var(--raza-mica); padding: 10px 14px; min-height: 56px; }
+.nivel-stil .btn[aria-pressed="true"] { outline: 2px solid var(--accent); }
+.nivel-stil .mic { display: block; font-weight: 400; }

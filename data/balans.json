@@ -35,7 +35,8 @@
       "deconectat": { "fericire": 3, "energie": 3, "podea": 15 },
       "telefonSuspendat": { "retea": 2, "podea": 10 },
       "izolare": { "prag": 20, "fericire": 2, "podea": 0 },
-      "epuizare": { "prag": 20, "fericire": 2, "podea": 0 }
+      "epuizare": { "prag": 20, "fericire": 2, "podea": 0 },
+      "acasaTarziu": { "varstaMin": 26, "fericire": 1, "podea": 40 }
     }
   },
 
@@ -57,6 +58,18 @@
   },
 
   "locuintaDupaEvacuare": "acasa",
+
+  "stilViata": {
+    "_info": "Multiplicator pe cheltuielile variabile (mâncare, transport, ieșiri). Schimbarea dă un efect de Fericire care se estompează singur (Fericirea revine spre ținta lunară): adaptarea hedonică.",
+    "niveluri": [
+      { "id": "modest", "nume": "Modest", "multiplicator": 1.0 },
+      { "id": "confortabil", "nume": "Confortabil", "multiplicator": 1.5 },
+      { "id": "lux", "nume": "Lux", "multiplicator": 2.3 }
+    ],
+    "start": "modest",
+    "fericireLaCrestere": 12,
+    "fericireLaScadere": -10
+  },
 
   "cariera": {
     "evenimentCV": "cv-start",
@@ -94,7 +107,8 @@
       "sansaMax": 0.85,
       "cresteMin": 0.05,
       "cresteMax": 0.12,
-      "luniMinimeIntreMariri": 12
+      "luniMinimeIntreMariri": 12,
+      "maxPestePiata": 1.3
     },
     "promovare": { "crestereMinima": 0.10 },
     "luniPentruExperienta": 6
@@ -108,7 +122,8 @@
 
   "gameOver": {
     "falimentPragDatorii": 10000,
-    "falimentLuni": 6
+    "falimentLuni": 6,
+    "renuntareLuni": 3
   },
 
   "numerar": {
