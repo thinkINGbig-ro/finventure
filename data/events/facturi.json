@@ -12,11 +12,27 @@
         {
           "id": "platesc",
           "eticheta": "Plătesc tot acum",
-          "cere": { "baniMin": "{datorie}", "motiv": "N-ai {datorie} lei disponibili." },
-          "ramburseaza": "factura",
-          "concepte": ["restante-facturi"],
-          "lectie": "Ai oprit penalitățile înainte să crească. La facturi, fiecare lună de întârziere costă în plus.",
-          "jurnal": "Ai plătit restanțele la facturi."
+          "subalegeri": [
+            {
+              "id": "cont",
+              "eticheta": "Din contul curent",
+              "cere": { "baniMin": "{datorie}", "motiv": "N-ai {datorie} lei disponibili." },
+              "ramburseaza": "factura",
+              "concepte": ["restante-facturi"],
+              "lectie": "Ai oprit penalitățile înainte să crească. La facturi, fiecare lună de întârziere costă în plus.",
+              "jurnal": "Ai plătit restanțele la facturi."
+            },
+            {
+              "id": "economii",
+              "eticheta": "Scot din economii",
+              "cere": { "economiiMin": "{datorie}", "motiv": "N-ai {datorie} lei puși deoparte." },
+              "retrageEconomii": "{datorie}",
+              "ramburseaza": "factura",
+              "concepte": ["restante-facturi", "fond-urgenta"],
+              "lectie": "Economiile au oprit penalitățile. Pentru asta există: o datorie cu penalități costă mai mult decât orice dobândă primești.",
+              "jurnal": "Ai scos bani din economii și ai plătit restanțele."
+            }
+          ]
         },
         {
           "id": "partial",

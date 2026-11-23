@@ -1,0 +1,246 @@
+{
+  "evenimente": [
+    {
+      "id": "bursa",
+      "titlu": "Bursa",
+      "faza": [1, 2],
+      "conditii": { "inStudii": true, "lipsaFlag": ["bursa_anul_asta"] },
+      "pondere": 5,
+      "cooldownLuni": 12,
+      "variabile": { "merit": 900, "sociala": 600 },
+      "text": "La avizier a apărut lista burselor pentru anul ăsta. Termenul de depunere e vineri.",
+      "alegeri": [
+        {
+          "id": "merit",
+          "eticheta": "Depun dosar pentru bursa de merit",
+          "cere": { "ascunse": { "skill": { "min": 45 } }, "motiv": "Mediile tale nu ajung pentru bursa de merit." },
+          "recurente": [{ "tip": "venit", "suma": "{merit}", "luni": 9, "eticheta": "Bursă de merit" }],
+          "flaguri": ["bursa_anul_asta:12"],
+          "efecte": { "fericire": 5 },
+          "concepte": ["bursa"],
+          "lectie": "Bursa de merit e un venit pe care îl câștigi învățând. Contează la buget ca un salariu mic.",
+          "jurnal": "Ai luat bursă de merit: {merit} lei pe lună, 9 luni."
+        },
+        {
+          "id": "sociala",
+          "eticheta": "Depun dosar pentru bursa socială",
+          "cere": {
+            "locuinta": ["camin"],
+            "motiv": "Bursa socială are criterii de venit; în cazul tău, nu se aplică."
+          },
+          "recurente": [{ "tip": "venit", "suma": "{sociala}", "luni": 9, "eticheta": "Bursă socială" }],
+          "flaguri": ["bursa_anul_asta:12"],
+          "concepte": ["bursa"],
+          "lectie": "Bursa socială ajută studenții cu venituri mici. Merită verificat în fiecare an dacă te încadrezi.",
+          "jurnal": "Ai luat bursă socială: {sociala} lei pe lună, 9 luni."
+        },
+        {
+          "id": "nu",
+          "eticheta": "N-am timp de acte",
+          "flaguri": ["bursa_anul_asta:12"],
+          "lectie": "Câteva ore de acte pot însemna câteva mii de lei pe an. Banii lăsați pe masă tot bani sunt."
+        }
+      ]
+    },
+    {
+      "id": "internship",
+      "titlu": "Internship plătit",
+      "faza": [1, 2, 3],
+      "conditii": { "inStudii": true, "jobProgram": ["niciunul"], "ascunse": { "skill": { "min": 35 } } },
+      "pondere": 5,
+      "cooldownLuni": 12,
+      "variabile": { "brut": "config:salarii.intern" },
+      "text": "O firmă caută studenți pentru un internship part-time, plătit cu {brut} lei brut. Program flexibil, merge cu cursurile.",
+      "alegeri": [
+        {
+          "id": "accept",
+          "eticheta": "Aplic și accept",
+          "job": { "id": "intern", "contract": "cim" },
+          "urmari": [{ "eveniment": "primul-cont", "dupaLuni": 1 }],
+          "concepte": ["cv"],
+          "lectie": "Un internship aduce bani acum și experiență în CV pentru primul job full-time.",
+          "jurnal": "Ai început un internship plătit."
+        },
+        {
+          "id": "nu",
+          "eticheta": "Mă concentrez pe facultate",
+          "efecte": { "skill": 2 },
+          "lectie": "Notele contează, dar la angajare experiența cântărește la fel de mult."
+        }
+      ]
+    },
+    {
+      "id": "inapoi-acasa",
+      "titlu": "Te întorci acasă?",
+      "faza": [2, 3, 4, 5],
+      "conditii": {
+        "locuinta": ["chirieSingur", "chirieColegi", "camin"],
+        "stat": { "bani": { "max": 20 } },
+        "lipsaFlag": ["refuzat_intoarcere"]
+      },
+      "pondere": 5,
+      "cooldownLuni": 12,
+      "checkpoint": true,
+      "text": "Chiria te sufocă: la sfârșitul lunii nu mai ajung banii. Părinții îți spun că ai oricând loc acasă.",
+      "alegeri": [
+        {
+          "id": "acasa",
+          "eticheta": "Mă întorc acasă până mă pun pe picioare",
+          "cere": { "ascunse": { "retea": { "min": 20 } }, "motiv": "Relația cu părinții e prea tensionată acum." },
+          "situatie": { "locuinta": "acasa" },
+          "efecte": { "fericire": -6, "retea": 3 },
+          "lectie": "Nu e un pas înapoi, e un plan: cheltuieli mici câteva luni, până închizi datoriile și refaci fondul.",
+          "jurnal": "Te-ai mutat înapoi la părinți, ca să-ți pui finanțele în ordine."
+        },
+        {
+          "id": "colegi",
+          "eticheta": "Mă mut într-o cameră mai ieftină, cu colegi",
+          "cere": { "locuinta": ["chirieSingur"], "motiv": "Stai deja în varianta cea mai ieftină de chirie." },
+          "situatie": { "locuinta": "chirieColegi" },
+          "efecte": { "fericire": -3 },
+          "lectie": "Chiria e de obicei cea mai mare cheltuială. Dacă o reduci, schimbi tot bugetul.",
+          "jurnal": "Te-ai mutat într-o cameră mai ieftină."
+        },
+        {
+          "id": "rezist",
+          "eticheta": "Rezist, luna viitoare o să fie mai bine",
+          "flaguri": ["refuzat_intoarcere:12"],
+          "lectie": "Dacă luna viitoare arată la fel, restanțele cresc cu penalități. Speranța nu e un buget."
+        }
+      ]
+    },
+    {
+      "id": "oferta-card-credit",
+      "titlu": "Ți-am pre-aprobat un card!",
+      "faza": [2, 3, 4, 5],
+      "conditii": {
+        "areProdus": ["contCurent", "contractMunca"],
+        "lipsaProdus": ["cardCredit"],
+        "lipsaFlag": ["refuzat_card"]
+      },
+      "pondere": 4,
+      "cooldownLuni": 24,
+      "variabile": { "limita": 5000 },
+      "text": "Notificare de la bancă: „Card de credit pre-aprobat, limită {limita} lei, 0 lei taxă primul an!”",
+      "alegeri": [
+        {
+          "id": "accept",
+          "eticheta": "Îl activez și plătesc tot ce cheltui cu el",
+          "produsNou": { "tip": "cardCredit", "limita": "{limita}", "plata": "integral", "cumparaturiPeCard": true },
+          "urmari": [{ "eveniment": "card-scadenta", "dupaLuni": 2 }],
+          "concepte": ["perioada-gratie"],
+          "lectie": "Un card de credit folosit cu disciplină e gratuit: plătești tot extrasul până la scadență, în fiecare lună.",
+          "jurnal": "Ți-ai activat un card de credit cu limită de {limita} lei."
+        },
+        {
+          "id": "accept-rezerva",
+          "eticheta": "Îl activez, dar îl țin pentru urgențe",
+          "produsNou": { "tip": "cardCredit", "limita": "{limita}", "plata": "integral" },
+          "concepte": ["perioada-gratie"],
+          "lectie": "Un card ținut pentru urgențe e o plasă de siguranță, dar nu înlocuiește fondul de urgență: e tot o datorie.",
+          "jurnal": "Ți-ai activat un card de credit pentru urgențe."
+        },
+        {
+          "id": "refuz",
+          "eticheta": "Nu-mi trebuie",
+          "flaguri": ["refuzat_card:36"],
+          "lectie": "„Pre-aprobat” înseamnă doar că banca vrea să-ți vândă un credit. Ai dreptul să spui nu."
+        }
+      ]
+    },
+    {
+      "id": "masina",
+      "titlu": "O mașină?",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 23, "jobProgram": ["full-time"], "lipsaFlag": ["are_masina", "fara_masina"] },
+      "pondere": 4,
+      "cooldownLuni": 24,
+      "checkpoint": true,
+      "variabile": { "noua": 80000, "sh": 25000, "costuri": 600 },
+      "text": "Navetele cu autobuzul durează o oră. Te gândești la o mașină: una nouă, de {noua} lei, sau una la mâna a doua, de {sh} lei. În plus, RCA, revizii și benzină: cam {costuri} lei pe lună.",
+      "alegeri": [
+        {
+          "id": "noua",
+          "eticheta": "Mașină nouă, cu credit auto pe 5 ani",
+          "cere": {
+            "ascunse": { "scorCredit": { "min": 45 } },
+            "lipsaFlag": ["istoric_restante", "executare_silita"],
+            "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit."
+          },
+          "produsNou": {
+            "tip": "credit",
+            "furnizor": "banca",
+            "suma": "{noua}",
+            "dae": "config:creditAuto.dae",
+            "luni": 60
+          },
+          "efecte": { "numerar": "-{noua}", "fericire": 10, "energie": 5 },
+          "recurente": [{ "tip": "cheltuiala", "suma": "{costuri}", "eticheta": "Mașina: RCA, revizii, benzină" }],
+          "flaguri": ["are_masina"],
+          "etichete": ["rate", "stilSus"],
+          "concepte": ["credit-auto", "dae"],
+          "lectie": "Rata nu e tot costul mașinii: asigurarea, reviziile și benzina se plătesc lunar, iar mașina pierde din valoare în fiecare an.",
+          "jurnal": "Ți-ai luat o mașină nouă, cu credit pe 5 ani."
+        },
+        {
+          "id": "sh",
+          "eticheta": "Una la mâna a doua, plătită cash",
+          "cere": { "baniMin": "{sh}" },
+          "efecte": { "numerar": "-{sh}", "fericire": 6, "energie": 5 },
+          "recurente": [{ "tip": "cheltuiala", "suma": "{costuri}", "eticheta": "Mașina: RCA, revizii, benzină" }],
+          "flaguri": ["are_masina"],
+          "concepte": ["credit-auto"],
+          "lectie": "Fără rate e mai ieftin, dar pune deoparte și pentru reparații: o mașină mai veche are surprize.",
+          "jurnal": "Ți-ai luat o mașină la mâna a doua, cash."
+        },
+        {
+          "id": "transport",
+          "eticheta": "Rămân pe transport în comun",
+          "flaguri": ["fara_masina:36"],
+          "efecte": { "energie": -2 },
+          "concepte": ["credit-auto"],
+          "lectie": "Fără mașină economisești câteva sute de lei pe lună. Pe 10 ani, diferența se adună în zeci de mii de lei."
+        }
+      ]
+    },
+    {
+      "id": "factura-iarna",
+      "titlu": "Factura din ianuarie",
+      "faza": [2, 3, 4, 5],
+      "conditii": { "locuinta": ["chirieSingur", "chirieColegi"], "lipsaFlag": ["factura_iarna_recenta"] },
+      "pondere": 4,
+      "cooldownLuni": 12,
+      "variabile": { "suma": 1400, "rata": 470 },
+      "text": "A venit factura la gaz pentru iarnă: {suma} lei. Apartamentul e vechi și se încălzește greu.",
+      "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "O plătesc acum",
+          "cere": { "baniMin": "{suma}" },
+          "efecte": { "numerar": "-{suma}" },
+          "flaguri": ["factura_iarna_recenta:10"],
+          "concepte": ["fond-urgenta"],
+          "lectie": "Cheltuielile sezoniere nu sunt surprize: iarna vine în fiecare an. Pune deoparte puțin lunar pentru ele."
+        },
+        {
+          "id": "fond",
+          "eticheta": "O plătesc din fondul de urgență",
+          "cere": { "fondUrgentaMin": "{suma}" },
+          "sursaPlata": "fondUrgenta",
+          "efecte": { "numerar": "-{suma}" },
+          "flaguri": ["factura_iarna_recenta:10"],
+          "concepte": ["fond-urgenta"],
+          "lectie": "Fondul a acoperit-o, dar o factură care vine în fiecare iarnă trebuie pusă în bugetul lunar."
+        },
+        {
+          "id": "esalonez",
+          "eticheta": "Cer eșalonare în 3 luni",
+          "recurente": [{ "tip": "cheltuiala", "suma": "{rata}", "luni": 3, "eticheta": "Eșalonarea facturii la gaz" }],
+          "flaguri": ["factura_iarna_recenta:10"],
+          "concepte": ["restante-facturi"],
+          "lectie": "Eșalonarea e mai bună decât restanța: fără penalități, dar bugetul următoarelor 3 luni e mai mic."
+        }
+      ]
+    }
+  ]
+}

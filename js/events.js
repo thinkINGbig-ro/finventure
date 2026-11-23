@@ -21,6 +21,7 @@ export function potrivesteProdus(p, selector) {
 }
 
 export const gasesteProduse = (state, selector) => state.produse.filter((p) => potrivesteProdus(p, selector));
+export const economii = (state) => gasesteProduse(state, 'contEconomii').reduce((s, p) => s + p.sold, 0);
 export const gasesteProdus = (state, selector) => gasesteProduse(state, selector)[0];
 
 // ---------- Variabile ----------
@@ -129,6 +130,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     locuinta: (lista) => lista.includes(state.situatie.locuinta) || 'Nu se potrivește cu locul unde stai.',
     numerarMin: (v) => state.numerar >= inBani(val(v)) || `Nu ai ${lei(val(v))} cash.`,
     baniMin: (v) => baniDisponibili(state) >= inBani(val(v)) || `Nu ai ${lei(val(v))} disponibili.`,
+    economiiMin: (v) => economii(state) >= inBani(val(v)) || `N-ai ${lei(val(v))} puși deoparte.`,
     fondUrgentaMin: (v) => {
       if (!state.produse.some((p) => p.tip === 'contEconomii' && p.fondUrgenta)) return 'Nu ai un fond de urgență.';
       return fondUrgenta(state) >= inBani(val(v)) || `Fondul de urgență nu ajunge (ai ${lei(inLei(fondUrgenta(state)))}).`;
@@ -274,7 +276,7 @@ export function areUrmareScadenta(state) {
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -313,6 +315,17 @@ function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   }
   for (const spec of [p.produsNou ?? []].flat()) {
     deschideProdus(state, ctx, rezolvaSpec(spec, val), idDecizie);
+  }
+  if (p.retrageEconomii) {
+    // Mută bani din conturile de economii în portofel (întâi cele care nu sunt fond de urgență).
+    let deScos = inBani(val(p.retrageEconomii));
+    const conturi = gasesteProduse(state, 'contEconomii').sort((a, b) => Number(a.fondUrgenta) - Number(b.fondUrgenta));
+    for (const cont of conturi) {
+      const luat = Math.min(deScos, cont.sold);
+      cont.sold -= luat;
+      deScos -= luat;
+      incaseaza(state, luat);
+    }
   }
   if (p.ramburseaza) {
     // Facturile se achită toate (chirie, utilități, telefon); la celelalte, doar primul produs găsit

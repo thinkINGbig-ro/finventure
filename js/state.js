@@ -118,6 +118,11 @@ export function activeTotale(state) {
 
 export const avereNeta = (state) => activeTotale(state) - datoriiTotale(state);
 
+// Ce poți vinde sau retrage ca să plătești datoriile (fără contul curent și fără Pilonul II).
+export function activeLichidabile(state) {
+  return state.produse.filter((p) => p.tip !== 'contCurent').reduce((s, p) => s + valoareProdus(p, state), 0);
+}
+
 export function economiiLungTermen(state) {
   return state.produse
     .filter((p) => p.tip !== 'contCurent')

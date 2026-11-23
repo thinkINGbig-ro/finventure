@@ -1,0 +1,153 @@
+{
+  "generat": "2026-11-23T22:43:22.381Z",
+  "seed": "sim",
+  "vietiPeProfil": 500,
+  "evenimente": 40,
+  "profiluri": {
+    "aleator": {
+      "descriere": "alegeri la întâmplare, meniuri folosite rar",
+      "n": 500,
+      "procente": {
+        "pensie": 71,
+        "faliment": 29,
+        "burnout": 0,
+        "renuntare": 0
+      },
+      "varstaMedie": 55,
+      "varstaMedieGameOver": 30.4,
+      "avereMedianaLei": 2354961,
+      "avereMedianaLeiDeAzi": 254742,
+      "mediiAnualeProcent": {
+        "inflatie": 4.83,
+        "etf": 6.91,
+        "salariu": 5.31,
+        "salariuReal": 0.3
+      },
+      "cauzeGameOver": [
+        {
+          "cauza": "faliment: masina › noua",
+          "numar": 57
+        },
+        {
+          "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
+          "numar": 33
+        },
+        {
+          "cauza": "faliment: telefon-rate › rate",
+          "numar": 12
+        },
+        {
+          "cauza": "faliment: mutare › singur",
+          "numar": 9
+        },
+        {
+          "cauza": "faliment: oferta-card-credit › accept-rezerva",
+          "numar": 7
+        },
+        {
+          "cauza": "faliment: oferta-card-credit › accept",
+          "numar": 6
+        },
+        {
+          "cauza": "faliment: dupa-liceu › facultate-taxa",
+          "numar": 5
+        },
+        {
+          "cauza": "faliment: facturi-somatie › partial",
+          "numar": 3
+        },
+        {
+          "cauza": "faliment: lipsa-spatiu › caut",
+          "numar": 3
+        },
+        {
+          "cauza": "faliment: dupa-liceu › facultate-buget",
+          "numar": 2
+        }
+      ]
+    },
+    "prudent": {
+      "descriere": "fond de urgență, fără IFN, contract de muncă, economisește și investește",
+      "n": 500,
+      "procente": {
+        "pensie": 100,
+        "faliment": 0,
+        "burnout": 0,
+        "renuntare": 0
+      },
+      "varstaMedie": 65,
+      "varstaMedieGameOver": null,
+      "avereMedianaLei": 22481403,
+      "avereMedianaLeiDeAzi": 2400303,
+      "mediiAnualeProcent": {
+        "inflatie": 4.86,
+        "etf": 7.08,
+        "salariu": 5.51,
+        "salariuReal": 0.52
+      },
+      "cauzeGameOver": []
+    },
+    "riscant": {
+      "descriere": "IFN, la negru, card pe minim, cheltuie tot",
+      "n": 500,
+      "procente": {
+        "pensie": 15.4,
+        "faliment": 84.6,
+        "burnout": 0,
+        "renuntare": 0
+      },
+      "varstaMedie": 40.7,
+      "varstaMedieGameOver": 36.3,
+      "avereMedianaLei": 103578,
+      "avereMedianaLeiDeAzi": 43596,
+      "mediiAnualeProcent": {
+        "inflatie": 4.83,
+        "etf": 7.24,
+        "salariu": 4.54,
+        "salariuReal": -0.55
+      },
+      "cauzeGameOver": [
+        {
+          "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
+          "numar": 354
+        },
+        {
+          "cauza": "faliment: telefon-rate › rate",
+          "numar": 48
+        },
+        {
+          "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
+          "numar": 9
+        },
+        {
+          "cauza": "faliment: facturi-somatie › ignor",
+          "numar": 3
+        },
+        {
+          "cauza": "faliment: mutare › singur",
+          "numar": 2
+        },
+        {
+          "cauza": "faliment: masina › noua",
+          "numar": 2
+        },
+        {
+          "cauza": "faliment: investitie-garantata › raportez",
+          "numar": 2
+        },
+        {
+          "cauza": "faliment: reducere-stil › las",
+          "numar": 1
+        },
+        {
+          "cauza": "faliment: abonamente › las",
+          "numar": 1
+        },
+        {
+          "cauza": "faliment: mutare › colegi",
+          "numar": 1
+        }
+      ]
+    }
+  }
+}

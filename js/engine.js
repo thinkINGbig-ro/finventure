@@ -16,7 +16,7 @@ import {
   proceseazaTitluri, randamentLunar, rataLunara, valoareProdus,
 } from './finance.js';
 import {
-  actualizeazaDerivate, adaugaJurnal, areFlag, avereNeta, creeazaStare, datoriiTotale, expiraFlaguri, multiplicatorStil, schimbaStil, seteazaFlag,
+  activeLichidabile, actualizeazaDerivate, adaugaJurnal, areFlag, avereNeta, creeazaStare, datoriiTotale, expiraFlaguri, multiplicatorStil, schimbaStil, seteazaFlag,
 } from './state.js';
 import {
   FLAG_FACTURA, NUME_FACTURI, alegeEvenimentAleator, aplicaAlegere, creeazaOprireEveniment, deschideProdus, descrieOprire,
@@ -456,20 +456,49 @@ function proceseazaFacturi(state, ctx) {
 }
 
 // Executorul poprește și contul curent, peste suma protejată.
+// Executarea silită nu se oprește la salariu: executorul poprește contul curent (peste suma
+// protejată), apoi economiile, sparge depozitele și vinde investițiile, până acoperă datoria.
 function proceseazaPoprireCont(state, ctx) {
-  const cont = contCurent(state);
   const popriri = gasesteProduse(state, 'poprire');
-  if (!cont || !popriri.length) return;
-  let disponibil = Math.max(0, cont.sold - pret(state, ctx, 'poprire.sumaProtejataCont'));
-  for (const p of popriri) {
-    const luat = Math.min(p.datorie, disponibil);
+  if (!popriri.length) return;
+  const datorieTotala = () => popriri.reduce((t, p) => t + p.datorie, 0);
+  const surse = [];
+  const cont = contCurent(state);
+  if (cont) surse.push({ tip: 'cont', disponibil: Math.max(0, cont.sold - pret(state, ctx, 'poprire.sumaProtejataCont')), ia: (x) => { cont.sold -= x; } });
+  for (const e of gasesteProduse(state, 'contEconomii')) surse.push({ tip: 'economii', disponibil: e.sold, ia: (x) => { e.sold -= x; } });
+
+  let dinCont = 0;
+  let dinEconomii = 0;
+  const imparte = (suma) => {
+    for (const p of popriri) {
+      const luat = Math.min(p.datorie, suma);
+      p.datorie -= luat;
+      p.retinutTotal += luat;
+      suma -= luat;
+    }
+  };
+  for (const sursa of surse) {
+    const luat = Math.min(sursa.disponibil, datorieTotala());
     if (!luat) continue;
-    cont.sold -= luat;
-    disponibil -= luat;
-    p.datorie -= luat;
-    p.retinutTotal += luat;
-    state.an.ac.retinutPoprire += luat;
-    if (!state.momente.primaPoprireCont) adaugaMoment(state, 'primaPoprireCont', { retinut: luat }, ['poprire-cont']);
+    sursa.ia(luat);
+    imparte(luat);
+    if (sursa.tip === 'cont') dinCont += luat;
+    else dinEconomii += luat;
+  }
+  // Depozitele și investițiile se lichidează doar cât e nevoie, una câte una.
+  for (const p of [...state.produse]) {
+    if (datorieTotala() === 0) break;
+    if (p.tip !== 'depozit' && !(p.tip === 'investitie' && p.clasa !== 'titluriStat')) continue;
+    const suma = lichideaza(state, ctx, p); // banii ajung în portofel
+    const luat = plateste(state, Math.min(suma, datorieTotala()));
+    imparte(luat);
+    dinEconomii += luat;
+  }
+
+  state.an.ac.retinutPoprire += dinCont + dinEconomii;
+  if (dinCont && !state.momente.primaPoprireCont) adaugaMoment(state, 'primaPoprireCont', { retinut: dinCont }, ['poprire-cont']);
+  if (dinEconomii) adaugaJurnal(state, `Executorul a luat ${formateazaLei(inLei(dinEconomii))} lei din economii și investiții.`);
+  for (const p of popriri) {
     if (p.datorie === 0) {
       state.produse = state.produse.filter((x) => x !== p);
       adaugaJurnal(state, 'Poprirea s-a încheiat: datoria e acoperită.');
@@ -570,7 +599,9 @@ function verificaFinal(state, ctx, { lunar = false } = {}) {
   const g = bal(ctx, 'gameOver');
   if (lunar) {
     const prag = inBani(g.falimentPragDatorii) * state.indicePreturi;
-    if (state.stat.bani === 0 && datoriiTotale(state) >= prag) state.contoare.luniFaliment += 1;
+    const datorii = datoriiTotale(state);
+    const insolvent = activeLichidabile(state) < datorii; // economii + depozite + investiții (fără Pilonul II)
+    if (state.stat.bani === 0 && datorii >= prag && insolvent) state.contoare.luniFaliment += 1;
     else state.contoare.luniFaliment = 0;
   }
 

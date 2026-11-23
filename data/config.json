@@ -26,6 +26,7 @@
   "salarii": {
     "_nota": "Brut lunar, full-time, nivel de intrare pe piața din România (medii orientative, nu oferte reale).",
     "barista": { "valoare": 2025, "deVerificat": true, "sursa": "", "nota": "brut lunar, part-time 4h" },
+    "intern": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "brut lunar, internship part-time pentru studenți" },
     "curier": { "valoare": 4300, "deVerificat": true, "sursa": "" },
     "vanzator": { "valoare": 4200, "deVerificat": true, "sursa": "" },
     "sefTura": { "valoare": 5300, "deVerificat": true, "sursa": "" },
@@ -141,6 +142,10 @@
 
   "bnpl": {
     "dae": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "cumpără acum, plătește mai târziu: 0% dacă plătești la timp" }
+  },
+
+  "creditAuto": {
+    "dae": { "valoare": 0.10, "deVerificat": true, "sursa": "" }
   },
 
   "creditNevoiPersonale": {

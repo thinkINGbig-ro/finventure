@@ -69,8 +69,9 @@ function trasaturi(def) {
   return t;
 }
 
-function alegePrinScor(ponderi) {
+function alegePrinScor(ponderiSauFunctie) {
   return (oprire, state, ctx, rnd) => {
+    const ponderi = typeof ponderiSauFunctie === 'function' ? ponderiSauFunctie(state, ctx) : ponderiSauFunctie;
     const ev = ctx.evenimente.get(oprire.eveniment);
     let best = null;
     for (const cale of caiDisponibile(oprire)) {
@@ -103,9 +104,23 @@ function cereMarireAnual(state, ctx) {
   if (c && c.contract !== 'negru' && (c.luniDeLaMarire ?? 0) >= 12) actiune(state, ctx, 'cereMarire');
 }
 
+function inchideRestanteDinEconomii(state, ctx) {
+  for (const d of state.produse.filter((p) => (p.tip === 'factura' || p.tip === 'poprire' || (p.tip === 'credit' && p.restanta > 0)))) {
+    const datorie = d.tip === 'credit' ? d.rest + d.restanta : d.tip === 'poprire' ? d.datorie : d.restanta;
+    const lipsa = datorie - baniDisponibili(state);
+    for (const e of gasesteProduse(state, 'contEconomii')) {
+      if (lipsa <= 0) break;
+      const suma = Math.min(e.sold, lipsa);
+      if (suma > 0) actiune(state, ctx, 'retrage', { id: e.id, suma: lei(suma) });
+    }
+    actiune(state, ctx, 'ramburseaza', { id: d.id });
+  }
+}
+
 // Prudent: cont, fond de urgență de 6 luni, restul investit în ETF, cere măriri, caută job full-time.
 function meniuPrudent(state, ctx) {
   asiguraCont(state, ctx);
+  inchideRestanteDinEconomii(state, ctx);
   const lunar = cheltuieliLunare(state, ctx);
   let fond = state.produse.find((p) => p.tip === 'contEconomii' && p.fondUrgenta);
   if (!fond) {
@@ -170,12 +185,12 @@ export const PROFILURI = {
   prudent: {
     nume: 'prudent',
     descriere: 'fond de urgență, fără IFN, contract de muncă, economisește și investește',
-    alege: alegePrinScor({
-      ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, negociaza: 4, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
+    alege: alegePrinScor((state, ctx) => ({
+      ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, negociaza: areJobFullTime(state, ctx) ? 4 : -1, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
       fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
       viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15,
       inselatorie: -15, pariu: -6, stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
-    }),
+    })),
     meniu: meniuPrudent,
   },
   riscant: {

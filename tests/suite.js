@@ -364,6 +364,22 @@ function teste(ctxBaza, incarcare) {
       ok(state.concepte.includes('poprire-cont'), 'conceptul s-a deblocat');
     },
 
+    'executarea ia și din economii și depozite; cine are active nu e în faliment'() {
+      const { state, ctx } = jocFaraVenit('executare');
+      const cont = actiune(state, ctx, 'deschide', { tip: 'contCurent' }).produs;
+      cont.sold = inBani(1500); // sub suma protejată
+      state.numerar = 0;
+      state.produse.push({ id: 'e1', tip: 'contEconomii', sold: inBani(3000), fondUrgenta: true, dobandaAnuala: 0, deschisLa: 0 });
+      state.produse.push({ id: 'd1', tip: 'depozit', sold: inBani(4000), luni: 12, luniRamase: 6, dobandaAcumulata: 0, reinnoire: true, dobandaAnuala: 0, deschisLa: 0 });
+      state.produse.push({ id: 'px', tip: 'poprire', creditor: 'recuperator', datorie: inBani(5000), retinutTotal: 0, deschisLa: 0, cauza: null });
+      let o = avanseaza(state, ctx);
+      while (o && state.luna < 1) o = o.tip === 'eveniment' ? alege(state, ctx, primaDisponibila(o)).oprire : continua(state, ctx);
+      ok(!gasesteProdus(state, 'poprire'), 'datoria de 5.000 lei a fost acoperită din economii și depozit');
+      egal(gasesteProdus(state, 'contEconomii').sold, 0, 'economiile au fost poprite');
+      ok(!gasesteProdus(state, 'depozit'), 'depozitul a fost lichidat');
+      ok(state.jurnal.some((j) => j.text.includes('din economii și investiții')), 'apare în jurnal');
+    },
+
     'poprirea pe salariu reține max. o treime din net'() {
       const ctx = ctxNou();
       const state = jocNou(ctx, { seed: 'poprire' });

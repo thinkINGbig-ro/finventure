@@ -1,6 +1,7 @@
 // Simulare de echilibru, pe profiluri de jucător:
 //   node tests/simulare.js [--n 500] [--profil aleator,prudent,riscant] [--seed sim] [--json raport.json]
 // --n = vieți per profil. --json scrie procentele pe profil într-un fișier (pentru grafice).
+// Raportul folosit în prezentare: node tests/simulare.js --n 500 --json docs/raport-simulare.json
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { formateazaEroare, incarcaContinut } from '../js/content.js';

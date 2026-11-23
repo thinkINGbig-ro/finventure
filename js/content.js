@@ -131,7 +131,7 @@ function valideazaConfig(nod, fisier, erori, cale = '') {
 const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'oferte', 'alegeri'];
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -272,6 +272,7 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
     }
   }
   if (r.transferaInCont !== undefined && r.transferaInCont !== 'tot') num(r.transferaInCont, 'transferaInCont');
+  if (r.retrageEconomii !== undefined) num(r.retrageEconomii, 'retrageEconomii');
   if (r.job !== undefined && r.job !== null) {
     const job = cv.joburi.get(r.job?.id);
     if (!job) err(`${cale}.job.id`, `jobul „${r.job?.id}” nu există în jobs.json`);
@@ -340,7 +341,7 @@ function valideazaConditii(cond, cale, err, cv, vars) {
   if (cond === undefined) return;
   if (!cond || typeof cond !== 'object' || Array.isArray(cond)) return err(cale, 'trebuie să fie un obiect');
   const liste = ['faza', 'flag', 'lipsaFlag', 'areProdus', 'lipsaProdus', 'job', 'studii', 'locuinta'];
-  const numerice = ['numerarMin', 'baniMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
+  const numerice = ['numerarMin', 'baniMin', 'economiiMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
   campuriNecunoscute(cond, [...liste, ...numerice, 'varstaMin', 'varstaMax', 'stat', 'ascunse', 'poateRambursa', 'sau', 'motiv',
     'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata'], cale, err);
   if (cond.stilViata !== undefined && !Array.isArray(cond.stilViata)) err(`${cale}.stilViata`, 'listă de niveluri (ex. ["modest"])');

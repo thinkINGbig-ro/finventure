@@ -165,6 +165,16 @@
       "id": "asigurare-sanatate",
       "titlu": "Asigurarea de sănătate (CASS)",
       "text": "Din salariu se reține CASS, adică 10% din brut, pentru asigurarea de sănătate. Ea îți dă dreptul la consultații, analize și tratament gratuit la stat, uneori cu timp de așteptare. Fără contract de muncă (la negru) nu ești asigurat automat. Exemplu: o operație care la privat costă 10.000 lei poate fi gratuită la stat, dacă ești asigurat."
+    },
+    {
+      "id": "bursa",
+      "titlu": "Bursa",
+      "text": "Bursa e un sprijin în bani pentru elevi și studenți: de merit (pentru rezultate), socială (pentru venituri mici) sau de performanță. Se acordă de obicei pe durata anului universitar și cere un dosar depus la termen. E un venit ca oricare altul în bugetul tău. Exemplu: 900 lei pe lună timp de 9 luni înseamnă 8.100 lei pe an."
+    },
+    {
+      "id": "credit-auto",
+      "titlu": "Mașina: credit, leasing și costul real",
+      "text": "O mașină costă mult mai mult decât prețul ei: RCA (asigurarea obligatorie), CASCO (opțională), revizii, benzină, parcare. Cu credit auto sau leasing plătești și dobândă, iar mașina pierde 15–20% din valoare în primul an. Calculează costul total pe lună, nu doar rata. Exemplu: o rată de 1.700 lei plus 600 lei pe lună pentru întreținere înseamnă 2.300 lei pe lună pentru o mașină."
     }
   ]
 }
