@@ -1,0 +1,247 @@
+{
+  "evenimente": [
+    {
+      "id": "urgenta-2000",
+      "titlu": "Ai nevoie urgent de bani",
+      "faza": [2, 3, 4],
+      "conditii": { "varstaMin": 19, "lipsaFlag": ["urgenta_recenta"] },
+      "pondere": 3,
+      "checkpoint": true,
+      "variabile": { "suma": 2000 },
+      "text": "Ți s-a stricat laptopul chiar înainte de sesiune. Reparația costă {suma} lei.",
+      "alegeri": [
+        {
+          "id": "fond",
+          "eticheta": "Folosesc fondul de urgență",
+          "cere": { "fondUrgentaMin": "{suma}" },
+          "sursaPlata": "fondUrgenta",
+          "efecte": { "numerar": "-{suma}", "viitor": -3 },
+          "flaguri": ["urgenta_recenta:12"],
+          "concepte": ["fond-urgenta"],
+          "lectie": "Exact pentru asta există fondul de urgență. Pune-l la loc cât poți de repede.",
+          "jurnal": "Ai plătit reparația laptopului din fondul de urgență."
+        },
+        {
+          "id": "depozit",
+          "eticheta": "Sparg depozitul",
+          "cere": { "depoziteMin": "{suma}" },
+          "lichideaza": "depozit",
+          "efecte": { "numerar": "-{suma}", "viitor": -5 },
+          "flaguri": ["urgenta_recenta:12"],
+          "concepte": ["depozit", "fond-urgenta"],
+          "lectie": "Ai scos banii înainte de termen, deci ai pierdut dobânda. Un fond de urgență lichid te scutea de asta.",
+          "jurnal": "Ai spart depozitul ca să repari laptopul."
+        },
+        {
+          "id": "prieten",
+          "eticheta": "Împrumut de la un prieten",
+          "cere": { "ascunse": { "retea": { "min": 40 } }, "motiv": "Nimeni din jur nu-ți poate da {suma} lei acum." },
+          "flaguri": ["datorie_prieten", "urgenta_recenta:12"],
+          "urmari": [{ "eveniment": "prieten-returnare", "dupaLuni": 6, "variabile": { "suma": "{suma}" } }],
+          "jurnal": "Un prieten ți-a împrumutat {suma} lei. I-ai promis că îi dai înapoi în 6 luni."
+        },
+        {
+          "id": "card",
+          "eticheta": "Plătesc cu cardul de credit",
+          "cere": { "cardDisponibilMin": "{suma}" },
+          "sursaPlata": "cardCredit",
+          "efecte": { "numerar": "-{suma}" },
+          "flaguri": ["urgenta_recenta:12"],
+          "urmari": [{ "eveniment": "card-scadenta", "dupaLuni": 1 }],
+          "jurnal": "Ai plătit reparația cu cardul de credit."
+        },
+        {
+          "id": "ifn",
+          "eticheta": "Iau un credit rapid de la IFN",
+          "produsNou": {
+            "tip": "credit", "furnizor": "ifn", "suma": "{suma}", "dae": "config:ifn.dae", "luni": 6,
+            "luniFaraDobanda": "config:ifn.luniFaraDobanda", "laRestanta": "ifn-restanta", "flag": "datorie_ifn"
+          },
+          "efecte": { "numerar": "-{suma}" },
+          "flaguri": ["urgenta_recenta:12"],
+          "urmari": [{ "eveniment": "ifn-alegere", "dupaLuni": 1 }],
+          "concepte": ["ifn", "dae"],
+          "lectie": "Banii vin în 15 minute, dar DAE poate trece de 100% pe an. Citește costul total, nu doar rata.",
+          "jurnal": "Ai luat {suma} lei de la un IFN, pe 6 luni."
+        },
+        {
+          "id": "extra",
+          "eticheta": "Vând ceva și fac ore în plus",
+          "rezultate": [
+            {
+              "pondere": 3,
+              "efecte": { "energie": -15, "fericire": -3 },
+              "flaguri": ["urgenta_recenta:12"],
+              "jurnal": "Ai vândut consola și ai făcut ture în plus. Ai strâns toți banii, fără nicio datorie."
+            },
+            {
+              "pondere": 1,
+              "efecte": { "energie": -20, "fericire": -5, "numerar": -800 },
+              "flaguri": ["urgenta_recenta:12"],
+              "jurnal": "N-ai strâns tot din vânzări și ture, restul de 800 de lei a ieșit din buzunar."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ifn-alegere",
+      "titlu": "Creditul de la IFN",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["credit:ifn"] },
+      "variabile": { "datorie": "stare:datorie:credit:ifn" },
+      "text": "A trecut o lună de la creditul IFN. Mai ai de dat {datorie} lei. De acum, dobânda începe să curgă.",
+      "alegeri": [
+        {
+          "id": "returnez",
+          "eticheta": "Returnez tot acum",
+          "cere": { "poateRambursa": "credit:ifn", "motiv": "N-ai {datorie} lei disponibili." },
+          "ramburseaza": "credit:ifn",
+          "concepte": ["contract-credit"],
+          "lectie": "Ai returnat în perioada fără dobândă, deci ai plătit aproape doar cât ai împrumutat. Așa se folosește un IFN, dacă chiar trebuie.",
+          "jurnal": "Ai returnat creditul IFN după o lună."
+        },
+        {
+          "id": "rate",
+          "eticheta": "Plătesc ratele, cum scrie în contract",
+          "concepte": ["cost-total-credit"],
+          "lectie": "Cu un DAE de peste 100%, pe 6 luni dai înapoi vizibil mai mult decât ai luat. Uită-te la costul total, nu la rată."
+        }
+      ]
+    },
+    {
+      "id": "ifn-restanta",
+      "titlu": "Ai ratat rata",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "conditii": { "areProdus": ["credit:ifn"] },
+      "variabile": { "datorie": "stare:datorie:credit:ifn", "restanta": "stare:restanta:credit:ifn" },
+      "text": "N-ai plătit rata la IFN. Te sună în fiecare zi, iar datoria a ajuns la {datorie} lei, din care {restanta} lei sunt restanți.",
+      "alegeri": [
+        {
+          "id": "alt-ifn",
+          "eticheta": "Iau alt IFN ca să-l plătesc pe primul",
+          "produsNou": {
+            "tip": "credit", "furnizor": "ifn", "suma": "{datorie}", "dae": "config:ifn.dae", "luni": 6,
+            "laRestanta": "ifn-restanta", "flag": "datorie_ifn"
+          },
+          "ramburseaza": "credit:ifn",
+          "flaguri": ["spirala_datorii"],
+          "concepte": ["spirala-datoriilor"],
+          "lectie": "Ai mutat datoria, n-ai scăpat de ea. Acum plătești dobândă la dobândă.",
+          "jurnal": "Ai luat un al doilea IFN ca să-l plătești pe primul."
+        },
+        {
+          "id": "extra",
+          "eticheta": "Muncesc în plus ca să recuperez",
+          "efecte": { "numerar": "{restanta}", "energie": -15 },
+          "concepte": ["biroul-de-credit"],
+          "lectie": "Cu cât acoperi restanța mai repede, cu atât penalitățile sunt mai mici. Întârzierea rămâne însă la Biroul de Credit.",
+          "jurnal": "Ai făcut ture în plus ca să acoperi restanța la IFN."
+        },
+        {
+          "id": "ignor",
+          "eticheta": "Nu mai răspund la telefon",
+          "efecte": { "fericire": -5 },
+          "concepte": ["biroul-de-credit"],
+          "lectie": "Datoria nu dispare dacă o ignori. După câteva luni e vândută unei firme de recuperare, apoi vine executarea.",
+          "jurnal": "Ai început să ignori telefoanele de la IFN."
+        }
+      ]
+    },
+    {
+      "id": "prieten-returnare",
+      "titlu": "Prietenul vrea banii",
+      "doarUrmare": true,
+      "conditii": { "flag": ["datorie_prieten"] },
+      "variabile": { "suma": 2000 },
+      "text": "Prietenul care ți-a împrumutat {suma} lei te întreabă, cam stânjenit, de bani.",
+      "alegeri": [
+        {
+          "id": "returnez",
+          "eticheta": "Îi dau banii înapoi",
+          "cere": { "baniMin": "{suma}" },
+          "efecte": { "numerar": "-{suma}", "retea": 10, "fericire": 3 },
+          "stergeFlaguri": ["datorie_prieten"],
+          "jurnal": "I-ai dat prietenului banii înapoi, la timp."
+        },
+        {
+          "id": "amanare",
+          "eticheta": "Îi cer încă 3 luni",
+          "cere": { "lipsaFlag": ["amanare_prieten"], "motiv": "Ai mai cerut o dată amânare." },
+          "efecte": { "retea": -5 },
+          "flaguri": ["amanare_prieten:12"],
+          "urmari": [{ "eveniment": "prieten-returnare", "dupaLuni": 3, "variabile": { "suma": "{suma}" } }],
+          "jurnal": "I-ai cerut prietenului încă 3 luni."
+        },
+        {
+          "id": "nu",
+          "eticheta": "Nu-i mai dau banii",
+          "efecte": { "retea": -30, "fericire": -10 },
+          "stergeFlaguri": ["datorie_prieten"],
+          "flaguri": ["prieten_pierdut"],
+          "lectie": "Ai păstrat banii, dar ai pierdut un prieten. Data viitoare n-o să mai ai pe cine suna.",
+          "jurnal": "Nu i-ai mai dat banii prietenului. Nu mai vorbiți."
+        }
+      ]
+    },
+    {
+      "id": "card-scadenta",
+      "titlu": "Extrasul cardului de credit",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["cardCredit"] },
+      "variabile": { "sold": "stare:soldCard", "minim": "stare:minimCard" },
+      "text": "A venit extrasul cardului de credit: ai de plată {sold} lei. Poți achita tot sau doar minimul de {minim} lei.",
+      "alegeri": [
+        {
+          "id": "integral",
+          "eticheta": "Achit tot",
+          "cere": { "baniMin": "{sold}" },
+          "seteazaProdus": { "cardCredit": { "plata": "integral" } },
+          "concepte": ["perioada-gratie"],
+          "lectie": "Ai plătit tot în perioada de grație, deci 0 lei dobândă. Cardul de credit e gratis doar așa."
+        },
+        {
+          "id": "minim",
+          "eticheta": "Plătesc doar minimul",
+          "seteazaProdus": { "cardCredit": { "plata": "minim" } },
+          "concepte": ["plata-minima"],
+          "lectie": "Restul rămâne pe card cu dobândă de peste 20% pe an. Plata minimă e capcana cardului."
+        }
+      ]
+    },
+    {
+      "id": "numerar-furat",
+      "titlu": "Plicul a dispărut",
+      "faza": [1, 2, 3, 4, 5],
+      "conditii": { "numerarMin": "balans:numerar.pragRiscFurt" },
+      "pondere": 1,
+      "cooldownLuni": 36,
+      "variabile": { "pierdere": "stare:numerarCash*0.4" },
+      "text": "Ajungi acasă și plicul cu bani nu mai e unde l-ai lăsat. Lipsesc {pierdere} lei.",
+      "alegeri": [
+        {
+          "id": "cont",
+          "eticheta": "Gata, îmi deschid cont la bancă",
+          "cere": { "lipsaProdus": ["contCurent"], "motiv": "Ai deja cont. Ce rămâne e să nu mai ții atâția bani în casă." },
+          "sursaPlata": "cash",
+          "efecte": { "numerar": "-{pierdere}", "fericire": -8 },
+          "stergeFlaguri": ["refuz_cont"],
+          "urmari": [{ "eveniment": "primul-cont", "dupaLuni": 1 }],
+          "concepte": ["garantarea-depozitelor"],
+          "lectie": "Banii din bancă sunt garantați prin lege până la 100.000 de euro. Cei din sertar nu-i garantează nimeni.",
+          "jurnal": "Ți-au dispărut {pierdere} lei din casă."
+        },
+        {
+          "id": "ascund",
+          "eticheta": "Data viitoare îi ascund mai bine",
+          "sursaPlata": "cash",
+          "efecte": { "numerar": "-{pierdere}", "fericire": -10 },
+          "concepte": ["garantarea-depozitelor"],
+          "lectie": "Numerarul din casă nu aduce dobândă și poate dispărea oricând. Ține acasă doar cât îți trebuie.",
+          "jurnal": "Ți-au dispărut {pierdere} lei din casă."
+        }
+      ]
+    }
+  ]
+}

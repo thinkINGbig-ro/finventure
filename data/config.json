@@ -1,0 +1,147 @@
+{
+  "_info": "Valori economice. Toate sumele sunt în lei, procentele ca fracții (0.10 = 10%). Fiecare valoare trebuie verificată cu un specialist: după verificare, puneți deVerificat: false și completați sursa.",
+
+  "taxe": {
+    "cas": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "contribuția la pensie, din brut" },
+    "cass": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "contribuția la sănătate, din brut" },
+    "impozitVenit": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "se aplică pe brut minus CAS, CASS și deduceri" },
+    "deducerePersonala": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "simplificat la 0; în realitate depinde de brut și de persoanele în întreținere" },
+    "impozitDobanzi": { "valoare": 0.10, "deVerificat": true, "sursa": "" },
+    "impozitCastiguriInvestitii": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "diferă după tipul investiției și al brokerului" }
+  },
+
+  "pfa": {
+    "procentRetineri": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "simplificare: impozit + CAS + CASS ca procent din venitul lunar" }
+  },
+
+  "muncaLaNegru": {
+    "procentNetDinBrut": { "valoare": 0.75, "deVerificat": true, "sursa": "", "nota": "cât primești în mână față de brutul unui job echivalent cu contract" }
+  },
+
+  "pilon2": {
+    "procentDinBrut": { "valoare": 0.0475, "deVerificat": true, "sursa": "", "nota": "parte din CAS, nu o reținere în plus" },
+    "randamentAnual": { "valoare": 0.06, "deVerificat": true, "sursa": "" }
+  },
+
+  "salarii": {
+    "barista": { "valoare": 2025, "deVerificat": true, "sursa": "", "nota": "brut lunar, part-time 4h" },
+    "curier": { "valoare": 4300, "deVerificat": true, "sursa": "", "nota": "brut lunar, full-time" },
+    "asistentBirou": { "valoare": 5000, "deVerificat": true, "sursa": "", "nota": "brut lunar, full-time, junior" },
+    "cresterePrinInflatie": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "fără negociere, salariul crește anual cu această fracție din inflație" }
+  },
+
+  "costTrai": {
+    "bazaLunara": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "mâncare, transport, telefon, ieșiri minime" },
+    "procentCumparaturi": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "partea din costul de trai care poate fi plătită cu cardul" }
+  },
+
+  "locuinte": {
+    "acasa": { "valoare": 300, "deVerificat": true, "sursa": "", "nota": "contribuție lunară la casa părinților" },
+    "camin": { "valoare": 450, "deVerificat": true, "sursa": "" },
+    "chirieColegi": { "valoare": 1300, "deVerificat": true, "sursa": "", "nota": "partea ta din chirie + utilități" },
+    "chirieSingur": { "valoare": 2600, "deVerificat": true, "sursa": "", "nota": "garsonieră + utilități" }
+  },
+
+  "studii": {
+    "facultateBuget": {
+      "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "" },
+      "durataLuni": { "valoare": 36, "deVerificat": true, "sursa": "", "nota": "licență de 3 ani" }
+    },
+    "facultateTaxa": {
+      "taxaAnuala": { "valoare": 4000, "deVerificat": true, "sursa": "" },
+      "durataLuni": { "valoare": 36, "deVerificat": true, "sursa": "" }
+    },
+    "scoalaProfesionala": {
+      "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "" },
+      "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    }
+  },
+
+  "inflatie": {
+    "medieAnuala": { "valoare": 0.05, "deVerificat": true, "sursa": "" },
+    "deviatieAnuala": { "valoare": 0.02, "deVerificat": true, "sursa": "" }
+  },
+
+  "conturi": {
+    "contCurent": {
+      "comisionLunar": { "valoare": 5, "deVerificat": true, "sursa": "" }
+    },
+    "contTineri": {
+      "comisionLunar": { "valoare": 0, "deVerificat": true, "sursa": "" },
+      "varstaMaxima": { "valoare": 25, "deVerificat": true, "sursa": "", "nota": "după vârsta asta devine cont curent standard" }
+    },
+    "contEconomii": {
+      "dobandaAnuala": { "valoare": 0.02, "deVerificat": true, "sursa": "" }
+    },
+    "depozit": {
+      "dobandaAnuala": { "valoare": 0.055, "deVerificat": true, "sursa": "" },
+      "luniStandard": { "valoare": 12, "deVerificat": true, "sursa": "" }
+    },
+    "garantareDepozite": {
+      "plafonEuro": { "valoare": 100000, "deVerificat": true, "sursa": "" },
+      "cursEuro": { "valoare": 5.0, "deVerificat": true, "sursa": "" }
+    }
+  },
+
+  "cardCredit": {
+    "dobandaAnuala": { "valoare": 0.22, "deVerificat": true, "sursa": "" },
+    "plataMinimaProcent": { "valoare": 0.05, "deVerificat": true, "sursa": "" },
+    "plataMinimaFixa": { "valoare": 50, "deVerificat": true, "sursa": "" },
+    "limitaStandard": { "valoare": 3000, "deVerificat": true, "sursa": "" }
+  },
+
+  "ifn": {
+    "dae": { "valoare": 1.2, "deVerificat": true, "sursa": "", "nota": "DAE anuală; la unele IFN trece de 100%" },
+    "luniFaraDobanda": { "valoare": 1, "deVerificat": true, "sursa": "", "nota": "unele IFN oferă prima lună fără dobândă la primul credit" }
+  },
+
+  "creditNevoiPersonale": {
+    "dae": { "valoare": 0.12, "deVerificat": true, "sursa": "" }
+  },
+
+  "restante": {
+    "penalitateLunara": { "valoare": 0.02, "deVerificat": true, "sursa": "", "nota": "procent lunar aplicat pe suma restantă" },
+    "luniPanaLaRaportare": { "valoare": 1, "deVerificat": true, "sursa": "", "nota": "după câte luni de întârziere ajungi la Biroul de Credit" },
+    "luniPanaLaCesiune": { "valoare": 4, "deVerificat": true, "sursa": "", "nota": "după câte luni datoria e vândută unei firme de recuperare" },
+    "luniPanaLaExecutare": { "valoare": 8, "deVerificat": true, "sursa": "", "nota": "după câte luni de la prima întârziere începe executarea silită" },
+    "comisionRecuperare": { "valoare": 0.15, "deVerificat": true, "sursa": "", "nota": "cheltuieli de recuperare și executare adăugate la datorie" },
+    "aniInIstoric": { "valoare": 4, "deVerificat": true, "sursa": "", "nota": "cât rămâne o întârziere în istoricul de la Biroul de Credit" }
+  },
+
+  "poprire": {
+    "procentMaxDinNet": { "valoare": 0.3333, "deVerificat": true, "sursa": "", "nota": "limita pentru datorii obișnuite (alte limite la pensia alimentară)" }
+  },
+
+  "investitii": {
+    "etf": {
+      "randamentAnual": { "valoare": 0.07, "deVerificat": true, "sursa": "" },
+      "volatilitateAnuala": { "valoare": 0.16, "deVerificat": true, "sursa": "" },
+      "comision": { "valoare": 0.005, "deVerificat": true, "sursa": "" },
+      "socCrash": { "valoare": -0.30, "deVerificat": true, "sursa": "" }
+    },
+    "actiuni": {
+      "randamentAnual": { "valoare": 0.08, "deVerificat": true, "sursa": "" },
+      "volatilitateAnuala": { "valoare": 0.25, "deVerificat": true, "sursa": "" },
+      "comision": { "valoare": 0.005, "deVerificat": true, "sursa": "" },
+      "socCrash": { "valoare": -0.35, "deVerificat": true, "sursa": "" }
+    },
+    "crypto": {
+      "randamentAnual": { "valoare": 0.10, "deVerificat": true, "sursa": "" },
+      "volatilitateAnuala": { "valoare": 0.70, "deVerificat": true, "sursa": "" },
+      "comision": { "valoare": 0.01, "deVerificat": true, "sursa": "" },
+      "socCrash": { "valoare": -0.60, "deVerificat": true, "sursa": "" }
+    },
+    "aur": {
+      "randamentAnual": { "valoare": 0.04, "deVerificat": true, "sursa": "" },
+      "volatilitateAnuala": { "valoare": 0.15, "deVerificat": true, "sursa": "" },
+      "comision": { "valoare": 0.01, "deVerificat": true, "sursa": "" },
+      "socCrash": { "valoare": 0.05, "deVerificat": true, "sursa": "", "nota": "aurul tinde să crească în crize" }
+    },
+    "titluriStat": {
+      "dobandaAnuala": { "valoare": 0.06, "deVerificat": true, "sursa": "", "nota": "Tezaur/Fidelis, cupon fix" },
+      "luniMaturitate": { "valoare": 24, "deVerificat": true, "sursa": "" },
+      "comision": { "valoare": 0, "deVerificat": true, "sursa": "" }
+    },
+    "probabilitateCrashAnual": { "valoare": 0.06, "deVerificat": true, "sursa": "" }
+  }
+}

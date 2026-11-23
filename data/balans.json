@@ -1,0 +1,71 @@
+{
+  "_info": "Parametri de joc (echilibrare), NU valori economice reale. Valorile economice stau în config.json. Sumele sunt în lei.",
+
+  "start": {
+    "evenimentStart": "dupa-liceu",
+    "numerar": 1500,
+    "fericire": 70,
+    "energie": 80,
+    "skill": 30,
+    "scorCredit": 50,
+    "retea": 40,
+    "reputatie": 10
+  },
+
+  "evenimente": {
+    "sloturiMin": 1,
+    "sloturiMax": 3,
+    "opririMaxPeAn": 4,
+    "alegeriMax": 6,
+    "cooldownImplicitLuni": 12
+  },
+
+  "lunar": {
+    "energieRevenire": 0.15,
+    "energieTinta": 75,
+    "fericireTinta": 60,
+    "fericireRevenire": 0.1,
+    "lipsaBaniFericire": 6,
+    "lipsaBaniEnergie": 3,
+    "restantaFericire": 3,
+    "studiiEnergie": 1,
+    "scorCreditPenalizareLunara": 6,
+    "scorCreditCrestereLunara": 0.3
+  },
+
+  "statistici": {
+    "baniLuniPentru100": 3,
+    "viitorLuniEconomiiPentru60": 12,
+    "viitorStudii": { "liceu": 5, "profesionala": 10, "licenta": 20 },
+    "viitorPensieMax": 20
+  },
+
+  "studii": {
+    "facultateBuget": { "nivel": "licenta", "skillLaFinal": 15 },
+    "facultateTaxa": { "nivel": "licenta", "skillLaFinal": 15 },
+    "scoalaProfesionala": { "nivel": "profesionala", "skillLaFinal": 10 }
+  },
+
+  "cardCredit": {
+    "scorCreditMinim": 40
+  },
+
+  "faze": {
+    "varstaMinima": { "2": 19, "3": 25, "4": 28, "5": 35 },
+    "faza4VarstaMin": 25,
+    "faza4LuniVechime": 36
+  },
+
+  "gameOver": {
+    "falimentPragDatorii": 10000,
+    "falimentLuni": 6
+  },
+
+  "numerar": {
+    "pragRiscFurt": 5000
+  },
+
+  "salvare": {
+    "checkpointuriMax": 5
+  }
+}

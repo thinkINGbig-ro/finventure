@@ -1,0 +1,35 @@
+{
+  "_info": "Salariile stau în config.json (salarii.<cheie>). Aici: descrierea jobului și efectul lunar asupra stărilor.",
+  "joburi": [
+    {
+      "id": "barista",
+      "titlu": "barista",
+      "program": "part-time",
+      "salariu": "salarii.barista",
+      "energieLunara": -2,
+      "fericireLunara": 0,
+      "skillAnual": 2,
+      "contracte": ["cim", "negru"]
+    },
+    {
+      "id": "curier",
+      "titlu": "curier",
+      "program": "full-time",
+      "salariu": "salarii.curier",
+      "energieLunara": -4,
+      "fericireLunara": -1,
+      "skillAnual": 2,
+      "contracte": ["cim", "pfa", "negru"]
+    },
+    {
+      "id": "asistent-birou",
+      "titlu": "asistent de birou",
+      "program": "full-time",
+      "salariu": "salarii.asistentBirou",
+      "energieLunara": -3,
+      "fericireLunara": 0,
+      "skillAnual": 4,
+      "contracte": ["cim"]
+    }
+  ]
+}

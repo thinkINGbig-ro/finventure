@@ -1,0 +1,95 @@
+{
+  "_info": "Enciclopedia Finventure. Text de 3–5 propoziții, cu un exemplu în lei. Cifrele din exemple sunt ilustrative.",
+  "concepte": [
+    {
+      "id": "cim",
+      "titlu": "Contractul de muncă (CIM)",
+      "text": "Contractul individual de muncă e acordul scris dintre tine și angajator. Din el ies vechimea, asigurarea medicală și contribuțiile la pensie. Fără contract („la negru”) poate primești mai mulți bani în mână azi, dar nu strângi nimic pentru mai târziu. Exemplu: 3 ani la negru înseamnă 3 ani care lipsesc la calculul pensiei."
+    },
+    {
+      "id": "brut-net",
+      "titlu": "Salariul brut și net",
+      "text": "Brutul e salariul din contract, netul e ce primești pe card. Din brut se rețin CAS (pensie), CASS (sănătate) și impozitul pe venit. Exemplu: la 4.050 lei brut rămân cam 2.370 lei net. Când negociezi, întreabă mereu dacă suma e brută sau netă."
+    },
+    {
+      "id": "iban",
+      "titlu": "IBAN",
+      "text": "IBAN-ul e „adresa” contului tău bancar: un cod de 24 de caractere care începe cu RO. Îl dai oricui trebuie să-ți trimită bani: angajatorului, părinților, unui prieten. Nu e secret, dar codul PIN și datele cardului sunt. Exemplu: angajatorul îți cere IBAN-ul ca să-ți vireze salariul de 2.400 lei."
+    },
+    {
+      "id": "comisioane",
+      "titlu": "Comisioane bancare",
+      "text": "Băncile câștigă bani și din comisioane: administrare cont, retrageri de la alte bănci, transferuri. Sumele par mici, dar se adună. Exemplu: 5 lei pe lună administrare înseamnă 60 de lei pe an, adică un abonament la streaming. Multe bănci au pachete fără comision pentru tineri sau studenți."
+    },
+    {
+      "id": "fond-urgenta",
+      "titlu": "Fondul de urgență",
+      "text": "Fondul de urgență sunt bani puși deoparte doar pentru neprevăzut: un laptop stricat, o cheltuială medicală, o lună fără salariu. Ideal acoperă 3–6 luni de cheltuieli și stă într-un cont din care îi poți scoate oricând. Nu e o investiție, e o plasă de siguranță. Exemplu: la 2.500 lei cheltuieli pe lună, un fond de 7.500 lei îți dă 3 luni de liniște."
+    },
+    {
+      "id": "depozit",
+      "titlu": "Depozitul bancar",
+      "text": "Un depozit înseamnă că îi lași băncii o sumă pentru o perioadă fixă (de exemplu 12 luni), iar ea îți dă dobândă. Dacă scoți banii înainte de termen, pierzi de obicei dobânda. Exemplu: 5.000 lei la 5,5% pe an aduc cam 250 lei după impozit, dar numai dacă nu spargi depozitul. De asta depozitul nu e un fond de urgență bun."
+    },
+    {
+      "id": "garantarea-depozitelor",
+      "titlu": "Garantarea depozitelor",
+      "text": "Banii ținuți la o bancă din România sunt garantați prin lege până la echivalentul a 100.000 de euro de persoană, la fiecare bancă. Dacă banca dă faliment, Fondul de Garantare îți dă banii înapoi. Banii ținuți în casă nu sunt garantați de nimeni. Exemplu: 3.000 lei furați din sertar sunt pierduți definitiv."
+    },
+    {
+      "id": "ifn",
+      "titlu": "IFN (credit rapid)",
+      "text": "IFN-urile sunt instituții financiare nebancare: dau credite repede, cu puține acte, dar mult mai scump decât o bancă. Sunt utile doar pentru sume mici, returnate foarte repede. Exemplu: 2.000 lei luați pe 6 luni la un DAE mare pot ajunge să coste câteva sute de lei în plus. Citește contractul înainte să semnezi."
+    },
+    {
+      "id": "dae",
+      "titlu": "DAE (dobânda anuală efectivă)",
+      "text": "DAE arată cât te costă un credit pe an, cu tot cu dobânda și comisioanele. E cifra corectă pentru a compara două oferte, nu „rata mică”. Exemplu: un credit cu DAE 12% și unul cu DAE 120% pot avea rate care par apropiate pe termen scurt, dar costul total diferă enorm. Legea obligă creditorii să afișeze DAE."
+    },
+    {
+      "id": "contract-credit",
+      "titlu": "Contractul de credit",
+      "text": "Contractul spune exact cât plătești, când și ce se întâmplă dacă întârzii. Caută: DAE, costul total, comisionul de rambursare anticipată și penalitățile. Ai dreptul să primești informațiile înainte să semnezi. Exemplu: unele IFN-uri dau prima lună fără dobândă, dar numai dacă returnezi tot în 30 de zile."
+    },
+    {
+      "id": "cost-total-credit",
+      "titlu": "Costul total al creditului",
+      "text": "Costul total e diferența dintre cât dai înapoi și cât ai împrumutat. O rată mică pe termen lung poate ascunde un cost total uriaș. Exemplu: împrumuți 2.000 lei și plătești 6 rate de 420 lei, deci 2.520 lei: costul total e 520 lei. Compară mereu suma totală de plată."
+    },
+    {
+      "id": "spirala-datoriilor",
+      "titlu": "Spirala datoriilor",
+      "text": "Spirala datoriilor începe când iei un credit ca să plătești alt credit. Datoria nu scade, doar se mută, iar dobânzile se adună. Exemplu: iei 2.500 lei de la un IFN ca să acoperi 2.200 lei datorați altuia, iar peste câteva luni datorezi 3.000. Ieșirea: buget strict, venit în plus și discuție cu creditorul pentru reeșalonare."
+    },
+    {
+      "id": "biroul-de-credit",
+      "titlu": "Biroul de Credit",
+      "text": "Biroul de Credit ține evidența creditelor tale și a întârzierilor la plată. Băncile se uită acolo înainte să-ți dea un credit nou. O întârziere rămâne în istoric câțiva ani, chiar dacă ai plătit între timp. Exemplu: o restanță la un IFN de 500 lei te poate costa un credit ipotecar peste 3 ani."
+    },
+    {
+      "id": "perioada-gratie",
+      "titlu": "Perioada de grație",
+      "text": "La cardul de credit, perioada de grație e timpul în care poți returna cumpărăturile fără dobândă (de obicei până la 50–55 de zile). Dacă achiți tot soldul până la scadență, cardul nu te costă nimic. Exemplu: cumperi de 2.000 lei pe card și plătești 2.000 lei la scadență: dobânda e 0. Asta e singura folosire „gratuită” a cardului de credit."
+    },
+    {
+      "id": "plata-minima",
+      "titlu": "Plata minimă",
+      "text": "Plata minimă e suma mică pe care banca o cere lunar la cardul de credit (de exemplu 5% din sold). Te ține „la zi”, dar restul soldului rămâne pe card cu dobândă de peste 20% pe an. Exemplu: dacă plătești doar minimul la 2.000 lei, îți ia ani să scapi și plătești sute de lei dobândă. E cea mai comună capcană a cardului de credit."
+    },
+    {
+      "id": "rata",
+      "titlu": "Rata",
+      "text": "Rata e suma pe care o plătești lunar pentru un credit: o parte acoperă dobânda, restul scade datoria. La început, din rată pleacă mai mult pe dobândă. Exemplu: la un credit de 10.000 lei, primele rate scad datoria mai încet decât ultimele. Înainte să iei un credit, verifică dacă rata încape în buget și într-o lună proastă."
+    },
+    {
+      "id": "poprire",
+      "titlu": "Poprirea",
+      "text": "Poprirea apare când un executor recuperează o datorie direct din salariul tău. Angajatorul e obligat să rețină o parte din net (de regulă până la o treime) și să o trimită creditorului. Exemplu: la 3.000 lei net, poți primi doar 2.000 lei pe lună până se acoperă datoria. Ajungi aici după luni de întârzieri ignorate."
+    },
+    {
+      "id": "dobanda-compusa",
+      "titlu": "Dobânda compusă",
+      "text": "Dobânda compusă înseamnă că și câștigurile tale încep să câștige. Cu cât lași banii mai mult, cu atât efectul e mai mare. Exemplu: 200 lei pe lună la 7% pe an devin cam 34.600 lei după 10 ani, deși ai pus doar 24.000. Timpul contează mai mult decât suma de start."
+    }
+  ]
+}

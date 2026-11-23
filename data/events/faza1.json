@@ -1,0 +1,121 @@
+{
+  "evenimente": [
+    {
+      "id": "dupa-liceu",
+      "titlu": "Și acum ce faci?",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "text": "Ai luat bacul! Toată lumea te întreabă același lucru: „Și acum ce faci?”",
+      "alegeri": [
+        {
+          "id": "facultate-buget",
+          "eticheta": "Dau la facultate, la buget",
+          "cere": { "ascunse": { "skill": { "min": 30 } }, "motiv": "Media de la bac nu ajunge pentru buget." },
+          "situatie": { "studii": "facultateBuget", "locuinta": "camin" },
+          "recurente": [{ "tip": "venit", "suma": 1400, "luni": 36, "eticheta": "Bani de la părinți" }],
+          "efecte": { "skill": 5, "fericire": 5 },
+          "jurnal": "Ai intrat la facultate, la buget, și te-ai mutat la cămin."
+        },
+        {
+          "id": "facultate-taxa",
+          "eticheta": "Facultate cu taxă, stau acasă",
+          "situatie": { "studii": "facultateTaxa", "locuinta": "acasa" },
+          "recurente": [{ "tip": "venit", "suma": 1500, "luni": 36, "eticheta": "Bani de la părinți (inclusiv taxa)" }],
+          "efecte": { "skill": 5 },
+          "jurnal": "Ai intrat la o facultate cu taxă și ai rămas acasă."
+        },
+        {
+          "id": "munca",
+          "eticheta": "Mă angajez direct",
+          "job": { "id": "curier", "contract": "cim" },
+          "situatie": { "locuinta": "acasa" },
+          "urmari": [{ "eveniment": "primul-cont", "dupaLuni": 1 }],
+          "efecte": { "fericire": 3 },
+          "concepte": ["cim"],
+          "lectie": "Cu contract de muncă strângi vechime și contribuții la pensie din prima zi.",
+          "jurnal": "Te-ai angajat curier, cu contract de muncă."
+        },
+        {
+          "id": "sabatic",
+          "eticheta": "Îmi iau un an sabatic",
+          "recurente": [{ "tip": "venit", "suma": 800, "luni": 12, "eticheta": "Bani de la părinți" }],
+          "flaguri": ["an_sabatic:12"],
+          "efecte": { "fericire": 10 },
+          "jurnal": "Ți-ai luat un an liber să te gândești ce vrei."
+        }
+      ]
+    },
+    {
+      "id": "primul-cont",
+      "titlu": "Un cont la bancă",
+      "faza": [1, 2, 3],
+      "conditii": { "lipsaProdus": ["contCurent"], "lipsaFlag": ["refuz_cont"] },
+      "pondere": 4,
+      "maxAparitii": 2,
+      "text": "Treci pe lângă o bancă și vezi afișul: „Cont gratuit pentru tineri, card de debit pe loc”. Toți colegii au deja card.",
+      "alegeri": [
+        {
+          "id": "tineri",
+          "eticheta": "Cont pentru tineri, fără comision",
+          "cere": { "varstaMax": 25, "motiv": "Contul pentru tineri e doar până la 25 de ani." },
+          "produsNou": { "tip": "contCurent", "pachet": "tineri" },
+          "transferaInCont": "tot",
+          "concepte": ["iban", "comisioane"],
+          "lectie": "IBAN-ul e adresa contului tău. Îl dai când primești bani, nu e secret.",
+          "jurnal": "Ți-ai deschis primul cont bancar, un cont pentru tineri."
+        },
+        {
+          "id": "standard",
+          "eticheta": "Cont curent standard",
+          "produsNou": { "tip": "contCurent", "pachet": "standard" },
+          "transferaInCont": "tot",
+          "concepte": ["iban", "comisioane"],
+          "lectie": "5 lei pe lună comision par nimic, dar fac 60 de lei pe an. Compară pachetele.",
+          "jurnal": "Ți-ai deschis primul cont bancar."
+        },
+        {
+          "id": "cash",
+          "eticheta": "Nu-mi trebuie, merg pe cash",
+          "flaguri": ["refuz_cont:12"],
+          "jurnal": "Ai rămas pe cash. Banii stau în sertar."
+        }
+      ]
+    },
+    {
+      "id": "oferta-job",
+      "titlu": "Se caută barista",
+      "faza": [1, 2, 3],
+      "conditii": { "job": ["niciunul"] },
+      "pondere": 5,
+      "cooldownLuni": 6,
+      "checkpoint": true,
+      "variabile": { "brut": "config:salarii.barista" },
+      "text": "Cafeneaua din colț caută barista part-time. Patronul îți zice: „Cu carte de muncă e {brut} lei brut. Sau îți dau mai mult în mână, fără acte. Cum vrei.”",
+      "alegeri": [
+        {
+          "id": "cim",
+          "eticheta": "Cu contract de muncă",
+          "job": { "id": "barista", "contract": "cim" },
+          "urmari": [{ "eveniment": "primul-cont", "dupaLuni": 1 }],
+          "concepte": ["cim", "brut-net"],
+          "lectie": "Primești mai puțin în mână, dar strângi vechime, asigurare medicală și pensie.",
+          "jurnal": "Te-ai angajat barista, cu contract de muncă."
+        },
+        {
+          "id": "negru",
+          "eticheta": "La negru, mai mulți bani acum",
+          "job": { "id": "barista", "contract": "negru" },
+          "flaguri": ["munca_la_negru"],
+          "concepte": ["cim"],
+          "lectie": "Banii în plus de azi vin fără vechime, fără asigurare medicală și fără pensie. Consecințele apar mai târziu.",
+          "jurnal": "Te-ai angajat barista, la negru."
+        },
+        {
+          "id": "refuz",
+          "eticheta": "Nu acum",
+          "jurnal": "Ai refuzat un job de barista."
+        }
+      ]
+    }
+  ]
+}
