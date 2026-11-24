@@ -10,7 +10,9 @@ export const MOTOR = {
     'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job'],
   flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat'],
   evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta'],
-  concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare'],
+  concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare',
+    // din acțiunile meniului „Datoriile mele” (js/datorii.js)
+    'rambursare-anticipata', 'avalansa-bulgare', 'refinantare', 'esalonare'],
 };
 
 const numeFlag = (f) => f.split(':')[0];

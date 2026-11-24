@@ -149,6 +149,14 @@
     "costCautareJob": 1
   },
 
+  "datorii": {
+    "_info": "Meniul „Datoriile mele”. Opțiunile de durată sunt în luni.",
+    "luniEsalonare": [6, 12, 24],
+    "luniRefinantare": [24, 36, 60],
+    "scorCreditRefinantare": 45,
+    "luniRestanteAnuleazaEsalonarea": 2
+  },
+
   "salvare": {
     "checkpointuriRecente": 5,
     "checkpointuriMax": 10

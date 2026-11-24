@@ -240,6 +240,20 @@
     "probabilitateCrashAnual": { "valoare": 0.06, "deVerificat": true, "sursa": "" }
   },
 
+  "rambursareAnticipata": {
+    "comisionDobandaFixa": { "valoare": 0.01, "deVerificat": true, "sursa": "", "nota": "procent din suma rambursată, la creditele cu dobândă fixă (plafonat de lege)" },
+    "comisionDobandaVariabila": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "la dobânda variabilă, rambursarea anticipată e fără comision" }
+  },
+
+  "refinantare": {
+    "dae": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "DAE la un credit de refinanțare / consolidare a datoriilor de consum" }
+  },
+
+  "esalonareRecuperator": {
+    "dobanda": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "firmele de recuperare acceptă des plata în rate fără dobândă în plus; costurile sunt deja incluse în datorie" },
+    "avansProcent": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "prima plată cerută ca să accepte eșalonarea" }
+  },
+
   "activitati": {
     "_info": "Prețurile activităților din meniul „Activități”, la prețurile de start (se ajustează cu inflația).",
     "abonamentSala3Luni": { "valoare": 450, "deVerificat": true, "sursa": "", "nota": "abonament la sală pe 3 luni" },

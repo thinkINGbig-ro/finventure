@@ -401,8 +401,8 @@ Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
 |---|---|---|
 | 0 | Bug-uri: plata restanțelor din Bancă, mesaj la fiecare acțiune din meniu, ecranul „Ce s-a întâmplat” după o decizie urmată de alt card | ✅ pe `main` |
 | 1 | Meniul „Activități” (`data/activitati.json`, `js/activitati.js`): 16 activități cu buget anual de timp (`balans.timp`); Enciclopedia mutată în antet (📖); salvări versiunea 2 cu migrare | ✅ |
-| 2 | Datoriile mele: lista unificată, rambursare parțială/anticipată, eșalonare, refinanțare/consolidare, avalanșă vs. bulgăre de zăpadă | în lucru |
-| 3 | Educație: studii la orice vârstă, master, doctorat, postliceală, cursuri, certificări, permis, credit de studii, bursă | |
+| 2 | Datoriile mele (`js/datorii.js`, panou din Bancă): lista unificată cu costul total rămas, plata restanței, rambursare parțială (scade rata / durata, cu dobânda economisită și comision la dobânda fixă), eșalonare la recuperator (se anulează la 2 luni de întârziere), refinanțare / consolidare (istoric + grad de îndatorare); 4 concepte noi | ✅ |
+| 3 | Educație: studii la orice vârstă, master, doctorat, postliceală, cursuri, certificări, permis, credit de studii, bursă | în lucru |
 | 4a/4b | Investiții: meniu complet, DCA, portofoliu, rebalansare, grafic; imobiliare de închiriat | |
 | 5 | Joburi și muncă: joburi noi (inclusiv artist, cu venit variabil), ritm de muncă, ore suplimentare, al doilea job, demisie | |
 | 6a/6b | Afacere proprie: pornire (domeniu, formă juridică, capital, pregătire), funcționare (decizii, profit vs. cash flow, riscuri, vânzare/închidere/insolvență) | |
@@ -416,6 +416,7 @@ Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 
 |---|---|---|---|---|
 | înainte (faza F) | 100 / 0 | 100 / 0 | ~55 / ~45 | ~24 / ~76 |
 | 1 | 100 / 0 | 100 / 0 | 54,2 / 45,8 | 24 / 76 |
+| 2 | 100 / 0 | 100 / 0 | 51,6 / 48,4 | 15,6 / 84,4 (cauza: riscantul își consolidează cardul pe 60 de luni și îl umple din nou; verificat pe aceleași vieți: 24% fără consolidare) |
 
 Reguli pentru extindere:
 - Fiecare lot: teste noi (`tests/loturi.js`), analiza conținutului fără erori, simularea cu cele 4 profiluri (`--n 200` intermediar, `--n 500` la final de lot; profilurile folosesc și opțiunile noi), UI verificat la 360 px, commit separat per lot / sub-lot.

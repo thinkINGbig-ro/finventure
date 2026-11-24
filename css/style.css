@@ -261,6 +261,9 @@ button { cursor: pointer; }
 .punct { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--main); }
 .punct.plin { background: var(--main); }
 .motiv-indisponibil { margin-top: 4px; }
+.restanta { color: var(--loss); }
+.previzualizare { margin: 4px 0 0; min-height: 0; }
+.sub-sectiune { border-top: 1px solid var(--linie); margin-top: 10px; padding-top: 8px; }
 .btn[aria-disabled="true"] { opacity: .55; }
 .lectie-rezultat { background: var(--bg-3); border-left: 4px solid var(--main); border-radius: var(--raza-mica); padding: 10px 12px; font-size: 15px; }
 

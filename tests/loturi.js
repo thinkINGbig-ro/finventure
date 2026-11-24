@@ -2,7 +2,8 @@
 
 import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, oprireCurenta } from '../js/engine.js';
 import { textRezultat } from '../js/events.js';
-import { baniDisponibili, creeazaProdus } from '../js/finance.js';
+import { baniDisponibili, creeazaProdus, datorieProdus } from '../js/finance.js';
+import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
@@ -12,6 +13,121 @@ export function testeLoturi(ctxBaza, a) {
   return {
     ...lot0(ctxBaza, a),
     ...lot1(ctxBaza, a),
+    ...lot2(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 2: Datoriile mele ----------
+
+function lot2(ctxBaza, a) {
+  const { ok, egal } = a;
+  const jocCuDatorii = (seed) => {
+    const { ctx, state } = a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.numerar = inBani(100_000);
+    const credit = (spec) => {
+      const p = creeazaProdus({ tip: 'credit', ...spec, suma: inBani(spec.suma) }, state, ctx);
+      state.produse.push(p);
+      return p;
+    };
+    return { ctx, state, credit };
+  };
+  return {
+    'lotul 2: lista arată toate datoriile, cu sold, rată, DAE și costul total rămas'() {
+      const { ctx, state, credit } = jocCuDatorii('lista');
+      const c = credit({ furnizor: 'banca', suma: 10_000, dae: 0.12, luni: 24 });
+      const f = creeazaProdus({ tip: 'factura', categorie: 'telefon' }, state, ctx);
+      f.restanta = inBani(100); f.luniRestanta = 1;
+      state.produse.push(f);
+      const card = creeazaProdus({ tip: 'cardCredit' }, state, ctx);
+      card.soldScadent = inBani(2000);
+      state.produse.push(card);
+      const lista = listaDatorii(state, ctx);
+      const dc = lista.find((d) => d.id === c.id);
+      ok(dc && dc.rata > 0 && dc.dae === 0.12 && dc.luniRamase === 24, 'creditul are rată, DAE și durată');
+      ok(dc.costRamas > c.rest, 'costul total rămas include dobânda');
+      ok(lista.find((d) => d.id === f.id)?.restanta === f.restanta, 'factura restantă apare');
+      const dCard = lista.find((d) => d.id === card.id);
+      ok(dCard.doarMinim.total > card.soldScadent && dCard.doarMinim.luni > 12, 'la card: costul plății minime');
+    },
+
+    'lotul 2: rambursarea parțială economisește dobândă; „termin mai repede” economisește mai mult'() {
+      const { ctx, state, credit } = jocCuDatorii('partial');
+      const c = credit({ furnizor: 'banca', suma: 20_000, dae: 0.12, luni: 60, variabila: false });
+      const r = simuleazaRambursare(c, inBani(5000), 'rata', ctx);
+      const t = simuleazaRambursare(c, inBani(5000), 'durata', ctx);
+      ok(r.economie > 0 && t.economie > r.economie, `economii: rată ${r.economie}, durată ${t.economie}`);
+      ok(r.rataNoua < c.rata && t.luniNoi < c.luniRamase, 'rata scade, respectiv durata scade');
+      const cost = costRamasCredit(c);
+      const rez = actiune(state, ctx, 'ramburseazaPartial', { id: c.id, suma: 5000, mod: 'durata' });
+      ok(rez.ok, rez.mesaj);
+      egal(cost - costRamasCredit(c) - inBani(5000) - t.comision, t.economie, 'economia anunțată e cea reală');
+      ok(state.concepte.includes('rambursare-anticipata'), 'conceptul s-a deblocat');
+      const tot = actiune(state, ctx, 'ramburseazaPartial', { id: c.id, suma: 1_000_000, mod: 'rata' });
+      ok(tot.ok && !state.produse.includes(c), 'o sumă cât tot creditul îl închide');
+    },
+
+    'lotul 2: lecția spune metoda folosită (avalanșă / bulgăre de zăpadă)'() {
+      const { ctx, state, credit } = jocCuDatorii('metoda');
+      const scump = credit({ furnizor: 'ifn', suma: 5000, dae: 1.2, luni: 12 });
+      const mic = credit({ furnizor: 'banca', suma: 1000, dae: 0.12, luni: 12 });
+      credit({ furnizor: 'banca', suma: 8000, dae: 0.15, luni: 24 });
+      const r1 = actiune(state, ctx, 'ramburseazaPartial', { id: scump.id, suma: 500, mod: 'durata' });
+      ok(/avalanșă/.test(r1.lectie), `avalanșă: ${r1.lectie}`);
+      const r2 = actiune(state, ctx, 'ramburseazaPartial', { id: mic.id, suma: 100, mod: 'durata' });
+      ok(/bulgărelui/.test(r2.lectie), `bulgăre: ${r2.lectie}`);
+      ok(state.concepte.includes('avalansa-bulgare'), 'conceptul s-a deblocat');
+    },
+
+    'lotul 2: plata restanței oprește întârzierea'() {
+      const { ctx, state, credit } = jocCuDatorii('restanta');
+      const c = credit({ furnizor: 'banca', suma: 5000, dae: 0.12, luni: 12 });
+      c.restanta = inBani(500); c.luniRestanta = 2;
+      const r = actiune(state, ctx, 'platesteRestanta', { id: c.id });
+      ok(r.ok, r.mesaj);
+      egal(c.restanta, 0, 'restanța e zero');
+      egal(c.luniRestanta, 0, 'nu mai e în întârziere');
+    },
+
+    'lotul 2: eșalonarea la recuperator oprește executarea; întârzierile o anulează'() {
+      const { ctx, state, credit } = jocCuDatorii('esalonare');
+      const c = credit({ furnizor: 'banca', suma: 3000, dae: 0.12, luni: 12 });
+      Object.assign(c, { stadiu: 'cesionat', furnizor: 'recuperator', rest: 0, restanta: inBani(3000), luniRestanta: 6 });
+      const r = actiune(state, ctx, 'esaloneaza', { id: c.id, luni: 12 });
+      ok(r.ok, r.mesaj);
+      ok(c.stadiu === 'activ' && c.esalonat && c.luniRestanta === 0, 'datoria e acum în rate');
+      ok(state.concepte.includes('esalonare'), 'conceptul s-a deblocat');
+      // Fără bani, ratele nu se plătesc: după câteva luni, înțelegerea se anulează.
+      state.recurente = [];
+      for (const p of state.produse) if (p.tip === 'contractMunca') state.produse = state.produse.filter((x) => x !== p);
+      state.numerar = 0;
+      for (const p of state.produse) if (p.tip === 'contCurent' || p.tip === 'contEconomii') p.sold = 0;
+      for (let i = 0; i < 4 && !state.final; i++) a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+      ok(!state.produse.some((p) => p.esalonat), 'eșalonarea nu mai există');
+      ok(state.jurnal.some((j) => /eșalonare: înțelegerea s-a anulat|ratele din eșalonare/.test(j.text)), 'jurnalul spune că s-a anulat');
+    },
+
+    'lotul 2: refinanțarea: refuzată cu istoric prost sau grad de îndatorare mare; altfel închide datoriile vechi'() {
+      const { ctx, state, credit } = jocCuDatorii('consolidare');
+      const ifn = credit({ furnizor: 'ifn', suma: 3000, dae: 1.2, luni: 12 });
+      const card = creeazaProdus({ tip: 'cardCredit' }, state, ctx);
+      card.soldScadent = inBani(2500);
+      state.produse.push(card);
+      state.flaguri.istoric_restante = { setatLa: 0, expiraLa: null };
+      ok(/Biroul de Credit/.test(actiune(state, ctx, 'consolideaza', { ids: [ifn.id, card.id], luni: 36 }).mesaj), 'istoricul prost blochează');
+      delete state.flaguri.istoric_restante;
+      state.ascunse.scorCredit = 70;
+      const sim = simuleazaConsolidare(state, ctx, [ifn.id, card.id], 36);
+      ok(sim.ok && sim.rataNoua < sim.rateVechi, `rata nouă mai mică: ${sim.mesaj ?? ''}`);
+      const mare = credit({ furnizor: 'banca', suma: 400_000, dae: 0.12, luni: 24 });
+      ok(/îndatorare|venitul tău net/.test(simuleazaConsolidare(state, ctx, [ifn.id], 36).mesaj ?? ''), 'gradul de îndatorare mare blochează');
+      state.produse = state.produse.filter((p) => p !== mare);
+      const r = actiune(state, ctx, 'consolideaza', { ids: [ifn.id, card.id], luni: 36 });
+      ok(r.ok, r.mesaj);
+      ok(!state.produse.includes(ifn) && datorieProdus(card) === 0, 'datoriile vechi sunt închise');
+      ok(state.produse.some((p) => p.tip === 'credit' && p.furnizor === 'refinantare' && p.rest === sim.suma), 'creditul nou are suma lor');
+      ok(r.lectie && state.concepte.includes('refinantare'), 'lecție și concept');
+    },
   };
 }
 
@@ -165,6 +281,10 @@ function lot0(ctxBaza, a) {
         cereMarire: [{}],
         cautaJob: [{}],
         activitate: [{ activitate: 'alergare' }, { activitate: 'nu-exista' }, { activitate: 'exersezi-hobby' }],
+        platesteRestanta: [{ id: id('contCurent') }, {}],
+        ramburseazaPartial: [{ id: id('contCurent'), suma: 100 }],
+        esaloneaza: [{ id: id('contCurent'), luni: 12 }, {}],
+        consolideaza: [{ ids: [], luni: 36 }, { ids: [id('contEconomii')], luni: 36 }],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

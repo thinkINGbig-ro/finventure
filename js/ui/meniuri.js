@@ -1,18 +1,18 @@
-// Meniurile dintre „Avansează”-uri. Bancă și Concepte sunt funcționale; restul vin odată cu conținutul.
+// Meniurile dintre „Avansează”-uri: Activități, Bancă (cu „Datoriile mele”), Carieră, Cumpărături,
+// Enciclopedia și meniul jocului. Fiecare acțiune trece prin motor și afișează mesajul întors.
 
 import { actiune, sansaMarire } from '../engine.js';
 import { contractCurent, jobCurent } from '../cariera.js';
-import { fluturas } from '../finance.js';
-import { cardDisponibil, contCurent, datorieProdus, fondUrgenta, plataMinimaCard } from '../finance.js';
-import { NUME_FACTURI } from '../events.js';
-import { cfg, inBani, varstaLa } from '../util.js';
+import { cardDisponibil, contCurent, fluturas, fondUrgenta, plataMinimaCard } from '../finance.js';
+import { bal, cfg, inBani, varstaLa } from '../util.js';
 import { ani, h, lei, procent } from './dom.js';
 import { confirma } from './ecrane.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../activitati.js';
+import { datoriiTotal, listaDatorii, simuleazaConsolidare, simuleazaEsalonare, simuleazaRambursare } from '../datorii.js';
 
 const TITLURI = {
-  meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
+  meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', datorii: 'Datoriile mele', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
 };
 const IN_CURAND = {
   investitii: 'Aici vei putea cumpăra ETF-uri, acțiuni, titluri de stat, aur sau crypto și vei vedea cum crește (sau scade) portofoliul.',
@@ -34,6 +34,7 @@ export function deschidePanou(tab, optiuni) {
 function continutPanou(tab, o, reranda) {
   if (tab === 'activitati') return panouActivitati(o, reranda);
   if (tab === 'banca') return panouBanca(o, reranda);
+  if (tab === 'datorii') return panouDatorii(o, reranda);
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
   if (tab === 'cariera') return panouCariera(o, reranda);
   if (tab === 'cumparaturi') return panouCumparaturi(o, reranda);
@@ -188,27 +189,119 @@ function panouBanca(o, reranda) {
     sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('deschide', { tip: 'cardCredit' }, 'Banca ți-a aprobat cardul de credit.') }, 'Cere un card de credit')));
   }
 
-  // Datorii
-  const datorii = state.produse.filter((p) => ['credit', 'factura', 'poprire'].includes(p.tip));
-  if (datorii.length) {
-    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Datorii'));
-    for (const d of datorii) sectiuni.push(produsDatorie(d, executa));
+  // Datorii: lista completă e în panoul „Datoriile mele”.
+  const datorii = listaDatorii(state, ctx);
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Datoriile mele'));
+  sectiuni.push(datorii.length
+    ? produs(`${datorii.length} ${datorii.length === 1 ? 'datorie' : 'datorii'}`, lei(datoriiTotal(state)),
+      datorii.some((d) => d.restanta > 0 || d.luniRestante > 0) ? 'Ai restanțe: fiecare lună de întârziere adaugă penalități.' : 'Totul e plătit la zi.',
+      h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-principal', onclick: () => deschidePanou('datorii', o) }, 'Vezi și gestionează')))
+    : h('p', { class: 'mic' }, 'N-ai nicio datorie. Bravo.'));
+  return sectiuni;
+}
+
+// ---------- Datoriile mele ----------
+
+const NUME_LUNI = (n) => (n === 1 ? '1 lună' : `${n} luni`);
+
+function panouDatorii(o, reranda) {
+  const { state, ctx } = o;
+  const executa = executor(o, reranda);
+  const lista = listaDatorii(state, ctx);
+  const sectiuni = [h('p', { class: 'mesaj-actiune', role: 'status' }),
+    h('button', { type: 'button', class: 'btn-inapoi', onclick: () => deschidePanou('banca', o) }, '‹ Înapoi la Bancă')];
+  if (!lista.length) return [...sectiuni, h('p', {}, 'N-ai nicio datorie. Banii tăi lucrează pentru tine, nu pentru bancă.')];
+
+  sectiuni.push(h('p', { class: 'mic' }, `Total: ${lei(datoriiTotal(state))}. Ratele se plătesc singure în fiecare lună, dacă ai bani în cont.`));
+  for (const d of lista) sectiuni.push(cardDatorie(d, state, ctx, executa));
+
+  // Ordinea în care merită să dai banii în plus: avalanșă vs. bulgăre de zăpadă.
+  const cuDae = lista.filter((d) => d.dae != null);
+  if (cuDae.length >= 2) {
+    const nume = (xs) => xs.map((d) => d.titlu).join(' → ');
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Pe care o plătești întâi?'),
+      h('p', { class: 'mic' }, h('strong', {}, 'Avalanșă'), ` (cea mai mare DAE întâi, economisești cel mai mult): ${nume([...cuDae].sort((a, b) => b.dae - a.dae))}.`),
+      h('p', { class: 'mic' }, h('strong', {}, 'Bulgăre de zăpadă'), ` (cea mai mică întâi, te motivează): ${nume([...cuDae].sort((a, b) => a.sold - b.sold))}.`));
+  }
+
+  // Refinanțare / consolidare
+  const eligibile = lista.filter((d) => d.poateConsolida);
+  if (eligibile.length) {
+    const luni = bal(ctx, 'datorii.luniRefinantare');
+    const bife = eligibile.map((d) => ({ d, input: h('input', { type: 'checkbox', checked: true }) }));
+    const durata = h('select', { 'aria-label': 'Durata creditului nou' }, luni.map((n) => h('option', { value: n, selected: n === 36 || null }, `${n} luni`)));
+    const previzualizare = h('p', { class: 'mic previzualizare' });
+    const alese = () => bife.filter((b) => b.input.checked).map((b) => b.d.id);
+    const actualizeaza = () => {
+      const s = simuleazaConsolidare(state, ctx, alese(), Number(durata.value));
+      previzualizare.textContent = s.suma == null ? s.mesaj
+        : `Credit nou: ${lei(s.suma)} la DAE ${procent(s.dae)}. Rata: ${lei(s.rataNoua)} în loc de ${lei(s.rateVechi)}. Cost total: ${lei(s.costNou)} față de ${lei(s.costVechi)} acum.${s.ok ? '' : ` ${s.mesaj}`}`;
+    };
+    bife.forEach((b) => b.input.addEventListener('change', actualizeaza));
+    durata.addEventListener('change', actualizeaza);
+    actualizeaza();
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, eligibile.length > 1 ? 'Strânge-le într-un singur credit' : 'Refinanțează la bancă'),
+      h('p', { class: 'mic' }, 'Banca îți dă un credit nou cu care închide datoriile alese. Verifică venitul, istoricul și gradul de îndatorare.'),
+      bife.map((b) => h('label', { class: 'comutator' }, b.input, `${b.d.titlu} (${lei(b.d.sold)}${b.d.dae != null ? `, DAE ${procent(b.d.dae)}` : ''})`)),
+      h('label', { class: 'comutator' }, 'Durata: ', durata),
+      previzualizare,
+      h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('consolideaza', { ids: alese(), luni: Number(durata.value) }) }, 'Cere creditul')));
   }
   return sectiuni;
 }
 
-function produsDatorie(d, executa) {
-  const ramburs = (text = 'Plătește tot') => h('div', { class: 'rand-butoane' },
-    h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('ramburseaza', { id: d.id }, 'Datorie achitată.') }, text));
-  if (d.tip === 'credit') {
-    const titlu = d.stadiu === 'cesionat' ? 'Datorie la firma de recuperare' : d.furnizor === 'ifn' ? 'Credit IFN' : 'Credit';
-    const detalii = d.stadiu === 'cesionat'
-      ? `Restanță: ${lei(d.restanta)}. Urmează executarea silită.`
-      : `Rata ${lei(d.rata)} · mai sunt ${d.luniRamase} rate · DAE ${procent(d.dae)}${d.restanta ? ` · restanță ${lei(d.restanta)}` : ''}`;
-    return produs(titlu, lei(datorieProdus(d)), detalii, ramburs('Rambursează tot'));
+function cardDatorie(d, state, ctx, executa) {
+  const prod = state.produse.find((p) => p.id === d.id);
+  const detalii = [];
+  if (d.rata != null) detalii.push(`${d.tip === 'cardCredit' ? 'Minim de plată' : 'Rata'} ${lei(d.rata)}`);
+  if (d.dae != null) detalii.push(`DAE ${procent(d.dae)}`);
+  if (d.luniRamase != null) detalii.push(`mai sunt ${d.luniRamase} rate`);
+  const randuri = [h('div', { class: 'mic' }, detalii.join(' · '))];
+  if (d.restanta > 0 || d.luniRestante > 0) {
+    randuri.push(h('div', { class: 'mic restanta' }, `⚠ Restanță: ${lei(d.restanta || d.sold)}${d.luniRestante ? `, de ${NUME_LUNI(d.luniRestante)}` : ''}${d.penalitati ? ` (penalități ${lei(d.penalitati)})` : ''}`));
   }
-  if (d.tip === 'factura') return produs(`Restanță la ${NUME_FACTURI[d.furnizor]}`, lei(d.restanta), `${d.luniRestanta} ${d.luniRestanta === 1 ? 'lună' : 'luni'} de întârziere · penalități: ${lei(d.penalitati)}`, ramburs());
-  return produs('Poprire', lei(d.datorie), `Reținut până acum: ${lei(d.retinutTotal)}`, ramburs());
+  if (d.stadiu === 'cesionat') randuri.push(h('div', { class: 'mic restanta' }, 'Urmează executarea silită dacă nu plătești sau nu negociezi.'));
+  if (d.tip === 'poprire') randuri.push(h('div', { class: 'mic' }, `Executorul a reținut până acum ${lei(d.retinut)}.`));
+  if (d.tip === 'cardCredit' && d.doarMinim) {
+    randuri.push(h('div', { class: 'mic' }, d.doarMinim.neterminat
+      ? 'Doar cu plata minimă, datoria nu se mai termină.'
+      : `Doar cu plata minimă: ${NUME_LUNI(d.doarMinim.luni)} și ${lei(d.doarMinim.total)} în total.`));
+  } else if (d.tip === 'credit' && d.stadiu === 'activ') {
+    randuri.push(h('div', { class: 'mic' }, `Cost total rămas, dacă îl duci la capăt: ${lei(d.costRamas)}.`));
+  }
+
+  const butoane = [];
+  if (d.tip === 'cardCredit' ? prod.soldScadent > 0 : d.restanta > 0 && d.tip !== 'factura' && d.stadiu === 'activ') {
+    butoane.push(h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('platesteRestanta', { id: d.id }) }, d.tip === 'cardCredit' ? 'Plătește extrasul' : 'Plătește restanța'));
+  }
+  butoane.push(h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('ramburseaza', { id: d.id }) }, `Achită tot (${lei(d.sold)})`));
+  randuri.push(h('div', { class: 'rand-butoane' }, butoane));
+
+  if (d.poateRambursaPartial) {
+    const input = h('input', { type: 'number', inputmode: 'decimal', min: '1', step: '1', 'aria-label': 'Suma de rambursat în plus', placeholder: 'Suma în lei' });
+    const prev = h('p', { class: 'mic previzualizare' });
+    const val = () => Number(String(input.value).replace(',', '.'));
+    input.addEventListener('input', () => {
+      const r = simuleazaRambursare(prod, Math.round(val() * 100), 'rata', ctx);
+      const t = simuleazaRambursare(prod, Math.round(val() * 100), 'durata', ctx);
+      prev.textContent = !r.ok ? '' : r.integral ? `Închizi creditul și economisești ${lei(r.economie)} din dobândă.`
+        : `Rată mai mică (${lei(r.rataNoua)}): economisești ${lei(r.economie)}. Termini mai repede (${t.luniNoi} rate): economisești ${lei(t.economie)}.${r.comision ? ` Comision: ${lei(r.comision)}.` : ''}`;
+    });
+    randuri.push(h('div', { class: 'sub-sectiune' }, h('div', { class: 'mic' }, 'Rambursare anticipată (dai bani în plus):'),
+      h('div', { class: 'camp-suma' }, input,
+        h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('ramburseazaPartial', { id: d.id, suma: val(), mod: 'rata' }) }, 'Scade rata'),
+        h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('ramburseazaPartial', { id: d.id, suma: val(), mod: 'durata' }) }, 'Termin mai repede')),
+      prev));
+  }
+  if (d.poateEsalona) {
+    randuri.push(h('div', { class: 'sub-sectiune' }, h('div', { class: 'mic' }, 'Negociază o eșalonare cu recuperatorul:'),
+      h('div', { class: 'rand-butoane' }, bal(ctx, 'datorii.luniEsalonare').map((n) => {
+        const s = simuleazaEsalonare(state, ctx, prod, n);
+        return h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('esaloneaza', { id: d.id, luni: n }) },
+          `${n} rate de ${lei(s.rata)}`, h('span', { class: 'mic' }, ` (acum ${lei(s.avans)})`));
+      }))));
+  }
+  return produs(d.titlu, lei(d.sold), null, ...randuri);
 }
 
 function produs(titlu, valoare, detalii, ...extra) {

@@ -26,6 +26,7 @@ import { bilantNou, inregistreazaAn, inregistreazaLuna, verificaIndependenta } f
 import { esteAsigurat } from './events.js';
 import { areJobFullTime, cereMarire, contractCurent, sansaMarire } from './cariera.js';
 import { consumaTimp, faActivitate, motivTimp } from './activitati.js';
+import { achitaTot, consolideaza, esaloneaza, platesteRestanta, ramburseazaPartial, verificaEsalonare } from './datorii.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -574,6 +575,7 @@ function proceseazaRestante(state, ctx) {
     }
     if ((p.tip !== 'credit' && p.tip !== 'cardCredit') || p.luniRestanta === 0) continue;
     areRestante = true;
+    verificaEsalonare(state, ctx, p); // o eșalonare la recuperator cu întârzieri se anulează
     if (p.luniRestanta >= r('luniPanaLaRaportare')) {
       state.ascunse.scorCredit -= lunar.scorCreditPenalizareLunara;
       seteazaFlag(state, `istoric_restante:${r('aniInIstoric') * 12}`);
@@ -683,7 +685,8 @@ export { sansaMarire };
 
 // Toate acțiunile din meniuri. Fiecare întoarce { ok, mesaj }: mesajul e mereu un text de arătat
 // jucătorului (confirmarea sau motivul refuzului), ca nicio apăsare să nu rămână fără răspuns.
-export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate'];
+export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate',
+  'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -691,6 +694,12 @@ const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
 export function actiune(state, ctx, tip, param = {}) {
   const rez = executaActiune(state, ctx, tip, param);
   if (!rez.mesaj) rez.mesaj = rez.ok ? 'Gata.' : 'Nu se poate.';
+  // Conceptele deblocate de o acțiune (ex. refinanțarea) intră în enciclopedie ca la decizii.
+  if (rez.ok && rez.concepte?.length) {
+    rez.concepteNoi = rez.concepte.filter((c) => !state.concepte.includes(c));
+    state.concepte.push(...rez.concepteNoi);
+    ctx.persistenta?.concepte?.(rez.concepteNoi);
+  }
   return rez;
 }
 
@@ -763,9 +772,31 @@ function executaActiune(state, ctx, tip, param) {
     }
     case 'ramburseaza': {
       if (!['credit', 'cardCredit', 'poprire', 'factura'].includes(prod?.tip)) return { ok: false, mesaj: 'Nu e o datorie.' };
-      if (baniDisponibili(state) < datorieProdus(prod)) return { ok: false, mesaj: `Nu ai destui bani: îți trebuie ${leiText(datorieProdus(prod))}.` };
-      const s = ramburseaza(state, prod);
-      rez = { ok: true, suma: s, mesaj: prod.tip === 'factura' ? `Ai plătit ${leiText(s)} restanță la ${NUME_FACTURI[prod.furnizor]}.` : `Ai plătit ${leiText(s)}. Datoria e închisă.` };
+      rez = achitaTot(state, ctx, prod);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'platesteRestanta': {
+      if (!['credit', 'cardCredit', 'factura'].includes(prod?.tip)) return { ok: false, mesaj: 'Nu e o datorie cu restanță.' };
+      rez = platesteRestanta(state, prod);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'ramburseazaPartial': {
+      if (prod?.tip !== 'credit') return { ok: false, mesaj: 'Se poate rambursa parțial doar un credit.' };
+      rez = ramburseazaPartial(state, ctx, prod, suma, param.mod === 'durata' ? 'durata' : 'rata');
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'esaloneaza': {
+      if (!prod) return { ok: false, mesaj: 'Alege datoria.' };
+      rez = esaloneaza(state, ctx, prod, param.luni);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'consolideaza': {
+      rez = consolideaza(state, ctx, param.ids ?? [], param.luni);
+      if (!rez.ok) return rez;
       break;
     }
     case 'cumpara': {

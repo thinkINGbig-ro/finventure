@@ -10,6 +10,7 @@ import { areFlag, avereNeta, cheltuieliLunare, multiplicatorStil } from './state
 import { areJobFullTime, contractCurent } from './cariera.js';
 import { bal, cfg, inLei, varstaLa } from './util.js';
 import { timpRamas } from './activitati.js';
+import { consolidabile } from './datorii.js';
 import { rezumatViata } from './bilant.js';
 import { alegeFinal } from './finaluri.js';
 
@@ -135,6 +136,23 @@ function inchideRestanteDinEconomii(state, ctx) {
   }
 }
 
+// Datoriile, ca un jucător atent: eșalonează ce a ajuns la recuperatori (dacă n-o poate plăti tot)
+// și dă banii în plus pe datoria cu cea mai mare DAE (avalanșă), înainte să investească.
+function gestioneazaDatoriiAtent(state, ctx, rezerva) {
+  for (const c of gasesteProduse(state, 'credit').filter((p) => p.stadiu === 'cesionat')) {
+    if (baniDisponibili(state) >= c.restanta) actiune(state, ctx, 'ramburseaza', { id: c.id });
+    else actiune(state, ctx, 'esaloneaza', { id: c.id, luni: 12 });
+  }
+  const scumpe = gasesteProduse(state, 'credit')
+    .filter((p) => p.stadiu === 'activ' && p.furnizor !== 'ipoteca' && p.dae > 0.08 && p.rest > 0)
+    .sort((x, y) => y.dae - x.dae);
+  for (const c of scumpe) {
+    const surplus = baniDisponibili(state) - rezerva;
+    if (surplus < 20000) break;
+    actiune(state, ctx, 'ramburseazaPartial', { id: c.id, suma: lei(Math.min(surplus, c.rest)), mod: 'durata' });
+  }
+}
+
 // Frugal: modest toată viața, fond de 6 luni, aproape tot restul investit în ETF.
 function meniuFrugal(state, ctx) {
   asiguraCont(state, ctx);
@@ -151,6 +169,7 @@ function meniuFrugal(state, ctx) {
     const pentruFond = Math.min(surplus, Math.max(0, 6 * lunar - fondUrgenta(state)));
     if (pentruFond > 100) actiune(state, ctx, 'depune', { id: fond.id, suma: lei(pentruFond) });
   }
+  gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
   const deInvestit = baniDisponibili(state) - 3 * lunar;
   if (fondUrgenta(state) >= 6 * lunar && deInvestit > 50000) {
     actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(Math.round(deInvestit * 0.7)) });
@@ -192,6 +211,7 @@ function meniuPrudent(state, ctx) {
     if (pentruFond > 100) actiune(state, ctx, 'depune', { id: fond.id, suma: lei(pentruFond) });
   }
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
+  gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
   if (fondComplet && netLunar) {
     // 20%: investiții (pentru casă, prudentul le vinde la nevoie: „Vând investițiile pentru avans”)
     const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
@@ -240,6 +260,9 @@ function meniuRiscant(state, ctx, rnd) {
     const peCard = Math.round(card.limita * 0.3);
     actiune(state, ctx, 'cumpara', { suma: lei(peCard), fericire: 3, peCard: true });
   }
+  // Riscantul întinde datoriile pe cât mai mulți ani, ca să scadă rata (și să poată cheltui mai mult).
+  const deStrans = consolidabile(state).map((p) => p.id);
+  if (deStrans.length) actiune(state, ctx, 'consolideaza', { ids: deStrans, luni: 60 });
   // Riscantul își face timp de distracție, cât îl țin banii.
   faActivitati(state, ctx, ['vacanta-strainatate', 'city-break', 'iesire-prieteni', 'iesire-prieteni']);
   return cautaJobDacaTrebuie(state, ctx);
@@ -278,6 +301,18 @@ const ACTIUNI_ALEATOARE = [
   (state, ctx, rnd) => actiune(state, ctx, 'cumpara', { suma: lei(Math.round(baniDisponibili(state) * (0.1 + rnd() * 0.5))), fericire: 4 }),
   (state, ctx) => actiune(state, ctx, 'cereMarire'),
   (state, ctx) => actiune(state, ctx, 'cautaJob'),
+  // datoriile: rambursare parțială, eșalonare, consolidare, la întâmplare
+  (state, ctx, rnd) => {
+    const credite = gasesteProduse(state, 'credit');
+    if (!credite.length) return null;
+    const c = credite[Math.floor(rnd() * credite.length)];
+    if (c.stadiu === 'cesionat') return actiune(state, ctx, 'esaloneaza', { id: c.id, luni: [6, 12, 24][Math.floor(rnd() * 3)] });
+    return actiune(state, ctx, 'ramburseazaPartial', { id: c.id, suma: lei(Math.round(baniDisponibili(state) * rnd() * 0.5)), mod: rnd() < 0.5 ? 'rata' : 'durata' });
+  },
+  (state, ctx, rnd) => {
+    const ids = consolidabile(state).filter(() => rnd() < 0.7).map((p) => p.id);
+    return ids.length ? actiune(state, ctx, 'consolideaza', { ids, luni: [24, 36, 60][Math.floor(rnd() * 3)] }) : null;
+  },
   // o activitate la întâmplare din meniu (de două ori mai probabil: e meniul cel mai des folosit)
   ...Array(2).fill((state, ctx, rnd) => {
     const ids = [...ctx.activitati.keys()];
