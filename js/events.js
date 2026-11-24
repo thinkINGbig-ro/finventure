@@ -364,6 +364,13 @@ export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   return { decizie, ...rezultat };
 }
 
+// Ce vede jucătorul imediat după o decizie: jurnalul alegerii sau, dacă lipsește, ce a ales.
+// Nicio decizie nu rămâne fără un rezultat afișat.
+export function textRezultat({ decizie, jurnal }) {
+  if (jurnal) return jurnal;
+  return decizie?.eticheta ? `Ai ales: ${decizie.eticheta}.` : null;
+}
+
 function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   const val = (v) => rezolvaValoare(v, vars, ctx);
   const rezultat = { lectie: null, concepteNoi: [], jurnal: null, neplatit: 0 };

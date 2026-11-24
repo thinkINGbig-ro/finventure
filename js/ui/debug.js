@@ -13,6 +13,7 @@ export function initDebug(optiuni) {
   const buton = h('button', { type: 'button', class: 'btn-debug', 'aria-label': 'Deschide modul debug', onclick: () => deschide(optiuni) }, '🐞');
   document.querySelector('.antet-sus').append(buton);
   document.title = `[debug] ${document.title}`;
+  window.finventure = optiuni; // din consolă: finventure.getState(), finventure.ruleaza(oprire)
 }
 
 function deschide({ ctx, getState, ruleaza, randeaza }) {

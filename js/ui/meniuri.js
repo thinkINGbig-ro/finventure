@@ -41,19 +41,29 @@ function continutPanou(tab, o, reranda) {
 
 // ---------- Bancă ----------
 
-function panouBanca({ state, ctx, laSchimbare }, reranda) {
-  const mesaj = h('p', { class: 'mesaj-actiune', role: 'status' });
-  const executa = (tip, param, ok = 'Gata.') => {
+// Orice acțiune din meniuri trece pe aici: rulează în motor, redesenează panoul și afișează
+// mesajul întors de motor (confirmarea sau motivul refuzului) în bara de stare a panoului.
+function executor({ state, ctx, laSchimbare }, reranda) {
+  return (tip, param) => {
     const r = actiune(state, ctx, tip, param);
     laSchimbare();
     reranda();
-    const m = document.querySelector('.panou .mesaj-actiune');
-    if (m) {
-      m.textContent = r.ok ? ok : r.mesaj;
-      m.className = `mesaj-actiune ${r.ok ? 'ok' : 'eroare'}`;
-    }
+    arataMesaj(r.mesaj, r.ok && r.succes !== false);
     return r;
   };
+}
+
+function arataMesaj(text, ok) {
+  const m = document.querySelector('.panou .mesaj-actiune');
+  if (!m) return;
+  m.textContent = text;
+  m.className = `mesaj-actiune ${ok ? 'ok' : 'eroare'}`;
+}
+
+function panouBanca(o, reranda) {
+  const { state, ctx, laSchimbare } = o;
+  const mesaj = h('p', { class: 'mesaj-actiune', role: 'status' });
+  const executa = executor(o, reranda);
   const camp = (eticheta, ...butoane) => {
     const input = h('input', { type: 'number', inputmode: 'decimal', min: '1', step: '1', 'aria-label': eticheta, placeholder: 'Suma în lei' });
     const val = () => Number(String(input.value).replace(',', '.'));
@@ -108,11 +118,12 @@ function panouBanca({ state, ctx, laSchimbare }, reranda) {
       `Dobândă ${procent(d.dobandaAnuala)} pe an · mai sunt ${d.luniRamase} luni · dobândă strânsă: ${lei(d.dobandaAcumulata)}`,
       h('div', { class: 'rand-butoane' }, h('button', {
         type: 'button', class: 'btn btn-text', onclick: async () => {
-          if (await confirma(`Spargi depozitul? Primești ${lei(d.sold)}, iar dobânda strânsă (${lei(d.dobandaAcumulata)}) se pierde.`, { da: 'Sparge' })) {
-            const r = actiune(state, ctx, 'lichideaza', { id: d.id });
-            laSchimbare();
-            if (r.ok) deschidePanou('banca', { state, ctx, laSchimbare });
-          } else deschidePanou('banca', { state, ctx, laSchimbare });
+          // Confirmarea înlocuiește panoul; după ea redeschidem panoul și arătăm rezultatul.
+          const da = await confirma(`Spargi depozitul? Primești ${lei(d.sold)}, iar dobânda strânsă (${lei(d.dobandaAcumulata)}) se pierde.`, { da: 'Sparge' });
+          const r = da ? actiune(state, ctx, 'lichideaza', { id: d.id }) : null;
+          laSchimbare();
+          deschidePanou('banca', o);
+          if (r) arataMesaj(r.mesaj, r.ok);
         },
       }, 'Sparge depozitul'))));
   }
@@ -173,7 +184,9 @@ function produs(titlu, valoare, detalii, ...extra) {
 
 const NUME_CONTRACT = { cim: 'contract de muncă (CIM)', pfa: 'PFA', negru: 'la negru' };
 
-function panouCariera({ state, ctx, laSchimbare, laOprire }, reranda) {
+function panouCariera(o, reranda) {
+  const { state, ctx, laOprire } = o;
+  const executa = executor(o, reranda);
   const mesaj = h('p', { class: 'mesaj-actiune', role: 'status' });
   const c = contractCurent(state);
   const job = jobCurent(state, ctx);
@@ -187,14 +200,7 @@ function panouCariera({ state, ctx, laSchimbare, laOprire }, reranda) {
     if (c.contract !== 'negru') {
       const sansa = Math.round(sansaMarire(state, ctx) * 100);
       sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', {
-        type: 'button', class: 'btn btn-secundar', onclick: () => {
-          const r = actiune(state, ctx, 'cereMarire');
-          laSchimbare();
-          reranda();
-          const m = document.querySelector('.panou .mesaj-actiune');
-          m.textContent = r.mesaj;
-          m.className = `mesaj-actiune ${r.ok && r.succes ? 'ok' : 'eroare'}`;
-        },
+        type: 'button', class: 'btn btn-secundar', onclick: () => executa('cereMarire'),
       }, 'Cere o mărire')));
       sectiuni.push(h('p', { class: 'mic' }, `Șanse estimate: cam ${sansa}%. Cresc cu skill-ul, reputația și timpul de la ultima mărire.`));
     }
@@ -206,12 +212,7 @@ function panouCariera({ state, ctx, laSchimbare, laOprire }, reranda) {
   sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', {
     type: 'button', class: 'btn btn-principal', onclick: () => {
       const r = actiune(state, ctx, 'cautaJob');
-      if (!r.ok) {
-        const m = document.querySelector('.panou .mesaj-actiune');
-        m.textContent = r.mesaj;
-        m.className = 'mesaj-actiune eroare';
-        return;
-      }
+      if (!r.ok) return arataMesaj(r.mesaj, false);
       inchideStrat();
       laOprire?.(r.oprire);
     },
@@ -221,7 +222,9 @@ function panouCariera({ state, ctx, laSchimbare, laOprire }, reranda) {
 
 // ---------- Cumpărături: stilul de viață ----------
 
-function panouCumparaturi({ state, ctx, laSchimbare }, reranda) {
+function panouCumparaturi(o, reranda) {
+  const { state, ctx } = o;
+  const executa = executor(o, reranda);
   const niveluri = ctx.balans.stilViata.niveluri;
   const baza = Math.round(cfg(ctx, 'costTrai.mancareTransport') * state.indicePreturi * 100);
   const mesaj = h('p', { class: 'mesaj-actiune', role: 'status' });
@@ -231,14 +234,7 @@ function panouCumparaturi({ state, ctx, laSchimbare }, reranda) {
     h('p', { class: 'mic' }, 'Cât cheltui lunar pe mâncare, ieșiri, haine și transport. Un stil mai bun te bucură câteva luni, apoi te obișnuiești cu el. Cheltuiala însă rămâne.'),
     h('div', { class: 'nivel-stil' }, niveluri.map((n) => h('button', {
       type: 'button', class: 'btn btn-secundar', 'aria-pressed': String(n.id === state.stilViata),
-      onclick: () => {
-        const r = actiune(state, ctx, 'stilViata', { nivel: n.id });
-        laSchimbare();
-        reranda();
-        const m = document.querySelector('.panou .mesaj-actiune');
-        m.textContent = r.ok ? (r.sus ? 'Te bucuri de noul stil. O să te obișnuiești repede cu el.' : 'Primele luni o să fie mai greu, apoi te obișnuiești.') : r.mesaj;
-        m.className = `mesaj-actiune ${r.ok ? 'ok' : 'eroare'}`;
-      },
+      onclick: () => executa('stilViata', { nivel: n.id }),
     }, n.nume, h('span', { class: 'mic' }, `~${lei(Math.round(baza * n.multiplicator))} pe lună`)))),
     h('p', { class: 'mic' }, 'Telefoane, mașini și alte cumpărături mari vin curând.'),
   ];

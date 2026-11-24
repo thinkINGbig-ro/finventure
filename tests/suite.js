@@ -15,6 +15,7 @@ import { analizeazaContinut } from '../js/analiza.js';
 import { genereazaOferte, promovareDisponibila, schimbaJob } from '../js/cariera.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
 import { inBani, varstaLa } from '../js/util.js';
+import { testeLoturi } from './loturi.js';
 
 class EsecTest extends Error {}
 const ok = (cond, mesaj) => { if (!cond) throw new EsecTest(mesaj); };
@@ -686,6 +687,11 @@ function teste(ctxBaza, incarcare) {
       ok(!r.finaluri.neterminat, 'toate viețile s-au terminat');
       return `finaluri: ${JSON.stringify(r.finaluri)}`;
     },
+
+    // Testele loturilor din extindere (tests/loturi.js), cu aceleași ajutoare.
+    ...testeLoturi(ctxBaza, {
+      ok, egal, ctxNou, joc, jocCuJob, jocFaraVenit, consuma, ruleazaAni, primaDisponibila, strategieDin, alegerePeCale, verificaInvarianti,
+    }),
   };
 }
 

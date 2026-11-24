@@ -15,7 +15,8 @@ import { CHEI, creeazaStorage } from './storage.js';
 import { bal } from './util.js';
 import { $, h } from './ui/dom.js';
 import { arataEveniment } from './ui/eveniment.js';
-import { arataMoment, arataRezumat, confirma } from './ui/ecrane.js';
+import { arataMoment, arataRezultat, arataRezumat, confirma } from './ui/ecrane.js';
+import { textRezultat } from './events.js';
 import { deschidePanou } from './ui/meniuri.js';
 import { creeazaEcranPrincipal } from './ui/principal.js';
 import { stratDeschis } from './ui/strat.js';
@@ -63,7 +64,11 @@ async function porneste() {
           const cale = await arataEveniment(oprire);
           const r = alege(state, ctx, cale);
           randeaza();
-          arataLectie(r.rezultat, ctx);
+          // Dacă urmează imediat alt card, rezultatul primește ecranul lui (un toast ar rămâne ascuns sub card).
+          const text = textRezultat(r.rezultat);
+          if (r.oprire && r.oprire.tip !== 'final' && text && (r.rezultat.jurnal || r.rezultat.lectie)) {
+            await arataRezultat({ titlu: oprire.titlu, text, lectie: r.rezultat.lectie, concepteNoi: r.rezultat.concepteNoi }, ctx);
+          } else arataLectie(r.rezultat, ctx);
           oprire = r.oprire;
         } else if (oprire.tip === 'moment') {
           await arataMoment(oprire, ctx);

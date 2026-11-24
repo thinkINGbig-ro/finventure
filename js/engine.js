@@ -680,10 +680,23 @@ const CAMPURI_SETABILE = { cardCredit: ['plata', 'cumparaturiPeCard'], contEcono
 
 export { sansaMarire };
 
+// Toate acțiunile din meniuri. Fiecare întoarce { ok, mesaj }: mesajul e mereu un text de arătat
+// jucătorului (confirmarea sau motivul refuzului), ca nicio apăsare să nu rămână fără răspuns.
+export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob'];
+
+const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
+const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
+
 export function actiune(state, ctx, tip, param = {}) {
+  const rez = executaActiune(state, ctx, tip, param);
+  if (!rez.mesaj) rez.mesaj = rez.ok ? 'Gata.' : 'Nu se poate.';
+  return rez;
+}
+
+function executaActiune(state, ctx, tip, param) {
   if (state.pendinte?.tip === 'eveniment' || state.final) return { ok: false, mesaj: 'Termină întâi decizia curentă.' };
   const prod = param.id ? state.produse.find((p) => p.id === param.id) : null;
-  if (param.id && !prod) return { ok: false, mesaj: 'Produs inexistent.' };
+  if (param.id && !prod) return { ok: false, mesaj: 'Produsul nu mai există.' };
   const suma = param.suma != null ? inBani(param.suma) : null;
   let rez;
 
@@ -696,8 +709,16 @@ export function actiune(state, ctx, tip, param = {}) {
       }
       if (['contCurent', 'cardCredit'].includes(spec.tip) && gasesteProduse(state, spec.tip).length) return { ok: false, mesaj: 'Ai deja unul.' };
       if (spec.tip === 'credit' || spec.tip === 'poprire' || spec.tip === 'contractMunca') return { ok: false, mesaj: 'Nu se deschide din meniu.' };
+      if (spec.tip === 'depozit' && !(suma > 0)) return { ok: false, mesaj: 'Scrie suma pentru depozit.' };
       const p = deschideProdus(state, ctx, spec);
-      rez = p ? { ok: true, produs: p } : { ok: false, mesaj: 'Nu ai destui bani.' };
+      if (!p) return { ok: false, mesaj: 'Nu ai destui bani.' };
+      const texte = {
+        contCurent: p.pachet === 'tineri' ? 'Ai deschis un cont pentru tineri.' : 'Ai deschis un cont curent.',
+        contEconomii: 'Ai deschis un cont de economii.',
+        depozit: `Ai deschis un depozit de ${leiText(p.sold)}.`,
+        cardCredit: `Banca ți-a aprobat un card de credit cu limita de ${leiText(p.limita)}.`,
+      };
+      rez = { ok: true, produs: p, mesaj: texte[p.tip] ?? 'Gata.' };
       break;
     }
     case 'seteaza': {
@@ -705,36 +726,45 @@ export function actiune(state, ctx, tip, param = {}) {
       const campuri = Object.keys(param.campuri ?? {});
       if (!campuri.length || campuri.some((c) => !permise.includes(c))) return { ok: false, mesaj: 'Setare nepermisă.' };
       Object.assign(prod, param.campuri);
-      rez = { ok: true };
+      const c = param.campuri;
+      const mesaj = 'fondUrgenta' in c ? (c.fondUrgenta ? 'Contul e acum fondul tău de urgență.' : 'Contul nu mai e fond de urgență.')
+        : 'plata' in c ? (c.plata === 'integral' ? 'Vei achita tot extrasul în fiecare lună: 0 dobândă.' : 'Vei plăti doar minimul: restul face dobândă.')
+          : 'cumparaturiPeCard' in c ? (c.cumparaturiPeCard ? 'Cumpărăturile merg pe cardul de credit.' : 'Cumpărăturile merg din contul tău.')
+            : 'Setare salvată.';
+      rez = { ok: true, mesaj };
       break;
     }
     case 'depune': {
       if (prod?.tip !== 'contEconomii' && prod?.tip !== 'contCurent') return { ok: false, mesaj: 'Poți depune doar într-un cont.' };
+      if (!(suma > 0)) return { ok: false, mesaj: 'Scrie o sumă.' };
       const disponibil = prod.tip === 'contCurent' ? state.numerar : baniDisponibili(state);
-      if (!(suma > 0) || disponibil < suma) return { ok: false, mesaj: 'Nu ai destui bani.' };
+      if (disponibil < suma) return { ok: false, mesaj: 'Nu ai destui bani.' };
       plateste(state, suma, prod.tip === 'contCurent' ? 'cash' : 'portofel');
       prod.sold += suma;
-      rez = { ok: true };
+      rez = { ok: true, mesaj: `Ai depus ${leiText(suma)} în ${NUME_PRODUS[prod.tip]}.` };
       break;
     }
     case 'retrage': {
       if (prod?.tip !== 'contEconomii' && prod?.tip !== 'contCurent') return { ok: false, mesaj: 'Poți retrage doar dintr-un cont.' };
-      if (!(suma > 0) || prod.sold < suma) return { ok: false, mesaj: 'Nu ai atâția bani în cont.' };
+      if (!(suma > 0)) return { ok: false, mesaj: 'Scrie o sumă.' };
+      if (prod.sold < suma) return { ok: false, mesaj: 'Nu ai atâția bani în cont.' };
       prod.sold -= suma;
       incaseaza(state, suma, { cash: prod.tip === 'contCurent' });
-      rez = { ok: true };
+      rez = { ok: true, mesaj: `Ai retras ${leiText(suma)} din ${NUME_PRODUS[prod.tip]}.` };
       break;
     }
     case 'lichideaza': {
       if (!['depozit', 'investitie', 'contEconomii'].includes(prod?.tip)) return { ok: false, mesaj: 'Nu se poate lichida.' };
       if (prod.clasa === 'titluriStat') return { ok: false, mesaj: 'Titlurile de stat se încasează la maturitate.' };
-      rez = { ok: true, suma: lichideaza(state, ctx, prod) };
+      const s = lichideaza(state, ctx, prod);
+      rez = { ok: true, suma: s, mesaj: `Ai închis ${NUME_PRODUS[prod.tip]} și ai primit ${leiText(s)}.` };
       break;
     }
     case 'ramburseaza': {
-      if (!['credit', 'cardCredit', 'poprire'].includes(prod?.tip)) return { ok: false, mesaj: 'Nu e o datorie.' };
-      if (baniDisponibili(state) < datorieProdus(prod)) return { ok: false, mesaj: 'Nu ai destui bani să achiți tot.' };
-      rez = { ok: true, suma: ramburseaza(state, prod) };
+      if (!['credit', 'cardCredit', 'poprire', 'factura'].includes(prod?.tip)) return { ok: false, mesaj: 'Nu e o datorie.' };
+      if (baniDisponibili(state) < datorieProdus(prod)) return { ok: false, mesaj: `Nu ai destui bani: îți trebuie ${leiText(datorieProdus(prod))}.` };
+      const s = ramburseaza(state, prod);
+      rez = { ok: true, suma: s, mesaj: prod.tip === 'factura' ? `Ai plătit ${leiText(s)} restanță la ${NUME_FACTURI[prod.furnizor]}.` : `Ai plătit ${leiText(s)}. Datoria e închisă.` };
       break;
     }
     case 'cumpara': {
@@ -746,15 +776,16 @@ export function actiune(state, ctx, tip, param = {}) {
       if (disponibil < suma) return { ok: false, mesaj: sursa === 'cardCredit' ? 'Limita cardului nu ajunge.' : 'Nu ai destui bani.' };
       plateste(state, suma, sursa);
       state.stat.fericire = Math.min(100, state.stat.fericire + (param.fericire ?? 0));
-      if (param.eticheta) adaugaJurnal(state, `Ai cumpărat ${param.eticheta} (${formateazaLei(inLei(suma))} lei${sursa === 'cardCredit' ? ', cu cardul de credit' : ''}).`);
-      rez = { ok: true };
+      const text = `Ai cumpărat ${param.eticheta ?? 'ceva'} (${leiText(suma)}${sursa === 'cardCredit' ? ', cu cardul de credit' : ''}).`;
+      if (param.eticheta) adaugaJurnal(state, text);
+      rez = { ok: true, mesaj: text };
       break;
     }
     case 'stilViata': {
       const r = schimbaStil(state, ctx, param.nivel);
       if (!r.schimbat) return { ok: false, mesaj: 'Ăsta e deja stilul tău.' };
       adaugaJurnal(state, `Ai trecut la un stil de viață ${r.nivel.nume.toLowerCase()}.`);
-      rez = { ok: true, sus: r.sus };
+      rez = { ok: true, sus: r.sus, mesaj: r.sus ? 'Te bucuri de noul stil. O să te obișnuiești repede cu el.' : 'Primele luni o să fie mai greu, apoi te obișnuiești.' };
       break;
     }
     case 'cereMarire': {
@@ -775,7 +806,7 @@ export function actiune(state, ctx, tip, param = {}) {
       const ev = ctx.evenimente.get(bal(ctx, 'cariera.evenimentCV'));
       state.pendinte = creeazaOprireEveniment(ev, state, ctx);
       persista(state, ctx);
-      return { ok: true, oprire: oprireCurenta(state, ctx) };
+      return { ok: true, mesaj: 'Hai să-ți facem CV-ul.', oprire: oprireCurenta(state, ctx) };
     }
     default:
       return { ok: false, mesaj: `Acțiune necunoscută: ${tip}` };

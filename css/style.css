@@ -254,6 +254,7 @@ button { cursor: pointer; }
 .mesaj-actiune { min-height: 22px; margin: 8px 0 0; font-size: 14px; }
 .mesaj-actiune.eroare { color: var(--loss); }
 .mesaj-actiune.ok { color: var(--gain); }
+.lectie-rezultat { background: var(--bg-3); border-left: 4px solid var(--main); border-radius: var(--raza-mica); padding: 10px 12px; font-size: 15px; }
 
 .concept-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .concept-lista button {

@@ -77,6 +77,20 @@ export function arataMoment(oprire, ctx) {
   return arataCard(continut, { buton: 'Mai departe', eticheta: 'Moment important' });
 }
 
+// ---------- Rezultatul unei decizii ----------
+// Apare când după decizie urmează imediat alt card (alt eveniment, un moment, rezumatul anului):
+// altfel lecția ar sta ca toast sub cardul următor, iar jucătorul n-ar vedea ce a rezultat.
+
+export function arataRezultat({ titlu, text, lectie, concepteNoi = [] }, ctx) {
+  return arataCard([
+    h('span', { class: 'card-cand' }, titlu ? `După „${titlu}”` : 'Rezultat'),
+    h('h2', {}, 'Ce s-a întâmplat'),
+    h('p', { class: 'card-text' }, text),
+    lectie && lectie !== text ? h('p', { class: 'lectie-rezultat' }, lectie) : null,
+    blocConcepte(concepteNoi, ctx),
+  ].filter(Boolean), { buton: 'Mai departe', eticheta: 'Rezultatul deciziei' });
+}
+
 // ---------- Rezumatul anului ----------
 
 export function arataRezumat(r, state, ctx) {
