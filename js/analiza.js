@@ -9,12 +9,15 @@ export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
     'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job'],
   flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat'],
-  evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta'],
+  evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta',
+    'imobil-reparatie', 'imobil-chirias-nu-plateste'],
   concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare',
     // din acțiunile meniului „Datoriile mele” (js/datorii.js)
     'rambursare-anticipata', 'avalansa-bulgare', 'refinantare', 'esalonare',
     // din meniul Investiții (js/investitii.js)
-    'etf', 'cost-comisioane', 'diversificare', 'investitie-lunara', 'rebalansare'],
+    'etf', 'cost-comisioane', 'diversificare', 'investitie-lunara', 'rebalansare',
+    // din imobiliarele de închiriat (js/imobiliare.js)
+    'randament-chirie', 'declaratia-unica'],
 };
 
 const numeFlag = (f) => f.split(':')[0];

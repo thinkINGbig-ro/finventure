@@ -11,6 +11,7 @@ import { areJobFullTime, contractCurent } from './cariera.js';
 import { bal, cfg, inLei, varstaLa } from './util.js';
 import { timpRamas } from './activitati.js';
 import { consolidabile } from './datorii.js';
+import { simuleazaCumparare } from './imobiliare.js';
 import { rezumatViata } from './bilant.js';
 import { alegeFinal } from './finaluri.js';
 
@@ -239,6 +240,11 @@ function meniuPrudent(state, ctx) {
     const varsta = varstaLa(state.luna);
     if (varsta >= 30 && !(state.dca ?? []).some((d) => d.clasa === 'pilon3')) actiune(state, ctx, 'seteazaDCA', { clasa: 'pilon3', suma: Math.round(lei(netLunar) * 0.03) });
     if (varsta % 5 === 0) actiune(state, ctx, 'rebalanseaza', { strategie: 'echilibrata' });
+    // Cu casa lui și fondul complet, o garsonieră de închiriat, cu credit, dacă avansul nu atinge fondul.
+    if (varsta >= 35 && state.produse.some((p) => p.tip === 'proprietate') && !state.produse.some((p) => p.tip === 'imobil')) {
+      const sim = simuleazaCumparare(state, ctx, 'garsoniera', 'credit');
+      if (sim.ok && baniDisponibili(state) - sim.dePlatit >= 3 * lunar) actiune(state, ctx, 'cumparaImobil', { marime: 'garsoniera', finantare: 'credit' });
+    }
     // 30%: dorințe — stil Confortabil dacă cheltuielile de bază rămân sub 80% din net
     if (state.stilViata === 'modest') {
       const mancare = pret(state, ctx, 'costTrai.mancareTransport');
@@ -289,6 +295,8 @@ function meniuRiscant(state, ctx, rnd) {
     const tinta = ['co-zborapid', 'co-pixelnord', 'crypto'][Math.floor(rnd() * 3)];
     actiune(state, ctx, 'investeste', { clasa: tinta, suma: lei(Math.round(peBursa * 0.5)) });
   }
+  // „Imobiliarele nu pierd niciodată”: un apartament cu credit, de îndată ce banca zice da.
+  if (!state.produse.some((p) => p.tip === 'imobil')) actiune(state, ctx, 'cumparaImobil', { marime: 'apartament', finantare: 'credit' });
   // Riscantul întinde datoriile pe cât mai mulți ani, ca să scadă rata (și să poată cheltui mai mult).
   const deStrans = consolidabile(state).map((p) => p.id);
   if (deStrans.length) actiune(state, ctx, 'consolideaza', { ids: deStrans, luni: 60 });
@@ -344,6 +352,12 @@ const ACTIUNI_ALEATOARE = [
     return clase.length ? actiune(state, ctx, 'vinde', { clasa: clase[Math.floor(rnd() * clase.length)] }) : null;
   },
   (state, ctx, rnd) => actiune(state, ctx, 'rebalanseaza', { strategie: ['prudenta', 'echilibrata', 'dinamica'][Math.floor(rnd() * 3)] }),
+  // imobiliare: cumpără (cash sau credit) sau vinde
+  (state, ctx, rnd) => {
+    const im = state.produse.find((p) => p.tip === 'imobil');
+    if (im && rnd() < 0.3) return actiune(state, ctx, 'vindeImobil', { id: im.id });
+    return actiune(state, ctx, 'cumparaImobil', { marime: rnd() < 0.5 ? 'garsoniera' : 'apartament', finantare: rnd() < 0.6 ? 'credit' : 'cash' });
+  },
   // educația: un program lung (uneori cu credit), un curs sau renunțarea la studii
   (state, ctx, rnd) => {
     const ids = [...ctx.educatie.programe.keys()];

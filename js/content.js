@@ -261,7 +261,7 @@ const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'sc
 const STATISTICI = ['bani', 'fericire', 'energie', 'viitor'];
 const ASCUNSE = ['skill', 'scorCredit', 'retea', 'reputatie'];
 const SURSE_PLATA = ['portofel', 'cash', 'cont', 'fondUrgenta', 'cardCredit'];
-const CAMPURI_SETABILE = { plata: ['integral', 'minim'], cumparaturiPeCard: 'bool', fondUrgenta: 'bool', reinnoire: 'bool' };
+const CAMPURI_SETABILE = { plata: ['integral', 'minim'], cumparaturiPeCard: 'bool', fondUrgenta: 'bool', reinnoire: 'bool', chirias: 'bool' };
 const CAMPURI_PRODUS = {
   contCurent: { pachet: ['standard', 'tineri'] },
   contEconomii: { suma: 'num', fondUrgenta: 'bool', dobandaAnuala: 'num' },

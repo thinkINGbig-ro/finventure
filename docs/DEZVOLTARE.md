@@ -49,6 +49,7 @@ js/datorii.js       „Datoriile mele”: rambursare, eșalonare, refinanțare
 js/educatie.js      meniul Educație: studii lungi, cursuri, educația ca investiție
 js/investitii.js    meniul Investiții: clase, companii, DCA, portofoliu, rebalansare
 js/ui/grafic.js     grafic cu linii în SVG (hover, tastatură, tabel)
+js/imobiliare.js    apartamente de închiriat: cumpărare, chiriași, impozit, vânzare
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -132,6 +133,10 @@ Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cer
 ## Investițiile (meniul Investiții)
 
 `data/investitii.json` are trei liste: `clase` (textele din meniu; randamentele, volatilitatea și comisioanele sunt în `config.json` → `investitii`), `companii` (companii **inventate**, cu id `co-…` și parametri de joc: `beta`, `alfa`, `volatilitate`, `riscFalimentAnual`) și `strategii` (alocările țintă pentru rebalansare; procentele fac 1). Companiile au fluxul RNG `companii`, deci adăugarea uneia nu schimbă bursa. În evenimente, selectorul `investitie:piata` înseamnă orice investiție care se poate vinde pe loc (fără titlurile de stat).
+
+## Imobiliarele de închiriat
+
+Produsul `imobil` (apartamentul de închiriat) e separat de `proprietate` (locuința jucătorului), ca evenimentele despre casă să nu-l confunde cu investiția. Prețurile, chiriile, impozitele și costurile sunt în `config.json` → `imobiliare` (prețul de cumpărare: `locuinte.pretGarsoniera` / `pretApartament`); probabilitățile (chiriaș care pleacă, reparații, chiriaș rău-platnic) în `balans.json` → `imobiliare`. În evenimente, `"seteazaProdus": { "imobil": { "chirias": false } }` îl lasă fără chiriaș.
 
 ## Salvările și migrarea
 

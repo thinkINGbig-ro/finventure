@@ -31,6 +31,7 @@ import { inscrieCurs, inscrieProgram, proceseazaCursuriLuna, proceseazaStudiiLun
 import {
   aplicaComisioaneAnuale, cumpara, depunePilon3, instantaneuAnual, miscaCompanii, proceseazaDCA, rebalanseaza, seteazaDCA, vinde,
 } from './investitii.js';
+import { actualizeazaImobileAnual, cumparaImobil, proceseazaImobile, vindeImobil } from './imobiliare.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -175,6 +176,7 @@ function inceputAn(state, ctx) {
     const i = cfg(ctx, 'ipotecar');
     state.piete.ircc = Math.min(i.irccMax.valoare, Math.max(i.irccMin.valoare, inflatie + i.irccPesteInflatie.valoare));
     for (const p of gasesteProduse(state, 'proprietate')) p.valoare = Math.round(p.valoare * (1 + inflatie + cfg(ctx, 'locuinte.crestereRealaPretAnuala')));
+    actualizeazaImobileAnual(state, ctx, inflatie);
     for (const c of state.produse.filter((p) => p.tip === 'credit' && p.variabila && p.stadiu === 'activ' && p.luniRamase > 0)) {
       const rataVeche = c.rata;
       c.dae = cfg(ctx, 'ipotecar.marjaVariabila') + state.piete.ircc;
@@ -268,6 +270,10 @@ export function proceseazaLuna(state, ctx) {
   // 2. Venituri
   const contract = gasesteProduse(state, 'contractMunca')[0];
   if (contract) proceseazaSalariu(state, ctx, contract);
+  const im = proceseazaImobile(state, ctx); // chiria netă intră, costurile de proprietar ies
+  ac.venituri += im.venit;
+  ac.taxe += im.impozit;
+  ac.cheltuieliTrai += im.cheltuieli;
   for (const r of state.recurente) {
     if (r.tip === 'venit') {
       incaseaza(state, r.suma);
@@ -700,7 +706,7 @@ export { sansaMarire };
 // jucătorului (confirmarea sau motivul refuzului), ca nicio apăsare să nu rămână fără răspuns.
 export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate',
   'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza', 'inscrieProgram', 'renuntaStudii', 'inscrieCurs',
-  'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza'];
+  'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza', 'cumparaImobil', 'vindeImobil'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -855,6 +861,16 @@ function executaActiune(state, ctx, tip, param) {
     }
     case 'rebalanseaza': {
       rez = rebalanseaza(state, ctx, param.strategie);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'cumparaImobil': {
+      rez = cumparaImobil(state, ctx, param.marime, param.finantare === 'credit' ? 'credit' : 'cash');
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'vindeImobil': {
+      rez = vindeImobil(state, ctx, prod);
       if (!rez.ok) return rez;
       break;
     }

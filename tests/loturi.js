@@ -4,6 +4,7 @@ import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, oprireCurenta } 
 import { textRezultat } from '../js/events.js';
 import { baniDisponibili, creeazaProdus, datorieProdus, pret, valoareProdus } from '../js/finance.js';
 import { aplicaComisioaneAnuale, miscaCompanii, portofoliu, proceseazaDCA } from '../js/investitii.js';
+import { actualizeazaImobileAnual, proceseazaImobile, simuleazaCumparare, simuleazaVanzare } from '../js/imobiliare.js';
 import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
 import { indeplinesteCerinte } from '../js/cariera.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
@@ -19,6 +20,71 @@ export function testeLoturi(ctxBaza, a) {
     ...lot2(ctxBaza, a),
     ...lot3(ctxBaza, a),
     ...lot4a(ctxBaza, a),
+    ...lot4b(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 4b: imobiliare de închiriat ----------
+
+function lot4b(ctxBaza, a) {
+  const { ok, egal } = a;
+  const jocProprietar = (seed, { brut = 12_000, bani = 400_000 } = {}) => {
+    const { ctx, state } = a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    const c = state.produse.find((p) => p.tip === 'contractMunca');
+    if (c) Object.assign(c, { brut: inBani(brut), contract: 'cim' });
+    state.numerar = inBani(bani);
+    return { ctx, state };
+  };
+  return {
+    'lotul 4b: cumperi cash, găsești chiriaș, chiria netă intră, costurile ies'() {
+      const { ctx, state } = jocProprietar('cash');
+      const bani = baniDisponibili(state);
+      const sim = simuleazaCumparare(state, ctx, 'garsoniera', 'cash');
+      ok(actiune(state, ctx, 'cumparaImobil', { marime: 'garsoniera', finantare: 'cash' }).ok, 'cumpărată');
+      egal(bani - baniDisponibili(state), sim.valoare + sim.costuri, 'a plătit prețul plus costurile tranzacției');
+      const p = state.produse.find((x) => x.tip === 'imobil');
+      let venit = 0;
+      let impozit = 0;
+      for (let i = 0; i < 24; i++) { const r = proceseazaImobile(state, ctx); venit += r.venit; impozit += r.impozit; }
+      ok(venit > 0 && p.chirieIncasata > 0, 'a încasat chirie');
+      ok(Math.abs(impozit - venit / 9) < 200, 'impozitul pe chirie e 10%');
+      ok(state.concepte.includes('randament-chirie'), 'concept');
+    },
+
+    'lotul 4b: cu credit: avans 25%, verificarea gradului de îndatorare; vânzarea închide creditul'() {
+      const sarac = jocProprietar('credit-mic', { brut: 4000 });
+      const r0 = actiune(sarac.state, sarac.ctx, 'cumparaImobil', { marime: 'apartament', finantare: 'credit' });
+      ok(!r0.ok && /îndatorare|salariul tău net|%/.test(r0.mesaj), `salariu mic: refuz (${r0.mesaj})`);
+      const { ctx, state } = jocProprietar('credit', { brut: 20_000 });
+      const sim = simuleazaCumparare(state, ctx, 'garsoniera', 'credit');
+      ok(sim.ok, sim.mesaj);
+      ok(Math.abs(sim.credit - sim.valoare * 0.75) < 100, 'creditul e 75% din preț');
+      ok(actiune(state, ctx, 'cumparaImobil', { marime: 'garsoniera', finantare: 'credit' }).ok, 'cumpărată cu credit');
+      const p = state.produse.find((x) => x.tip === 'imobil');
+      const credit = state.produse.find((x) => x.id === p.creditId);
+      ok(credit && credit.furnizor === 'ipotecaInvestitie', 'are creditul de investiție');
+      const v = simuleazaVanzare(state, ctx, p);
+      egal(v.impozit, Math.round(p.valoare * 0.03), 'sub 3 ani: impozit 3%');
+      const bani = baniDisponibili(state);
+      ok(actiune(state, ctx, 'vindeImobil', { id: p.id }).ok, 'vândută');
+      ok(!state.produse.includes(credit) && !state.produse.includes(p), 'creditul și proprietatea au dispărut');
+      egal(baniDisponibili(state) - bani, v.net, 'banii primiți = prețul minus costuri, impozit și credit');
+    },
+
+    'lotul 4b: reparația amânată alungă chiriașul; valoarea și chiria cresc cu inflația'() {
+      const { ctx, state } = jocProprietar('reparatie', { bani: 700_000 });
+      ok(actiune(state, ctx, 'cumparaImobil', { marime: 'apartament', finantare: 'cash' }).ok, 'cumpărat');
+      const p = state.produse.find((x) => x.tip === 'imobil');
+      p.chirias = true;
+      p.chirie = inBani(2800);
+      forteazaEveniment(state, ctx, 'imobil-reparatie');
+      alege(state, ctx, 'amana');
+      egal(p.chirias, false, 'chiriașul a plecat');
+      const valoare = p.valoare;
+      actualizeazaImobileAnual(state, ctx, 0.05);
+      ok(p.valoare > valoare * 1.05 && p.chirie === Math.round(inBani(2800) * 1.05), 'valoarea și chiria au crescut');
+    },
   };
 }
 
@@ -493,6 +559,8 @@ function lot0(ctxBaza, a) {
         seteazaDCA: [{ clasa: 'etf', suma: 200 }, { clasa: 'etf', suma: 0 }, { clasa: 'titluriStat', suma: 100 }],
         depunePilon3: [{ suma: 100 }, {}],
         rebalanseaza: [{ strategie: 'echilibrata' }, { strategie: 'nu-exista' }],
+        cumparaImobil: [{ marime: 'garsoniera', finantare: 'credit' }, { marime: 'castel' }],
+        vindeImobil: [{ id: id('contCurent') }],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

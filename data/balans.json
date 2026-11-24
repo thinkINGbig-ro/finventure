@@ -167,6 +167,14 @@
     "luniRestanteAnuleazaEsalonarea": 2
   },
 
+  "imobiliare": {
+    "_info": "Riscurile proprietarului, ca probabilități anuale (folosesc fluxul RNG „actiuni”). sansaGasesteChirias = pe lună, cât timp e gol.",
+    "sansaChiriasPleacaAnual": 0.25,
+    "sansaGasesteChirias": 0.5,
+    "sansaReparatieAnual": 0.15,
+    "sansaChiriasNuPlatesteAnual": 0.05
+  },
+
   "salvare": {
     "checkpointuriRecente": 5,
     "checkpointuriMax": 10

@@ -14,6 +14,7 @@ import { descrieCurs, descrieProgram } from '../educatie.js';
 import { companieFalimentata, infoClasa, portofoliu } from '../investitii.js';
 import { baniDisponibili, paramClasa } from '../finance.js';
 import { graficLinii } from './grafic.js';
+import { descrieImobile, simuleazaCumparare } from '../imobiliare.js';
 
 const TITLURI = {
   meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', datorii: 'Datoriile mele', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
@@ -149,6 +150,27 @@ function panouInvestitii(o, reranda) {
     produs('Pilonul III', lei(port.pilon3), 'Pensie facultativă: o alimentezi tu (sau firma). Banii se pot scoate de la 60 de ani.',
       campSuma('Suma de depus în Pilonul III', [['Depune', (s) => executa('depunePilon3', { suma: s })]])),
     produs('Pilonul II', lei(port.pilon2), 'Se alimentează singur din CAS-ul de pe fluturaș, cât lucrezi cu contract.'));
+
+  // Imobiliare de închiriat
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Imobiliare de închiriat'));
+  for (const im of descrieImobile(state, ctx)) {
+    const stare = im.chirias ? `Închiriat cu ${lei(im.chirie)} pe lună` : im.luniGol ? `Gol de ${NUME_LUNI(im.luniGol)}: cauți chiriaș` : 'Gol: cauți chiriaș';
+    sectiuni.push(produs(`🏠 ${im.titlu}`, lei(im.valoare),
+      `${stare} · costuri de proprietar ${lei(im.cost)} pe lună${im.rata ? ` · rata ${lei(im.rata)}` : ''} · chirie încasată netă până acum: ${lei(im.chirieIncasata)}`,
+      h('div', { class: 'mic' }, `Dacă vinzi acum primești ${lei(im.vanzare.net)} (comision ${lei(im.vanzare.comision)}, impozit ${lei(im.vanzare.impozit)}${im.vanzare.datorie ? `, creditul ${lei(im.vanzare.datorie)}` : ''}).`),
+      h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-text', onclick: () => executa('vindeImobil', { id: im.id }) }, 'Vinde'))));
+  }
+  for (const marime of ['garsoniera', 'apartament']) {
+    const cash = simuleazaCumparare(state, ctx, marime, 'cash');
+    const credit = simuleazaCumparare(state, ctx, marime, 'credit');
+    sectiuni.push(produs(marime === 'garsoniera' ? '🏢 Cumpără o garsonieră de închiriat' : '🏢 Cumpără un apartament de închiriat', lei(cash.valoare),
+      `Chirie de piață cam ${lei(cash.chirie)} pe lună · randament net estimat ${procent(cash.randamentNet)} pe an (înainte de lunile goale și reparații) · costuri la cumpărare ${lei(cash.costuri)}`,
+      h('div', { class: 'mic' }, `Cu credit: avans + costuri ${lei(credit.dePlatit)}, rata ${lei(credit.rata ?? 0)} pe lună, DAE ${procent(credit.dae ?? 0)}.`),
+      h('div', { class: 'rand-butoane' },
+        h('button', { type: 'button', class: 'btn btn-secundar', 'aria-disabled': cash.ok ? null : 'true', onclick: () => (cash.ok ? executa('cumparaImobil', { marime, finantare: 'cash' }) : arataMesaj(cash.mesaj, false)) }, 'Cash'),
+        h('button', { type: 'button', class: 'btn btn-secundar', 'aria-disabled': credit.ok ? null : 'true', onclick: () => (credit.ok ? executa('cumparaImobil', { marime, finantare: 'credit' }) : arataMesaj(credit.mesaj, false)) }, 'Cu credit')),
+      !cash.ok && !credit.ok ? h('div', { class: 'mic motiv-indisponibil' }, credit.mesaj) : null));
+  }
 
   // Rebalansare
   if (port.total) {

@@ -83,7 +83,8 @@ export function plateste(state, suma, sursa = 'portofel') {
 
 // ---------- Produse ----------
 
-export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate'];
+// „proprietate” = locuința ta; „imobil” = un apartament cumpărat ca să-l dai în chirie.
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil'];
 export const CATEGORII_FACTURI = ['chirie', 'utilitati', 'telefon'];
 
 // Facturile lunii, în ordinea în care se plătesc când banii nu ajung.
@@ -166,6 +167,8 @@ export function creeazaProdus(spec, state, ctx) {
       return { ...baza, jobId: spec.jobId, contract: spec.contract, brut: spec.brut, luniVechime: 0 };
     case 'proprietate':
       return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime ?? 'apartament' };
+    case 'imobil':
+      return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime, chirias: false, luniGol: 0, creditId: spec.creditId ?? null, chirieIncasata: 0 };
     case 'factura':
       // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
       return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };
@@ -200,6 +203,7 @@ export function valoareProdus(p, state) {
     case 'depozit':
       return p.sold;
     case 'proprietate':
+    case 'imobil':
       return p.valoare;
     case 'investitie':
       return p.clasa === 'titluriStat' ? p.principal : Math.round(p.unitati * (state.piete[indiceClasa(p.clasa)] ?? 0));

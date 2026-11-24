@@ -1,0 +1,82 @@
+{
+  "evenimente": [
+    {
+      "id": "imobil-reparatie",
+      "titlu": "S-a stricat centrala",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["imobil"] },
+      "variabile": { "cost": "pret:imobiliare.costReparatie", "ieftin": "pret:imobiliare.costReparatie*0.4" },
+      "text": "Te sună chiriașul: centrala din apartamentul de închiriat nu mai pornește. Un instalator bun cere {cost} lei pentru una nouă.",
+      "alegeri": [
+        {
+          "id": "repar",
+          "eticheta": "O schimb acum ({cost} lei)",
+          "cere": { "baniMin": "{cost}" },
+          "efecte": { "numerar": "-{cost}", "fericire": -2 },
+          "lectie": "Reparațiile fac parte din costul unei proprietăți de închiriat. Pune deoparte o parte din chirie pentru ele.",
+          "concepte": ["randament-chirie"],
+          "jurnal": "Ai schimbat centrala din apartamentul de închiriat ({cost} lei)."
+        },
+        {
+          "id": "carpesc",
+          "eticheta": "O repar ieftin ({ieftin} lei)",
+          "cere": { "baniMin": "{ieftin}" },
+          "rezultate": [
+            { "pondere": 1, "efecte": { "numerar": "-{ieftin}" }, "jurnal": "Ai reparat centrala ieftin și, deocamdată, ține." },
+            { "pondere": 1, "efecte": { "numerar": "-{ieftin}", "fericire": -4 }, "seteazaProdus": { "imobil": { "chirias": false } }, "jurnal": "Reparația ieftină n-a ținut. Chiriașul s-a săturat și s-a mutat." }
+          ],
+          "lectie": "O reparație ieftină poate ieși scumpă: dacă pleacă chiriașul, pierzi luni de chirie.",
+          "concepte": ["randament-chirie"]
+        },
+        {
+          "id": "amana",
+          "eticheta": "Îl rog să mai aștepte",
+          "efecte": { "fericire": -3 },
+          "seteazaProdus": { "imobil": { "chirias": false } },
+          "lectie": "Un chiriaș fără căldură pleacă. Lunile fără chirie costă mai mult decât reparația.",
+          "concepte": ["randament-chirie"],
+          "jurnal": "N-ai reparat centrala, iar chiriașul s-a mutat."
+        }
+      ]
+    },
+    {
+      "id": "imobil-chirias-nu-plateste",
+      "titlu": "Chiriașul nu mai plătește",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["imobil"] },
+      "variabile": { "chirie": 2000, "avocat": 1500 },
+      "text": "Chiriașul tău n-a mai plătit chiria de {chirie} lei. Spune că și-a pierdut jobul și promite că dă banii „curând”.",
+      "alegeri": [
+        {
+          "id": "esalonare",
+          "eticheta": "Îi dau două luni să recupereze",
+          "rezultate": [
+            { "pondere": 2, "efecte": { "fericire": 2, "retea": 1 }, "jurnal": "Chiriașul și-a găsit de lucru și a plătit restanța." },
+            { "pondere": 1, "efecte": { "numerar": "-{chirie}", "fericire": -5 }, "seteazaProdus": { "imobil": { "chirias": false } }, "jurnal": "Chiriașul n-a mai plătit nimic și a plecat. Ai pierdut o lună de chirie." }
+          ],
+          "lectie": "Un contract scris și o garanție de o lună-două te protejează exact în situația asta.",
+          "concepte": ["garantie-chirie"]
+        },
+        {
+          "id": "evacuez",
+          "eticheta": "Încep procedura de evacuare",
+          "cere": { "baniMin": "{avocat}" },
+          "efecte": { "numerar": "-{avocat}", "fericire": -4 },
+          "seteazaProdus": { "imobil": { "chirias": false } },
+          "lectie": "Evacuarea durează și costă: avocat, taxe, luni fără chirie. De aceea proprietarii cer garanție.",
+          "concepte": ["garantie-chirie"],
+          "jurnal": "Ai evacuat chiriașul care nu plătea (avocat: {avocat} lei)."
+        },
+        {
+          "id": "garantie",
+          "eticheta": "Rețin garanția și îl rog să plece",
+          "efecte": { "fericire": -2 },
+          "seteazaProdus": { "imobil": { "chirias": false } },
+          "lectie": "Garanția a acoperit chiria neplătită. Fără ea, ai fi pierdut banii.",
+          "concepte": ["garantie-chirie"],
+          "jurnal": "Ai reținut garanția chiriașului care nu mai plătea, iar el s-a mutat."
+        }
+      ]
+    }
+  ]
+}

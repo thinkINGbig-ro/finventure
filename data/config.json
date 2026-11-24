@@ -277,6 +277,24 @@
     "probabilitateCrashAnual": { "valoare": 0.06, "deVerificat": true, "sursa": "" }
   },
 
+  "imobiliare": {
+    "_info": "Apartamente cumpărate ca să le dai în chirie. Prețurile de cumpărare sunt în locuinte.pretGarsoniera / pretApartament.",
+    "chirieGarsoniera": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "chirie lunară de piață, oraș mare" },
+    "chirieApartament": { "valoare": 2800, "deVerificat": true, "sursa": "", "nota": "apartament cu 2 camere, oraș mare" },
+    "costLunarProprietarGarsoniera": { "valoare": 120, "deVerificat": true, "sursa": "", "nota": "impozit pe clădire, asigurare (PAD), fond de reparații; utilitățile le plătește chiriașul" },
+    "costLunarProprietarApartament": { "valoare": 180, "deVerificat": true, "sursa": "" },
+    "utilitatiCandEGol": { "valoare": 250, "deVerificat": true, "sursa": "", "nota": "când nu ai chiriaș, întreținerea și utilitățile minime le plătești tu" },
+    "impozitChirie": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "impozit pe venitul din chirii; se declară în Declarația unică (simplificat: reținut lunar)" },
+    "costuriCumparare": { "valoare": 0.03, "deVerificat": true, "sursa": "", "nota": "notar, taxe, comision de agenție, ca procent din preț" },
+    "costuriVanzare": { "valoare": 0.02, "deVerificat": true, "sursa": "", "nota": "comision de agenție la vânzare" },
+    "impozitVanzareSub3Ani": { "valoare": 0.03, "deVerificat": true, "sursa": "", "nota": "impozit la transferul proprietății deținute mai puțin de 3 ani" },
+    "impozitVanzarePeste3Ani": { "valoare": 0.01, "deVerificat": true, "sursa": "" },
+    "avansMinim": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "avansul cerut de bănci pentru o a doua locuință / investiție" },
+    "daeInPlus": { "valoare": 0.005, "deVerificat": true, "sursa": "", "nota": "dobânda la creditul pentru investiție, peste ipoteca obișnuită cu dobândă fixă" },
+    "luniCredit": { "valoare": 300, "deVerificat": true, "sursa": "" },
+    "costReparatie": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "o reparație mai mare (centrală, instalații)" }
+  },
+
   "rambursareAnticipata": {
     "comisionDobandaFixa": { "valoare": 0.01, "deVerificat": true, "sursa": "", "nota": "procent din suma rambursată, la creditele cu dobândă fixă (plafonat de lege)" },
     "comisionDobandaVariabila": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "la dobânda variabilă, rambursarea anticipată e fără comision" }
