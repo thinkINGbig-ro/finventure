@@ -255,6 +255,27 @@ button { cursor: pointer; }
 .mesaj-actiune { min-height: 22px; margin: 8px 0 0; font-size: 14px; }
 .mesaj-actiune.eroare { color: var(--loss); }
 .mesaj-actiune.ok { color: var(--gain); }
+/* ---------- Grafic (js/ui/grafic.js) ---------- */
+.grafic-bloc { margin: 8px 0 12px; }
+.grafic-zona { position: relative; }
+.grafic { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.grafic:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; border-radius: 6px; }
+.grafic-grila { stroke: var(--linie); stroke-width: 1; }
+.grafic-axa { fill: var(--text-2); font-size: 10px; }
+.grafic-linie { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.grafic-ghid { stroke: var(--text-2); stroke-width: 1; }
+.grafic-punct { stroke: var(--bg-2); stroke-width: 2; }
+.grafic-legenda { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--text-2); margin-bottom: 4px; }
+.grafic-cheie { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--c, currentColor); vertical-align: middle; margin-right: 6px; }
+.grafic-cheie.punctata { border-top-style: dashed; }
+.grafic-tooltip .grafic-cheie { width: 8px; height: 8px; border: 0; border-radius: 50%; }
+.grafic-tooltip {
+  position: absolute; top: 0; transform: translateX(-50%); pointer-events: none; z-index: 2;
+  background: var(--bg); border: 1px solid var(--linie); border-radius: 8px; padding: 6px 8px; font-size: 12px; white-space: nowrap;
+}
+.grafic-tabel .tabel th { text-align: left; font-size: 12px; color: var(--text-2); font-weight: 500; }
+.bara-pondere { height: 6px; border-radius: 3px; background: var(--bg); overflow: hidden; margin-top: 4px; }
+.bara-pondere > span { display: block; height: 100%; background: var(--main); border-radius: 3px; }
 .mesaj-lectie { display: block; color: var(--text-2); font-size: 13px; margin-top: 2px; }
 .timp-an { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 600; margin: 8px 0 2px; }
 .timp-puncte { display: flex; gap: 4px; }

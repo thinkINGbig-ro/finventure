@@ -11,13 +11,14 @@ import { deschideStrat, inchideStrat } from './strat.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../activitati.js';
 import { datoriiTotal, listaDatorii, simuleazaConsolidare, simuleazaEsalonare, simuleazaRambursare } from '../datorii.js';
 import { descrieCurs, descrieProgram } from '../educatie.js';
+import { companieFalimentata, infoClasa, portofoliu } from '../investitii.js';
+import { baniDisponibili, paramClasa } from '../finance.js';
+import { graficLinii } from './grafic.js';
 
 const TITLURI = {
   meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', datorii: 'Datoriile mele', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
 };
-const IN_CURAND = {
-  investitii: 'Aici vei putea cumpăra ETF-uri, acțiuni, titluri de stat, aur sau crypto și vei vedea cum crește (sau scade) portofoliul.',
-};
+const IN_CURAND = {};
 
 // optiuni: { state, ctx, conceptGlobale: string[], laSchimbare: () => void }
 export function deschidePanou(tab, optiuni) {
@@ -36,6 +37,7 @@ function continutPanou(tab, o, reranda) {
   if (tab === 'banca') return panouBanca(o, reranda);
   if (tab === 'datorii') return panouDatorii(o, reranda);
   if (tab === 'educatie') return panouEducatie(o, reranda);
+  if (tab === 'investitii') return panouInvestitii(o, reranda);
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
   if (tab === 'cariera') return panouCariera(o, reranda);
   if (tab === 'cumparaturi') return panouCumparaturi(o, reranda);
@@ -62,6 +64,103 @@ function arataMesaj(text, ok, lectie) {
   if (!m) return;
   m.replaceChildren(text, lectie ? h('span', { class: 'mesaj-lectie' }, lectie) : '');
   m.className = `mesaj-actiune ${ok ? 'ok' : 'eroare'}`;
+}
+
+// ---------- Investiții ----------
+
+// Câmp de sumă + butoane: [[text, (suma) => ...], ...]
+function campSuma(eticheta, butoane, placeholder = 'Suma în lei') {
+  const input = h('input', { type: 'number', inputmode: 'decimal', min: '1', step: '1', 'aria-label': eticheta, placeholder });
+  const val = () => Number(String(input.value).replace(',', '.'));
+  return h('div', { class: 'camp-suma' }, input, butoane.map(([text, fn]) => h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => fn(val()) }, text)));
+}
+
+const semn = (bani) => `${bani >= 0 ? '+' : '−'} ${lei(Math.abs(bani))}`;
+
+function panouInvestitii(o, reranda) {
+  const { state, ctx } = o;
+  const executa = executor(o, reranda);
+  const port = portofoliu(state, ctx);
+  const sectiuni = [h('p', { class: 'mesaj-actiune', role: 'status' })];
+
+  // Portofoliul: total, câștig, comisioane, grafic
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Portofoliul tău'));
+  if (port.total) {
+    const castig = port.total - port.cost;
+    sectiuni.push(produs('Valoare acum', lei(port.total),
+      `Ai pus ${lei(port.cost)} · ${castig >= 0 ? 'câștig' : 'pierdere'} pe hârtie: ${semn(castig)} · comisioane plătite până acum: ${lei(port.comisioane)}`));
+  } else {
+    sectiuni.push(h('p', { class: 'mic' }, 'N-ai încă investiții. Investește doar bani de care nu ai nevoie câțiva ani și după ce ai un fond de urgență.'));
+  }
+  const ist = port.istoric.filter((p) => p.investitii > 0 || p.investit > 0);
+  if (ist.length >= 2) {
+    sectiuni.push(graficLinii({
+      titlu: 'Cât valorează și cât ai pus, an de an',
+      x: ist.map((p) => p.varsta), unitateX: ' ani',
+      serii: [{ nume: 'Valoare', valori: ist.map((p) => p.investitii / 100) }, { nume: 'Ai pus', valori: ist.map((p) => p.investit / 100), punctata: true }],
+      format: (v) => `${Math.round(v).toLocaleString('ro-RO')} lei`,
+    }));
+  }
+  for (const r of port.randuri) {
+    const vandabil = r.clasa !== 'titluriStat' && !r.falimentata;
+    sectiuni.push(produs(`${r.emoji} ${r.titlu}`, lei(r.valoare),
+      r.falimentata ? 'Compania a dat faliment.' : `${Math.round(r.pondere * 100)}% din portofoliu · ${semn(r.castig)} față de ce ai pus`,
+      h('div', { class: 'bara-pondere', 'aria-hidden': 'true' }, h('span', { style: `width:${Math.round(r.pondere * 100)}%` })),
+      vandabil ? campSuma(`Suma de vândut din ${r.titlu}`, [
+        ['Vinde', (s) => executa('vinde', { clasa: r.clasa, suma: s })],
+        ['Vinde tot', () => executa('vinde', { clasa: r.clasa })],
+      ]) : r.clasa === 'titluriStat' ? h('div', { class: 'mic' }, 'Banii se întorc singuri la scadență.') : null));
+  }
+
+  // Cumpără
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Investește'),
+    h('p', { class: 'mic' }, `Bani disponibili: ${lei(baniDisponibili(state))}. Fiecare cumpărare are un comision; ETF-urile și fondurile au și un comision anual.`));
+  const linieClasa = (id, info) => {
+    const comision = paramClasa(ctx, id, 'comision');
+    const anual = paramClasa(ctx, id, 'comisionAnual');
+    const falimentata = companieFalimentata(state, id);
+    return produs(`${info.emoji} ${info.titlu}`, info.risc ? `risc ${info.risc}` : info.sector ?? '', info.descriere,
+      h('div', { class: 'mic' }, `Comision la cumpărare ${procent(comision)}${anual ? ` · comision anual ${procent(anual)}` : ''}`),
+      falimentata ? h('div', { class: 'mic restanta' }, 'A dat faliment.')
+        : campSuma(`Suma de investit în ${info.titlu}`, [['Investește', (s) => executa('investeste', { clasa: id, suma: s })]]));
+  };
+  for (const [id, info] of ctx.investitii.clase) sectiuni.push(linieClasa(id, info));
+  sectiuni.push(h('details', { class: 'detalii-companii' },
+    h('summary', { class: 'sectiune-titlu' }, 'Acțiuni la companii (inventate, risc mare)'),
+    h('p', { class: 'mic' }, 'O singură companie poate să se dubleze sau să dea faliment. Nu pune aici bani pe care nu-ți permiți să-i pierzi.'),
+    [...ctx.investitii.companii].map(([id, info]) => linieClasa(id, { ...info, risc: null }))));
+
+  // Investiție automată lunară
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Investiție automată lunară'),
+    h('p', { class: 'mic' }, 'Se investește singură în fiecare lună, după ce ai plătit tot. Dacă într-o lună banii nu ajung, sare luna.'));
+  for (const d of port.dca) {
+    const nume = d.clasa === 'pilon3' ? 'Pilonul III' : infoClasa(ctx, d.clasa)?.titlu ?? d.clasa;
+    sectiuni.push(produs(`🔁 ${nume}`, `${lei(d.suma)} / lună`, d.luniSarite ? `Luni sărite până acum (fără bani): ${d.luniSarite}` : null,
+      h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-text', onclick: () => executa('seteazaDCA', { clasa: d.clasa, suma: 0 }) }, 'Oprește'))));
+  }
+  const tinta = h('select', { 'aria-label': 'Unde investești lunar' },
+    h('option', { value: 'etf' }, 'ETF pe bursa mondială'), h('option', { value: 'pilon3' }, 'Pilonul III (pensie privată)'),
+    [...ctx.investitii.clase].filter(([id]) => !['etf', 'titluriStat'].includes(id)).map(([id, c]) => h('option', { value: id }, c.titlu)));
+  sectiuni.push(h('label', { class: 'comutator' }, 'Unde: ', tinta),
+    campSuma('Suma lunară', [['Setează', (s) => executa('seteazaDCA', { clasa: tinta.value, suma: s })]], 'Lei pe lună'));
+
+  // Pilonul III și II
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Pensia ta privată'),
+    produs('Pilonul III', lei(port.pilon3), 'Pensie facultativă: o alimentezi tu (sau firma). Banii se pot scoate de la 60 de ani.',
+      campSuma('Suma de depus în Pilonul III', [['Depune', (s) => executa('depunePilon3', { suma: s })]])),
+    produs('Pilonul II', lei(port.pilon2), 'Se alimentează singur din CAS-ul de pe fluturaș, cât lucrezi cu contract.'));
+
+  // Rebalansare
+  if (port.total) {
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Rebalansează'),
+      h('p', { class: 'mic' }, 'Aduce portofoliul la proporțiile unei strategii: vinde ce e peste, cumpără ce e sub. Costă comisioane (și impozit pe câștigul vândut). Titlurile de stat nu se vând.'));
+    for (const [id, st] of ctx.investitii.strategii) {
+      const alocare = Object.entries(st.alocare).map(([c, w]) => `${Math.round(w * 100)}% ${infoClasa(ctx, c)?.titlu ?? c}`).join(', ');
+      sectiuni.push(produs(`${st.titlu}${state.tintaInvestitii === id ? ' (strategia ta)' : ''}`, '', `${st.descriere} ${alocare}.`,
+        h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('rebalanseaza', { strategie: id }) }, 'Rebalansează așa'))));
+    }
+  }
+  return sectiuni;
 }
 
 // ---------- Educație ----------

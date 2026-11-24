@@ -403,7 +403,8 @@ Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
 | 1 | Meniul „Activități” (`data/activitati.json`, `js/activitati.js`): 16 activități cu buget anual de timp (`balans.timp`); Enciclopedia mutată în antet (📖); salvări versiunea 2 cu migrare | ✅ |
 | 2 | Datoriile mele (`js/datorii.js`, panou din Bancă): lista unificată cu costul total rămas, plata restanței, rambursare parțială (scade rata / durata, cu dobânda economisită și comision la dobânda fixă), eșalonare la recuperator (se anulează la 2 luni de întârziere), refinanțare / consolidare (istoric + grad de îndatorare); 4 concepte noi | ✅ |
 | 3 | Educație (`data/educatie.json`, `js/educatie.js`): 6 programe lungi la orice vârstă (buget cu admitere, taxă, profesională, postliceală, master, doctorat cu bursă), credit de studii, bursă de merit, renunțare; 9 cursuri cu certificat (bootcamp IT, contabilitate, marketing, electrician, instalator, engleză, permis, antreprenoriat, educație financiară); certificatele țin loc de diplomă (`jobs.json` → `cerinte.flagInLocDeStudii`); la final, „Educația ta, ca investiție”; salvări versiunea 3 | ✅ |
-| 4a/4b | Investiții: meniu complet, DCA, portofoliu, rebalansare, grafic; imobiliare de închiriat | în lucru |
+| 4a | Investiții (`data/investitii.json`, `js/investitii.js`, `js/ui/grafic.js`): 6 clase (nou: fond activ cu 2% comision anual vs. ETF cu 0,2%, pe același indice), 5 companii inventate cu faliment posibil (flux RNG `companii`), vânzare parțială cu comision și impozit, investiție automată lunară (și în Pilonul III), portofoliu cu alocare, câștig și comisioane plătite, grafic anual, rebalansare pe 3 strategii; selectorul `investitie:piata`; 5 concepte noi; salvări versiunea 4 | ✅ |
+| 4b | Imobiliare de închiriat | în lucru |
 | 5 | Joburi și muncă: joburi noi (inclusiv artist, cu venit variabil), ritm de muncă, ore suplimentare, al doilea job, demisie | |
 | 6a/6b | Afacere proprie: pornire (domeniu, formă juridică, capital, pregătire), funcționare (decizii, profit vs. cash flow, riscuri, vânzare/închidere/insolvență) | |
 | 7 | Cumpărături: catalog cu calitate, depreciere, revânzare, plata cash/card/rate/BNPL, animale de companie, tentații | |
@@ -417,6 +418,8 @@ Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 
 | înainte (faza F) | 100 / 0 | 100 / 0 | ~55 / ~45 | ~24 / ~76 |
 | 1 | 100 / 0 | 100 / 0 | 54,2 / 45,8 | 24 / 76 |
 | 2 | 100 / 0 | 100 / 0 | 51,6 / 48,4 | 15,6 / 84,4 (cauza: riscantul își consolidează cardul pe 60 de luni și îl umple din nou; verificat pe aceleași vieți: 24% fără consolidare) |
+| 3 | 100 / 0 | 100 / 0 | 51,4 / 48,6 | 15,6 / 84,4 |
+| 4a | 100 / 0 | 100 / 0 | 51 / 49 | 23,2 / 76,8 (riscantul pune acum jumătate din surplus pe bursă în loc să-l cheltuie; activele amână insolvența) |
 
 Reguli pentru extindere:
 - Fiecare lot: teste noi (`tests/loturi.js`), analiza conținutului fără erori, simularea cu cele 4 profiluri (`--n 200` intermediar, `--n 500` la final de lot; profilurile folosesc și opțiunile noi), UI verificat la 360 px, commit separat per lot / sub-lot.

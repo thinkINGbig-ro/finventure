@@ -2,7 +2,8 @@
 
 import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, oprireCurenta } from '../js/engine.js';
 import { textRezultat } from '../js/events.js';
-import { baniDisponibili, creeazaProdus, datorieProdus, pret } from '../js/finance.js';
+import { baniDisponibili, creeazaProdus, datorieProdus, pret, valoareProdus } from '../js/finance.js';
+import { aplicaComisioaneAnuale, miscaCompanii, portofoliu, proceseazaDCA } from '../js/investitii.js';
 import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
 import { indeplinesteCerinte } from '../js/cariera.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
@@ -17,6 +18,104 @@ export function testeLoturi(ctxBaza, a) {
     ...lot1(ctxBaza, a),
     ...lot2(ctxBaza, a),
     ...lot3(ctxBaza, a),
+    ...lot4a(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 4a: Investiții ----------
+
+function lot4a(ctxBaza, a) {
+  const { ok, egal } = a;
+  const jocInvestitor = (seed) => {
+    const { ctx, state } = a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.numerar = inBani(200_000);
+    return { ctx, state };
+  };
+  const valoareClasa = (state, clasa) => state.produse.filter((p) => p.tip === 'investitie' && p.clasa === clasa).reduce((s, p) => s + valoareProdus(p, state), 0);
+  return {
+    'lotul 4a: același indice, comisioane diferite: fondul activ rămâne mult în urma ETF-ului'() {
+      const { ctx, state } = jocInvestitor('comisioane');
+      ok(actiune(state, ctx, 'investeste', { clasa: 'etf', suma: 10_000 }).ok, 'ETF');
+      ok(actiune(state, ctx, 'investeste', { clasa: 'fondActiv', suma: 10_000 }).ok, 'fond activ');
+      for (let i = 0; i < 360; i++) { state.piete.etf *= 1.07 ** (1 / 12); aplicaComisioaneAnuale(state, ctx); }
+      const etf = valoareClasa(state, 'etf');
+      const fond = valoareClasa(state, 'fondActiv');
+      ok(fond < etf * 0.65, `după 30 de ani: ETF ${etf / 100} lei, fond activ ${fond / 100} lei`);
+      ok(portofoliu(state, ctx).comisioane > 0, 'comisioanele plătite sunt ținute minte');
+      ok(state.concepte.includes('cost-comisioane'), 'conceptul s-a deblocat');
+      return `ETF ${Math.round(etf / 100)} lei vs. fond activ ${Math.round(fond / 100)} lei`;
+    },
+
+    'lotul 4a: o companie poate da faliment; companiile au norocul lor, piața rămâne aceeași'() {
+      const { ctx: ctx0, state } = jocInvestitor('faliment');
+      const companii = new Map([...ctx0.investitii.companii].map(([k, c]) => [k, k === 'co-zborapid' ? { ...c, riscFalimentAnual: 0.9999 * 12 } : c]));
+      const ctx = { ...ctx0, investitii: { ...ctx0.investitii, companii } };
+      ok(actiune(state, ctx, 'investeste', { clasa: 'co-zborapid', suma: 5000 }).ok, 'cumpără acțiuni ZboRapid');
+      const piete = state.rng.piete;
+      miscaCompanii(state, ctx, 1.01);
+      egal(state.rng.piete, piete, 'companiile nu consumă din fluxul pieței');
+      egal(state.piete['co-zborapid'], 0, 'ZboRapid a dat faliment');
+      egal(valoareClasa(state, 'co-zborapid'), 0, 'acțiunile nu mai valorează nimic');
+      ok(!actiune(state, ctx, 'investeste', { clasa: 'co-zborapid', suma: 100 }).ok, 'nu se mai poate cumpăra');
+      ok(state.jurnal.some((j) => /faliment/.test(j.text)), 'jurnalul spune ce s-a întâmplat');
+    },
+
+    'lotul 4a: investiția automată lunară cumpără după salariu și sare lunile fără bani'() {
+      const { ctx, state } = jocInvestitor('dca');
+      ok(actiune(state, ctx, 'seteazaDCA', { clasa: 'etf', suma: 300 }).ok, 'DCA setat');
+      ok(actiune(state, ctx, 'seteazaDCA', { clasa: 'pilon3', suma: 100 }).ok, 'și în Pilonul III');
+      const pilon3 = state.pensie.pilon3 ?? 0;
+      a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+      const cost = state.produse.filter((p) => p.tip === 'investitie' && p.clasa === 'etf').reduce((s, p) => s + p.cost, 0);
+      egal(cost, 12 * inBani(300), 'un an de investiții lunare în ETF');
+      ok((state.pensie.pilon3 ?? 0) >= pilon3 + 12 * inBani(100), 'Pilonul III a primit lunar');
+      ok(state.istoricPortofoliu.length >= 1, 'istoricul are un punct pe an');
+      state.numerar = 0;
+      for (const p of state.produse) if (p.tip === 'contCurent') p.sold = 0;
+      for (const p of state.produse) if (p.tip === 'contractMunca') state.produse = state.produse.filter((x) => x !== p);
+      state.recurente = [];
+      proceseazaDCA(state, ctx);
+      ok(state.dca.every((d) => d.luniSarite > 0), 'fără bani, luna se sare');
+    },
+
+    'lotul 4a: vânzarea parțială plătește comision și impozit doar pe câștigul vândut'() {
+      const { ctx, state } = jocInvestitor('vanzare');
+      actiune(state, ctx, 'investeste', { clasa: 'etf', suma: 10_000 });
+      state.piete.etf *= 1.5;
+      const valoare = valoareClasa(state, 'etf');
+      const inainte = baniDisponibili(state);
+      const r = actiune(state, ctx, 'vinde', { clasa: 'etf', suma: 5000 });
+      ok(r.ok, r.mesaj);
+      ok(r.impozit > 0 && r.comision > 0, 'comision și impozit');
+      egal(baniDisponibili(state) - inainte, r.net, 'banii primiți = net');
+      const p = state.produse.find((x) => x.tip === 'investitie' && x.clasa === 'etf');
+      ok(Math.abs(valoareProdus(p, state) - (valoare - inBani(5000))) < 100, 'a rămas restul investiției');
+      ok(Math.abs(p.cost - inBani(10_000) * (1 - inBani(5000) / valoare)) < 100, 'costul rămas scade proporțional');
+    },
+
+    'lotul 4a: rebalansarea aduce portofoliul la strategie'() {
+      const { ctx, state } = jocInvestitor('rebalansare');
+      actiune(state, ctx, 'investeste', { clasa: 'crypto', suma: 50_000 });
+      const r = actiune(state, ctx, 'rebalanseaza', { strategie: 'echilibrata' });
+      ok(r.ok, r.mesaj);
+      const port = portofoliu(state, ctx);
+      const pondere = (clasa) => port.randuri.find((x) => x.clasa === clasa)?.pondere ?? 0;
+      ok(Math.abs(pondere('etf') - 0.6) < 0.05, `ETF ~60%: ${pondere('etf')}`);
+      ok(pondere('crypto') < 0.02, 'crypto vândut (nu e în strategie)');
+      ok(pondere('titluriStat') > 0.2, 'titluri de stat cumpărate');
+      ok(state.concepte.includes('rebalansare'), 'concept');
+    },
+
+    'lotul 4a: la prăbușirea bursei, „vând tot” vinde și companiile, și fondul activ'() {
+      const { ctx, state } = jocInvestitor('panica');
+      for (const clasa of ['etf', 'fondActiv', 'co-medicor', 'titluriStat']) actiune(state, ctx, 'investeste', { clasa, suma: 1000 });
+      const o = forteazaEveniment(state, ctx, 'prabusire-bursa', { pierdere: 100, procent: 20 });
+      alege(state, ctx, 'vand');
+      const ramase = state.produse.filter((p) => p.tip === 'investitie').map((p) => p.clasa);
+      egal(JSON.stringify(ramase), JSON.stringify(['titluriStat']), 'rămân doar titlurile de stat');
+      ok(o.tip === 'eveniment', 'evenimentul a apărut');
+    },
   };
 }
 
@@ -389,6 +488,11 @@ function lot0(ctxBaza, a) {
         inscrieProgram: [{ program: 'nu-exista' }, { program: 'master' }],
         renuntaStudii: [{}],
         inscrieCurs: [{ curs: 'educatie-financiara' }, { curs: 'educatie-financiara' }],
+        investeste: [{ clasa: 'etf', suma: 1000 }, { clasa: 'nu-exista', suma: 10 }, { clasa: 'etf' }],
+        vinde: [{ clasa: 'etf', suma: 100 }, { clasa: 'titluriStat' }, { clasa: 'crypto' }],
+        seteazaDCA: [{ clasa: 'etf', suma: 200 }, { clasa: 'etf', suma: 0 }, { clasa: 'titluriStat', suma: 100 }],
+        depunePilon3: [{ suma: 100 }, {}],
+        rebalanseaza: [{ strategie: 'echilibrata' }, { strategie: 'nu-exista' }],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

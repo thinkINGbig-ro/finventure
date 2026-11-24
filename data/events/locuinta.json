@@ -106,7 +106,7 @@
                 },
                 "avereLichidaMin": "{avansG}"
               },
-              "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur", "depozit"],
+              "lichideaza": ["investitie:piata", "depozit"],
               "flaguri": ["vandut_pentru_avans:1"],
               "etichete": ["vandPentruAvans", "casaMica"],
               "urmari": [{ "eveniment": "cumpara-locuinta", "dupaLuni": 0 }],
@@ -199,7 +199,7 @@
                 },
                 "avereLichidaMin": "{avansA}"
               },
-              "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur", "depozit"],
+              "lichideaza": ["investitie:piata", "depozit"],
               "flaguri": ["vandut_pentru_avans:1"],
               "etichete": ["vandPentruAvans", "casaMare"],
               "urmari": [{ "eveniment": "cumpara-locuinta", "dupaLuni": 0 }],

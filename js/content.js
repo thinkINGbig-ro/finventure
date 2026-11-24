@@ -16,6 +16,7 @@ const FISIERE = {
   finaluri: 'data/endings.json',
   activitati: 'data/activitati.json',
   educatie: 'data/educatie.json',
+  investitii: 'data/investitii.json',
 };
 
 // citeste(cale) -> Promise<string>; cale relativă la rădăcina proiectului
@@ -46,6 +47,7 @@ export async function incarcaContinut(citeste) {
   const finaluriJson = (await citesteJson(FISIERE.finaluri)) ?? { finaluri: [] };
   const activitatiJson = (await citesteJson(FISIERE.activitati)) ?? { activitati: [] };
   const educatieJson = (await citesteJson(FISIERE.educatie)) ?? { programe: [], cursuri: [] };
+  const investitiiJson = (await citesteJson(FISIERE.investitii)) ?? { clase: [], companii: [], strategii: [] };
 
   const brute = [];
   for (const nume of index.fisiere ?? []) {
@@ -59,12 +61,13 @@ export async function incarcaContinut(citeste) {
     json.evenimente.forEach((ev, i) => brute.push({ ev, fisier, pozitie: i }));
   }
 
-  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson }, erori, avertismente);
+  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson, investitiiJson }, erori, avertismente);
   return { ...rezultat, erori, avertismente };
 }
 
 export function construiesteContinut({
   config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] }, activitatiJson = { activitati: [] }, educatieJson = { programe: [], cursuri: [] },
+  investitiiJson = { clase: [], companii: [], strategii: [] },
 }, erori = [], avertismente = []) {
   valideazaConfig(config, FISIERE.config, erori);
 
@@ -142,7 +145,47 @@ export function construiesteContinut({
 
   const educatie = construiesteEducatie(educatieJson, { ...ctxValidare, referinte: [] }, erori, avertismente);
 
-  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri, activitati, educatie } };
+  const investitii = construiesteInvestitii(investitiiJson, erori);
+
+  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri, activitati, educatie, investitii } };
+}
+
+// ---------- Investiții (clase, companii inventate, strategii de rebalansare) ----------
+
+function construiesteInvestitii(json, erori) {
+  const fisier = FISIERE.investitii;
+  const clase = new Map();
+  const companii = new Map();
+  const strategii = new Map();
+  const text = (x, campuri, err) => { for (const c of campuri) if (typeof x[c] !== 'string' || !x[c].trim()) err(c, 'trebuie să fie text'); };
+  for (const c of json.clase ?? []) {
+    const err = (camp, mesaj) => erori.push({ fisier, id: c?.id, camp, mesaj });
+    campuriNecunoscute(c, ['id', 'titlu', 'emoji', 'risc', 'descriere'], '', err);
+    if (!CLASE_INVESTITII.includes(c.id)) err('id', `clasă necunoscută; permise: ${CLASE_INVESTITII.join(', ')}`);
+    text(c, ['titlu', 'emoji', 'risc', 'descriere'], err);
+    clase.set(c.id, c);
+  }
+  for (const c of json.companii ?? []) {
+    const err = (camp, mesaj) => erori.push({ fisier, id: c?.id, camp, mesaj });
+    campuriNecunoscute(c, ['id', 'titlu', 'emoji', 'sector', 'descriere', 'beta', 'alfa', 'volatilitate', 'riscFalimentAnual'], '', err);
+    if (typeof c.id !== 'string' || !/^co-[a-z0-9-]+$/.test(c.id)) err('id', 'id-ul unei companii începe cu „co-” (ex. „co-voltara”)');
+    text(c, ['titlu', 'emoji', 'sector', 'descriere'], err);
+    for (const k of ['beta', 'alfa', 'volatilitate', 'riscFalimentAnual']) if (typeof c[k] !== 'number') err(k, 'trebuie să fie număr');
+    if (!(c.riscFalimentAnual >= 0 && c.riscFalimentAnual < 1)) err('riscFalimentAnual', 'între 0 și 1');
+    if (companii.has(c.id)) err('id', 'id duplicat');
+    companii.set(c.id, c);
+  }
+  for (const s of json.strategii ?? []) {
+    const err = (camp, mesaj) => erori.push({ fisier, id: s?.id, camp, mesaj });
+    campuriNecunoscute(s, ['id', 'titlu', 'descriere', 'alocare'], '', err);
+    text(s, ['titlu', 'descriere'], err);
+    const alocare = Object.entries(s.alocare ?? {});
+    for (const [k] of alocare) if (!CLASE_INVESTITII.includes(k)) err(`alocare.${k}`, 'clasă necunoscută');
+    const suma = alocare.reduce((t, [, v]) => t + v, 0);
+    if (Math.abs(suma - 1) > 0.001) err('alocare', `procentele trebuie să facă 1 (acum ${suma})`);
+    strategii.set(s.id, s);
+  }
+  return { clase, companii, strategii };
 }
 
 // ---------- Educație (programe lungi + cursuri scurte) ----------

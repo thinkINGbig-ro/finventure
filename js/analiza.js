@@ -12,7 +12,9 @@ export const MOTOR = {
   evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta'],
   concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare',
     // din acțiunile meniului „Datoriile mele” (js/datorii.js)
-    'rambursare-anticipata', 'avalansa-bulgare', 'refinantare', 'esalonare'],
+    'rambursare-anticipata', 'avalansa-bulgare', 'refinantare', 'esalonare',
+    // din meniul Investiții (js/investitii.js)
+    'etf', 'cost-comisioane', 'diversificare', 'investitie-lunara', 'rebalansare'],
 };
 
 const numeFlag = (f) => f.split(':')[0];

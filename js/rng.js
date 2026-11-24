@@ -21,6 +21,7 @@ export function creeazaFluxuri(seed) {
     evenimente: hashSeed(`${seed}/evenimente`),
     piete: hashSeed(`${seed}/piete`),
     actiuni: hashSeed(`${seed}/actiuni`),
+    companii: hashSeed(`${seed}/companii`),
   };
 }
 

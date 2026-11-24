@@ -262,6 +262,31 @@
       "text": "Refinanțarea înseamnă să iei un credit nou, mai ieftin, ca să închizi unul scump. Consolidarea strânge mai multe datorii (card, IFN, rate) într-un singur credit, cu o singură rată. Banca verifică venitul, istoricul și gradul de îndatorare, deci merge doar dacă încă plătești la timp. Atenție la durată: o rată mai mică pe mai mulți ani poate însemna mai mulți bani dați în total. Exemplu: 10.000 lei datorie pe card (22%) mutați într-un credit la 10% pe 3 ani te costă cam 1.550 lei dobândă, față de aproape 4.400 lei (și 7 ani și jumătate) dacă plătești doar minimul la card."
     },
     {
+      "id": "etf",
+      "titlu": "ETF-ul",
+      "text": "Un ETF e un fond care cumpără automat toate acțiunile dintr-un indice (de exemplu cele mai mari 500 de companii americane sau mii de companii din toată lumea) și se tranzacționează la bursă ca o acțiune. Cu o singură cumpărare devii coproprietar pe o bucățică din sute de companii. Pentru că nu are pe cineva care să aleagă acțiunile, comisionul anual e foarte mic. Exemplu: cu 500 lei într-un ETF pe bursa mondială ai bani puși în peste 1.500 de companii, cu un cost de cam 1 leu pe an."
+    },
+    {
+      "id": "cost-comisioane",
+      "titlu": "Costul comisioanelor pe termen lung",
+      "text": "Un comision anual pare mic, dar se scade în fiecare an din toată suma, inclusiv din câștiguri, iar efectul se adună ca dobânda compusă, doar că împotriva ta. De aceea un fond cu 2% pe an rămâne mult în urma unui ETF cu 0,2%, chiar dacă investesc în aceleași companii. Înainte să investești, uită-te la comisionul de cumpărare, la cel de vânzare și mai ales la cel anual. Exemplu: 10.000 lei care cresc 7% pe an ajung în 30 de ani la cam 72.000 lei cu 0,2% comision și la doar cam 43.000 lei cu 2%."
+    },
+    {
+      "id": "diversificare",
+      "titlu": "Diversificarea",
+      "text": "Diversificarea înseamnă să nu pui toate ouăle în același coș: banii împărțiți pe multe companii și pe mai multe tipuri de investiții (acțiuni, titluri de stat, aur). O companie poate da faliment, dar sute deodată, foarte greu; iar când bursele scad, titlurile de stat și aurul de obicei țin. Nu-ți crește randamentul, dar îți scade mult riscul. Exemplu: cu toți banii într-o singură companie care dă faliment pierzi tot; într-un ETF cu 500 de companii, același faliment te costă cam 0,2%."
+    },
+    {
+      "id": "investitie-lunara",
+      "titlu": "Investiția lunară automată",
+      "text": "Investiția lunară automată (în engleză, DCA) înseamnă să pui aceeași sumă în fiecare lună, oricum ar fi bursa. Când prețurile sunt mici cumperi mai multe unități, când sunt mari, mai puține, deci nu trebuie să ghicești momentul potrivit. E și cel mai simplu obicei: banii pleacă singuri după salariu, înainte să apuci să-i cheltui. Exemplu: 300 lei pe lună timp de 30 de ani înseamnă 108.000 lei puși deoparte; cu un randament mediu de 7% pe an ajung la peste 340.000 lei."
+    },
+    {
+      "id": "rebalansare",
+      "titlu": "Rebalansarea",
+      "text": "Rebalansarea înseamnă să readuci portofoliul la proporțiile pe care le-ai ales. După un an bun, acțiunile au crescut și ocupă o parte mai mare decât voiai, deci riscul tău a crescut fără să decizi asta. Vinzi puțin din ce a crescut și cumperi din ce a rămas în urmă. Se face rar (o dată pe an), pentru că fiecare vânzare costă comision și, uneori, impozit. Exemplu: 60% acțiuni și 40% titluri devin, după un an bun, 70% și 30%; rebalansarea te aduce înapoi la 60/40."
+    },
+    {
       "id": "educatie-investitie",
       "titlu": "Educația ca investiție",
       "text": "Un curs sau o facultate costă de două ori: taxa și anii în care câștigi mai puțin pentru că înveți. Se întoarce prin salarii mai mari, ani la rând, și prin joburi care altfel nu ți-ar fi deschise. Ca la orice investiție, contează ce alegi: o calificare căutată se plătește repede, o diplomă într-un domeniu fără joburi poate să nu se plătească niciodată. Exemplu: un curs de electrician de 2.200 lei care îți crește salariul cu 1.000 lei brut pe lună se întoarce în câteva luni."

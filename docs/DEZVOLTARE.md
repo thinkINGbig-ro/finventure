@@ -47,6 +47,8 @@ js/cariera.js       CV, oferte, negociere, mărire, promovare
 js/activitati.js    meniul „Activități” și bugetul de timp al anului
 js/datorii.js       „Datoriile mele”: rambursare, eșalonare, refinanțare
 js/educatie.js      meniul Educație: studii lungi, cursuri, educația ca investiție
+js/investitii.js    meniul Investiții: clase, companii, DCA, portofoliu, rebalansare
+js/ui/grafic.js     grafic cu linii în SVG (hover, tastatură, tabel)
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -56,7 +58,7 @@ js/ui/*.js          ecranele
 data/config.json    valori economice (toate marcate „deVerificat”)
 data/balans.json    parametri de joc (echilibrare)
 data/events/*.json  evenimentele, pe teme
-data/concepts.json, data/jobs.json, data/endings.json, data/activitati.json, data/educatie.json
+data/concepts.json, data/jobs.json, data/endings.json, data/activitati.json, data/educatie.json, data/investitii.json
 tests/              teste (Node și browser) și simularea
 docs/raport-simulare.json  raportul de echilibru (regenerabil)
 ```
@@ -126,6 +128,10 @@ Operațiunile bancare (depune, retrage, plătește) nu consumă timp. Căutatul 
 - **`cursuri`** (scurte, mai multe odată): `pret` (`"pret:cursuri.<cheie>"` din config), `luni`, `timp` (acțiuni din bugetul anului), `energieLunara`, `skillLaFinal`, `flag` (certificatul primit la final).
 
 Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cerinte": { "studiiMin": "licenta", "flagInLocDeStudii": "certificat_it" }`.
+
+## Investițiile (meniul Investiții)
+
+`data/investitii.json` are trei liste: `clase` (textele din meniu; randamentele, volatilitatea și comisioanele sunt în `config.json` → `investitii`), `companii` (companii **inventate**, cu id `co-…` și parametri de joc: `beta`, `alfa`, `volatilitate`, `riscFalimentAnual`) și `strategii` (alocările țintă pentru rebalansare; procentele fac 1). Companiile au fluxul RNG `companii`, deci adăugarea uneia nu schimbă bursa. În evenimente, selectorul `investitie:piata` înseamnă orice investiție care se poate vinde pe loc (fără titlurile de stat).
 
 ## Salvările și migrarea
 

@@ -1,0 +1,23 @@
+{
+  "_info": "Meniul Investiții. „clase” = ce poți cumpăra (textele din meniu; randamentele și comisioanele sunt în config.json → investitii). „companii” = companii INVENTATE, cu risc mai mare decât un ETF: parametri de joc, nu valori reale (beta = cât urmează bursa, alfa = creștere anuală în plus sau în minus, volatilitate = cât oscilează singură, riscFalimentAnual = șansa să ajungă la zero). „strategii” = alocările țintă pentru rebalansare (sumele de pe o strategie fac 1).",
+  "clase": [
+    { "id": "titluriStat", "titlu": "Titluri de stat", "emoji": "🏛️", "risc": "foarte mic", "descriere": "Împrumuți statul pe 2 ani, cu dobândă fixă. Banii se întorc la scadență; nu se pot vinde înainte." },
+    { "id": "etf", "titlu": "ETF pe bursa mondială", "emoji": "🌍", "risc": "mediu", "descriere": "Cumperi o bucățică din sute de companii deodată, cu un comision anual foarte mic. Varianta clasică pe termen lung." },
+    { "id": "fondActiv", "titlu": "Fond mutual administrat activ", "emoji": "💼", "risc": "mediu", "descriere": "Un administrator alege acțiunile pentru tine. Investește cam în aceleași companii ca un ETF, dar cu un comision anual de 10 ori mai mare." },
+    { "id": "actiuni", "titlu": "Indicele bursei din România", "emoji": "📊", "risc": "mediu-mare", "descriere": "Acțiunile marilor companii românești, într-un singur fond. Mai puține companii, deci mai multe oscilații." },
+    { "id": "aur", "titlu": "Aur", "emoji": "🥇", "risc": "mediu", "descriere": "Nu aduce dobândă, dar de obicei crește când bursele cad. Bun pentru diversificare." },
+    { "id": "crypto", "titlu": "Crypto", "emoji": "🪙", "risc": "foarte mare", "descriere": "Poate crește sau scădea cu zeci de procente într-o lună. Doar bani pe care îți permiți să-i pierzi." }
+  ],
+  "companii": [
+    { "id": "co-voltara", "titlu": "Voltara Energie", "emoji": "🔋", "sector": "energie verde", "descriere": "Parcuri solare și baterii. Creștere constantă, datorii mari.", "beta": 1.0, "alfa": 0.01, "volatilitate": 0.35, "riscFalimentAnual": 0.01 },
+    { "id": "co-pixelnord", "titlu": "PixelNord Games", "emoji": "🎮", "sector": "jocuri video", "descriere": "Un joc de succes și altele în lucru. Totul depinde de următorul titlu.", "beta": 1.3, "alfa": 0.02, "volatilitate": 0.55, "riscFalimentAnual": 0.03 },
+    { "id": "co-agrovia", "titlu": "Agrovia Delta", "emoji": "🌾", "sector": "agricultură", "descriere": "Ferme și depozite. Plictisitoare, dar stabilă; depinde de vreme.", "beta": 0.7, "alfa": -0.005, "volatilitate": 0.25, "riscFalimentAnual": 0.01 },
+    { "id": "co-medicor", "titlu": "Medicor Pharma", "emoji": "💊", "sector": "medicamente", "descriere": "Medicamente generice și un medicament nou în teste. Un test reușit sau ratat mișcă tot prețul.", "beta": 0.8, "alfa": 0.005, "volatilitate": 0.30, "riscFalimentAnual": 0.008 },
+    { "id": "co-zborapid", "titlu": "ZboRapid", "emoji": "🚁", "sector": "livrări cu drona (startup)", "descriere": "Promite să schimbe livrările. Încă pierde bani în fiecare an.", "beta": 1.5, "alfa": 0.04, "volatilitate": 0.8, "riscFalimentAnual": 0.08 }
+  ],
+  "strategii": [
+    { "id": "prudenta", "titlu": "Prudentă", "descriere": "Mai mult siguranță decât creștere.", "alocare": { "titluriStat": 0.6, "etf": 0.3, "aur": 0.1 } },
+    { "id": "echilibrata", "titlu": "Echilibrată", "descriere": "Creștere pe termen lung, cu o plasă de siguranță.", "alocare": { "etf": 0.6, "titluriStat": 0.25, "aur": 0.1, "actiuni": 0.05 } },
+    { "id": "dinamica", "titlu": "Dinamică", "descriere": "Pentru zeci de ani de investit: accepți ani pe minus.", "alocare": { "etf": 0.8, "actiuni": 0.1, "aur": 0.05, "crypto": 0.05 } }
+  ]
+}

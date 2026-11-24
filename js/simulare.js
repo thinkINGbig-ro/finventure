@@ -184,6 +184,11 @@ function meniuFrugal(state, ctx) {
   if (fondUrgenta(state) >= 6 * lunar && deInvestit > 50000) {
     actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(Math.round(deInvestit * 0.7)) });
   }
+  // Frugalul investește și lunar, automat, 10% din salariu (o dată ce are fondul).
+  const cFrugal = contractCurent(state);
+  if (cFrugal && fondUrgenta(state) >= 6 * lunar && !(state.dca ?? []).length) {
+    actiune(state, ctx, 'seteazaDCA', { clasa: 'etf', suma: Math.round(lei(fluturas(cFrugal.brut, cFrugal.contract, ctx).net) * 0.1) });
+  }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
   cereMarireAnual(state, ctx);
   cursuriAtent(state, ctx, ['educatie-financiara', 'engleza'], fondUrgenta(state) >= 6 * lunar);
@@ -230,6 +235,10 @@ function meniuPrudent(state, ctx) {
     // 20%: investiții (pentru casă, prudentul le vinde la nevoie: „Vând investițiile pentru avans”)
     const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
     if (deInvestit > 50000) actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(deInvestit) });
+    // de la 30 de ani, o pensie privată lunară mică; la 5 ani, rebalansare pe strategia echilibrată
+    const varsta = varstaLa(state.luna);
+    if (varsta >= 30 && !(state.dca ?? []).some((d) => d.clasa === 'pilon3')) actiune(state, ctx, 'seteazaDCA', { clasa: 'pilon3', suma: Math.round(lei(netLunar) * 0.03) });
+    if (varsta % 5 === 0) actiune(state, ctx, 'rebalanseaza', { strategie: 'echilibrata' });
     // 30%: dorințe — stil Confortabil dacă cheltuielile de bază rămân sub 80% din net
     if (state.stilViata === 'modest') {
       const mancare = pret(state, ctx, 'costTrai.mancareTransport');
@@ -274,6 +283,12 @@ function meniuRiscant(state, ctx, rnd) {
     const peCard = Math.round(card.limita * 0.3);
     actiune(state, ctx, 'cumpara', { suma: lei(peCard), fericire: 3, peCard: true });
   }
+  // Riscantul pariază pe companii „de viitor” și crypto, cu ce-i rămâne după cheltuieli.
+  const peBursa = baniDisponibili(state) - lunar;
+  if (peBursa > 20000) {
+    const tinta = ['co-zborapid', 'co-pixelnord', 'crypto'][Math.floor(rnd() * 3)];
+    actiune(state, ctx, 'investeste', { clasa: tinta, suma: lei(Math.round(peBursa * 0.5)) });
+  }
   // Riscantul întinde datoriile pe cât mai mulți ani, ca să scadă rata (și să poată cheltui mai mult).
   const deStrans = consolidabile(state).map((p) => p.id);
   if (deStrans.length) actiune(state, ctx, 'consolideaza', { ids: deStrans, luni: 60 });
@@ -315,6 +330,20 @@ const ACTIUNI_ALEATOARE = [
   (state, ctx, rnd) => actiune(state, ctx, 'cumpara', { suma: lei(Math.round(baniDisponibili(state) * (0.1 + rnd() * 0.5))), fericire: 4 }),
   (state, ctx) => actiune(state, ctx, 'cereMarire'),
   (state, ctx) => actiune(state, ctx, 'cautaJob'),
+  // investițiile: orice clasă sau companie, DCA, vânzare, rebalansare
+  (state, ctx, rnd) => {
+    const ids = [...ctx.investitii.clase.keys(), ...ctx.investitii.companii.keys()];
+    return actiune(state, ctx, 'investeste', { clasa: ids[Math.floor(rnd() * ids.length)], suma: lei(Math.round(baniDisponibili(state) * (0.05 + rnd() * 0.3))) });
+  },
+  (state, ctx, rnd) => {
+    const ids = ['etf', 'pilon3', 'crypto', 'fondActiv'];
+    return actiune(state, ctx, 'seteazaDCA', { clasa: ids[Math.floor(rnd() * ids.length)], suma: rnd() < 0.3 ? 0 : Math.round(50 + rnd() * 400) });
+  },
+  (state, ctx, rnd) => {
+    const clase = [...new Set(gasesteProduse(state, 'investitie').map((p) => p.clasa))];
+    return clase.length ? actiune(state, ctx, 'vinde', { clasa: clase[Math.floor(rnd() * clase.length)] }) : null;
+  },
+  (state, ctx, rnd) => actiune(state, ctx, 'rebalanseaza', { strategie: ['prudenta', 'echilibrata', 'dinamica'][Math.floor(rnd() * 3)] }),
   // educația: un program lung (uneori cu credit), un curs sau renunțarea la studii
   (state, ctx, rnd) => {
     const ids = [...ctx.educatie.programe.keys()];

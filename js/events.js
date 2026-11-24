@@ -13,11 +13,14 @@ import {
 } from './cariera.js';
 
 // ---------- Produse după selector ----------
-// Selector: „cardCredit”, „credit:ifn” (tip:furnizor), „contCurent:tineri” (tip:pachet), „investitie:etf” (tip:clasa)
+// Selector: „cardCredit”, „credit:ifn” (tip:furnizor), „contCurent:tineri” (tip:pachet), „investitie:etf” (tip:clasa),
+// „investitie:piata” (orice investiție vandabilă pe loc)
 
 export function potrivesteProdus(p, selector) {
   const [tip, detaliu] = selector.split(':');
   if (p.tip !== tip) return false;
+  // „investitie:piata” = orice investiție care se poate vinde pe loc (tot în afară de titlurile de stat)
+  if (detaliu === 'piata') return p.tip === 'investitie' && p.clasa !== 'titluriStat';
   return !detaliu || p.furnizor === detaliu || p.pachet === detaliu || p.clasa === detaliu;
 }
 

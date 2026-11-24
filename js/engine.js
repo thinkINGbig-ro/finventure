@@ -28,6 +28,9 @@ import { areJobFullTime, cereMarire, contractCurent, sansaMarire } from './carie
 import { consumaTimp, faActivitate, motivTimp } from './activitati.js';
 import { achitaTot, consolideaza, esaloneaza, platesteRestanta, ramburseazaPartial, verificaEsalonare } from './datorii.js';
 import { inscrieCurs, inscrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna, renuntaStudii } from './educatie.js';
+import {
+  aplicaComisioaneAnuale, cumpara, depunePilon3, instantaneuAnual, miscaCompanii, proceseazaDCA, rebalanseaza, seteazaDCA, vinde,
+} from './investitii.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -205,6 +208,7 @@ function inceputAn(state, ctx) {
 function incheieAn(state, ctx) {
   const an = state.an;
   inregistreazaAn(state, ctx, an.ac);
+  instantaneuAnual(state);
   if (an.inflatie > 0 && !state.concepte.includes('puterea-de-cumparare')) state.concepte.push('puterea-de-cumparare');
   const areInvestitii = gasesteProduse(state, 'investitie').length > 0;
   if (areInvestitii && an.ac.castigInvestitii > 0 && !state.momente.primulAnPePlus) {
@@ -241,18 +245,18 @@ export function proceseazaLuna(state, ctx) {
   expiraFlaguri(state);
 
   // 1. Piețele se mișcă mereu (și fără investiții), ca RNG-ul să nu depindă de alegeri.
+  // Companiile individuale au fluxul lor („companii”), ca piața principală să nu se schimbe.
   const crash = state.luna === state.an.lunaCrash;
-  let valoareInainte = 0;
-  let valoareDupa = 0;
+  const valoareInainte = valoarePiata(state);
+  const factori = {};
   for (const clasa of CLASE_PIATA) {
-    const factor = randamentLunar(clasa, normal(state, 'piete'), ctx, crash);
-    const inainte = valoareClasa(state, clasa);
-    state.piete[clasa] *= factor;
-    const dupa = valoareClasa(state, clasa);
-    ac.castigInvestitii += dupa - inainte;
-    valoareInainte += inainte;
-    valoareDupa += dupa;
+    factori[clasa] = randamentLunar(clasa, normal(state, 'piete'), ctx, crash);
+    state.piete[clasa] *= factori[clasa];
   }
+  miscaCompanii(state, ctx, factori.actiuni);
+  const valoareDupa = valoarePiata(state);
+  aplicaComisioaneAnuale(state, ctx);
+  ac.castigInvestitii += valoarePiata(state) - valoareInainte;
   // Prăbușirea bursei: decizia „vinzi sau păstrezi?”, doar pentru cine are investiții de piață.
   if (crash && valoareInainte - valoareDupa > 10000) {
     programeazaUrmare(state, ctx, {
@@ -386,6 +390,9 @@ export function proceseazaLuna(state, ctx) {
   proceseazaRestante(state, ctx);
   proceseazaPoprireCont(state, ctx);
 
+  // 10. Investiția automată lunară: doar cu ce a rămas după toate plățile.
+  proceseazaDCA(state, ctx);
+
   actualizeazaDerivate(state, ctx);
   inregistreazaLuna(state, ctx, { asigurat: esteAsigurat(state) });
   if (verificaIndependenta(state, ctx)) {
@@ -396,8 +403,9 @@ export function proceseazaLuna(state, ctx) {
   state.luna += 1;
 }
 
-function valoareClasa(state, clasa) {
-  return state.produse.reduce((s, p) => s + (p.tip === 'investitie' && p.clasa === clasa ? valoareProdus(p, state) : 0), 0);
+// Valoarea investițiilor de piață (fără titlurile de stat, care au valoare fixă).
+function valoarePiata(state) {
+  return state.produse.reduce((s, p) => s + (p.tip === 'investitie' && p.clasa !== 'titluriStat' ? valoareProdus(p, state) : 0), 0);
 }
 
 function proceseazaSalariu(state, ctx, contract) {
@@ -691,7 +699,8 @@ export { sansaMarire };
 // Toate acțiunile din meniuri. Fiecare întoarce { ok, mesaj }: mesajul e mereu un text de arătat
 // jucătorului (confirmarea sau motivul refuzului), ca nicio apăsare să nu rămână fără răspuns.
 export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate',
-  'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza', 'inscrieProgram', 'renuntaStudii', 'inscrieCurs'];
+  'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza', 'inscrieProgram', 'renuntaStudii', 'inscrieCurs',
+  'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -725,6 +734,11 @@ function executaActiune(state, ctx, tip, param) {
       if (['contCurent', 'cardCredit'].includes(spec.tip) && gasesteProduse(state, spec.tip).length) return { ok: false, mesaj: 'Ai deja unul.' };
       if (spec.tip === 'credit' || spec.tip === 'poprire' || spec.tip === 'contractMunca') return { ok: false, mesaj: 'Nu se deschide din meniu.' };
       if (spec.tip === 'depozit' && !(suma > 0)) return { ok: false, mesaj: 'Scrie suma pentru depozit.' };
+      if (spec.tip === 'investitie') {
+        rez = cumpara(state, ctx, param.clasa, suma);
+        if (!rez.ok) return rez;
+        break;
+      }
       const p = deschideProdus(state, ctx, spec);
       if (!p) return { ok: false, mesaj: 'Nu ai destui bani.' };
       const texte = {
@@ -816,6 +830,31 @@ function executaActiune(state, ctx, tip, param) {
     }
     case 'inscrieCurs': {
       rez = inscrieCurs(state, ctx, param.curs);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'investeste': {
+      rez = cumpara(state, ctx, param.clasa, suma);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'vinde': {
+      rez = vinde(state, ctx, param.clasa, suma);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'seteazaDCA': {
+      rez = seteazaDCA(state, ctx, param.clasa, Number(param.suma) || 0);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'depunePilon3': {
+      rez = depunePilon3(state, ctx, suma);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'rebalanseaza': {
+      rez = rebalanseaza(state, ctx, param.strategie);
       if (!rez.ok) return rez;
       break;
     }
