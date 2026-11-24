@@ -50,6 +50,7 @@ js/educatie.js      meniul Educație: studii lungi, cursuri, educația ca invest
 js/investitii.js    meniul Investiții: clase, companii, DCA, portofoliu, rebalansare
 js/ui/grafic.js     grafic cu linii în SVG (hover, tastatură, tabel)
 js/imobiliare.js    apartamente de închiriat: cumpărare, chiriași, impozit, vânzare
+js/munca.js         Carieră: ritm, ore suplimentare, promovare, curs de firmă, demisie, venit în plus, artiști
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -133,6 +134,13 @@ Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cer
 ## Investițiile (meniul Investiții)
 
 `data/investitii.json` are trei liste: `clase` (textele din meniu; randamentele, volatilitatea și comisioanele sunt în `config.json` → `investitii`), `companii` (companii **inventate**, cu id `co-…` și parametri de joc: `beta`, `alfa`, `volatilitate`, `riscFalimentAnual`) și `strategii` (alocările țintă pentru rebalansare; procentele fac 1). Companiile au fluxul RNG `companii`, deci adăugarea uneia nu schimbă bursa. În evenimente, selectorul `investitie:piata` înseamnă orice investiție care se poate vinde pe loc (fără titlurile de stat).
+
+## Joburile (data/jobs.json)
+
+- `cerinte`: `studiiMin` (nivel), `skillMin`, `flagInLocDeStudii` (un certificat care ține loc de diplomă) și `flagNecesar` (obligatoriu, ex. `permis_auto` pentru șofer, `absolvent_medicina` pentru medic; acesta din urmă vine din `balans.studii.medicina.flagLaFinal`).
+- `artist: true` + `venitVariabil` (`volatilitate`, `sansaComandaMare`, `multiplicatorComandaMare`, opțional `lunaVarf`: luni cu concerte, 0 = septembrie): venitul lunii depinde de faimă și noroc. Artiștii nu apar în oferte; jucătorul devine artist din Carieră, dacă are un hobby.
+- `secundare`: activitățile pe lângă job (venitul în `config.json` → `munca`, oboseala lunară, cerințe). Una singură odată; ia o acțiune din bugetul de timp al anului.
+- Ritmul de muncă (relaxat / normal / intens), orele suplimentare și cursul plătit de firmă au parametrii în `balans.json` → `cariera` (`ritm`, `oreSuplimentare`, `cursFirma`, `artist`).
 
 ## Imobiliarele de închiriat
 

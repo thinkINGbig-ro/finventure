@@ -7,8 +7,8 @@
 // Ce face motorul singur, fără JSON (ținut aici ca să nu dea alarme false).
 export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
-    'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job'],
-  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat'],
+    'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job', 'clauza_fidelitate'],
+  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat', 'clauza_fidelitate'],
   evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta',
     'imobil-reparatie', 'imobil-chirias-nu-plateste'],
   concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare',
@@ -17,7 +17,9 @@ export const MOTOR = {
     // din meniul Investiții (js/investitii.js)
     'etf', 'cost-comisioane', 'diversificare', 'investitie-lunara', 'rebalansare',
     // din imobiliarele de închiriat (js/imobiliare.js)
-    'randament-chirie', 'declaratia-unica'],
+    'randament-chirie', 'declaratia-unica',
+    // din meniul Carieră (js/munca.js)
+    'ore-suplimentare', 'clauza-fidelitate', 'venit-variabil'],
 };
 
 const numeFlag = (f) => f.split(':')[0];
@@ -96,7 +98,16 @@ export function analizeazaContinut(ctx) {
     if (p.flag) adauga(setate, p.flag, `curs ${p.id}`);
     for (const k of p.concepte ?? []) concepteFolosite.add(k);
   }
-  for (const j of ctx.joburi.values()) if (j.cerinte?.flagInLocDeStudii) adauga(citite, j.cerinte.flagInLocDeStudii, `job ${j.id} (în loc de diplomă)`);
+  for (const j of ctx.joburi.values()) {
+    if (j.cerinte?.flagInLocDeStudii) adauga(citite, j.cerinte.flagInLocDeStudii, `job ${j.id} (în loc de diplomă)`);
+    if (j.cerinte?.flagNecesar) adauga(citite, j.cerinte.flagNecesar, `job ${j.id} (cerință)`);
+  }
+  for (const s of ctx.secundare?.values() ?? []) if (s.cerinte?.flagNecesar) adauga(citite, s.cerinte.flagNecesar, `job secundar ${s.id}`);
+  // Studiile terminate setează absolvent_<nivel> și, unele, un flag propriu (balans.studii.<id>.flagLaFinal).
+  for (const info of Object.values(ctx.balans?.studii ?? {})) {
+    if (info?.nivel) adauga(setate, `absolvent_${info.nivel}`, 'motor (studii terminate)');
+    if (info?.flagLaFinal) adauga(setate, info.flagLaFinal, 'motor (studii terminate)');
+  }
   for (const f of Object.keys(ctx.balans?.cariera?.cv?.bonusFlaguri ?? {})) adauga(citite, f, 'motor (scorul CV-ului)');
   MOTOR.flaguriSetate.forEach((f) => adauga(setate, f, 'motor'));
   MOTOR.flaguriCitite.forEach((f) => adauga(citite, f, 'motor'));

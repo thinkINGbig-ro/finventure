@@ -292,6 +292,21 @@
       "text": "Randamentul net al unui apartament dat în chirie e ce rămâne pe an din chirii, după impozit, costurile de proprietar (impozit pe clădire, asigurare, reparații) și lunile fără chiriaș, împărțit la cât te-a costat cu totul. Cu credit, din chirie se plătește și rata, iar dacă chiria nu o acoperă, diferența iese din salariul tău. Un apartament se vinde greu și cu costuri, deci banii nu sunt la îndemână ca la un ETF. Exemplu: o garsonieră de 250.000 lei cu 2.000 lei chirie aduce, după 10% impozit și 120 lei costuri lunare, cam 20.200 lei pe an, adică 7,8%, înainte de lunile goale și reparații."
     },
     {
+      "id": "ore-suplimentare",
+      "titlu": "Orele suplimentare",
+      "text": "Orele lucrate peste program se plătesc cu un spor de cel puțin 75% din salariul pe oră, dacă angajatorul nu ți le compensează cu timp liber în următoarele zile. Sunt un venit bun pe termen scurt, dar obosesc, iar un buget construit pe ele se prăbușește când dispar. Codul muncii limitează și câte ore poți lucra pe săptămână. Exemplu: la 6.000 lei brut și 168 de ore pe lună, o oră normală e cam 36 de lei brut; 20 de ore suplimentare aduc cam 1.250 lei brut în plus."
+    },
+    {
+      "id": "clauza-fidelitate",
+      "titlu": "Clauza de fidelitate",
+      "text": "Când firma îți plătește un curs scump, îți poate cere să semnezi o clauză de fidelitate: rămâi angajat o perioadă (de obicei 1–3 ani), altfel returnezi o parte din costul cursului. E corect pentru amândoi: firma investește în tine, tu câștigi o calificare. Citește clauza înainte să semnezi: cât timp, cât plătești și dacă suma scade în timp. Exemplu: un curs de 3.000 lei cu clauză de 2 ani te costă 3.000 lei dacă pleci după 6 luni și nimic dacă pleci după 2 ani."
+    },
+    {
+      "id": "venit-variabil",
+      "titlu": "Bugetul pe venit variabil",
+      "text": "Artiștii, freelancerii și cei care lucrează pe comision au luni foarte bune și luni aproape goale. Regula de aur: îți faci bugetul pe luna slabă, nu pe media lunilor, și pui deoparte surplusul din lunile bune. Fondul de urgență trebuie să fie mai mare decât la un salariat, de 6–12 luni de cheltuieli. Exemplu: dacă într-un an câștigi 1.000, 6.000 și 2.000 lei în luni diferite, nu-ți fixa cheltuielile la 3.000 lei, ci în jur de 1.500, iar restul merge în fond."
+    },
+    {
       "id": "educatie-investitie",
       "titlu": "Educația ca investiție",
       "text": "Un curs sau o facultate costă de două ori: taxa și anii în care câștigi mai puțin pentru că înveți. Se întoarce prin salarii mai mari, ani la rând, și prin joburi care altfel nu ți-ar fi deschise. Ca la orice investiție, contează ce alegi: o calificare căutată se plătește repede, o diplomă într-un domeniu fără joburi poate să nu se plătească niciodată. Exemplu: un curs de electrician de 2.200 lei care îți crește salariul cu 1.000 lei brut pe lună se întoarce în câteva luni."

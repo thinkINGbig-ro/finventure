@@ -19,6 +19,7 @@ export function timpPeAn(state, ctx) {
   if (program === 'full-time') n += t.jobFullTime;
   else if (program === 'part-time') n += t.jobPartTime;
   if (state.situatie.studii) n += t.studii;
+  if (state.produse.some((p) => p.tip === 'activitateSecundara')) n += t.jobSecundar;
   return Math.max(t.minim, n);
 }
 

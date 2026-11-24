@@ -78,10 +78,25 @@ export function construiesteContinut({
     if (joburi.has(j.id)) err('id', 'id duplicat');
     if (typeof dupaCale(config, j.salariu ?? '') !== 'number') err('salariu', `„${j.salariu}” nu există în config.json`);
     if (!['part-time', 'full-time'].includes(j.program)) err('program', 'trebuie să fie „part-time” sau „full-time”');
-    campuriNecunoscute(j.cerinte ?? {}, ['studiiMin', 'skillMin', 'flagInLocDeStudii'], 'cerinte', err);
+    campuriNecunoscute(j.cerinte ?? {}, ['studiiMin', 'skillMin', 'flagInLocDeStudii', 'flagNecesar'], 'cerinte', err);
     if (j.cerinte?.studiiMin && balans?.cariera?.nivelStudii?.[j.cerinte.studiiMin] === undefined) err('cerinte.studiiMin', `nivel necunoscut „${j.cerinte.studiiMin}”`);
-    if (j.cerinte?.flagInLocDeStudii !== undefined && !RE_FLAG_NUME.test(j.cerinte.flagInLocDeStudii)) err('cerinte.flagInLocDeStudii', 'nume de flag invalid');
+    for (const k of ['flagInLocDeStudii', 'flagNecesar']) if (j.cerinte?.[k] !== undefined && !RE_FLAG_NUME.test(j.cerinte[k])) err(`cerinte.${k}`, 'nume de flag invalid');
+    if (j.venitVariabil !== undefined) {
+      campuriNecunoscute(j.venitVariabil, ['volatilitate', 'sansaComandaMare', 'multiplicatorComandaMare', 'lunaVarf'], 'venitVariabil', err);
+      for (const k of ['volatilitate', 'sansaComandaMare', 'multiplicatorComandaMare']) if (typeof j.venitVariabil[k] !== 'number') err(`venitVariabil.${k}`, 'trebuie să fie număr');
+    }
     joburi.set(j.id, j);
+  }
+  // Joburile secundare (side hustle): venit lunar din config, oboseală, cerințe.
+  const secundare = new Map();
+  for (const s of joburiJson.secundare ?? []) {
+    const err = (camp, mesaj) => erori.push({ fisier: FISIERE.joburi, id: s.id, camp, mesaj });
+    campuriNecunoscute(s, ['id', 'titlu', 'emoji', 'venit', 'energieLunara', 'descriere', 'cerinte', 'variabil'], '', err);
+    if (typeof dupaCale(config, s.venit ?? '') !== 'number') err('venit', `„${s.venit}” nu există în config.json`);
+    if (typeof s.energieLunara !== 'number') err('energieLunara', 'trebuie să fie număr');
+    campuriNecunoscute(s.cerinte ?? {}, ['skillMin', 'flagNecesar'], 'cerinte', err);
+    if (secundare.has(s.id)) err('id', 'id duplicat');
+    secundare.set(s.id, s);
   }
 
   const concepte = new Map();
@@ -147,7 +162,7 @@ export function construiesteContinut({
 
   const investitii = construiesteInvestitii(investitiiJson, erori);
 
-  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri, activitati, educatie, investitii } };
+  return { ctx: { config, balans, joburi, secundare, concepte, evenimente, finaluri, activitati, educatie, investitii } };
 }
 
 // ---------- Investiții (clase, companii inventate, strategii de rebalansare) ----------

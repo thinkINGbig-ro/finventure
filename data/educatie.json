@@ -12,6 +12,16 @@
       "concepte": ["educatie-investitie"]
     },
     {
+      "id": "medicina",
+      "titlu": "Facultatea de medicină",
+      "emoji": "🩺",
+      "descriere": "6 ani, la buget. Admitere grea, mult de învățat, dar la final poți deveni medic.",
+      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "ascunse": { "skill": { "min": 60 } }, "motiv": "Admiterea la medicină cere o pregătire foarte bună (sau ai deja o licență)." },
+      "bursaMerit": true,
+      "lectie": "Medicina e cea mai lungă investiție în educație: 6 ani de studii plus rezidențiat. Salariile mari vin târziu.",
+      "concepte": ["educatie-investitie"]
+    },
+    {
       "id": "facultateTaxa",
       "titlu": "Facultate cu taxă",
       "emoji": "🎓",

@@ -6,7 +6,8 @@ import { baniDisponibili, creeazaProdus, datorieProdus, pret, valoareProdus } fr
 import { aplicaComisioaneAnuale, miscaCompanii, portofoliu, proceseazaDCA } from '../js/investitii.js';
 import { actualizeazaImobileAnual, proceseazaImobile, simuleazaCumparare, simuleazaVanzare } from '../js/imobiliare.js';
 import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
-import { indeplinesteCerinte } from '../js/cariera.js';
+import { indeplinesteCerinte, luniPanaLaPromovare, schimbaJob } from '../js/cariera.js';
+import { proceseazaSecundar, simuleazaOreSuplimentare, venitArtistLuna } from '../js/munca.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
@@ -21,6 +22,122 @@ export function testeLoturi(ctxBaza, a) {
     ...lot3(ctxBaza, a),
     ...lot4a(ctxBaza, a),
     ...lot4b(ctxBaza, a),
+    ...lot5(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 5: joburi și muncă ----------
+
+function lot5(ctxBaza, a) {
+  const { ok, egal } = a;
+  const flag = (state, f) => { state.flaguri[f] = { setatLa: 0, expiraLa: null }; };
+  const jocAngajat = (seed, jobId = 'curier', brut = 6000) => {
+    const { ctx, state } = a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    schimbaJob(state, ctx, { id: jobId, contract: 'cim', brut: inBani(brut) });
+    state.numerar = inBani(50_000);
+    state.situatie.studii = null;
+    return { ctx, state };
+  };
+  return {
+    'lotul 5: joburi noi cu cerințe: permis pentru șofer, diplomă de medicină pentru medic'() {
+      const { ctx, state } = jocAngajat('cerinte');
+      const sofer = ctx.joburi.get('sofer');
+      ok(!indeplinesteCerinte(sofer, state, ctx), 'fără permis: nu');
+      flag(state, 'permis_auto');
+      ok(indeplinesteCerinte(sofer, state, ctx), 'cu permis: da');
+      const medic = ctx.joburi.get('medic-rezident');
+      state.ascunse.skill = 70;
+      state.situatie.nivelStudii = 'licenta';
+      ok(!indeplinesteCerinte(medic, state, ctx), 'licența obișnuită nu ajunge');
+      state.situatie.studii = { id: 'medicina', luniRamase: 1, inceputLa: state.luna };
+      for (let i = 0; i < 12 && state.situatie.studii; i++) a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+      ok(areFlag(state, 'absolvent_medicina'), 'medicina terminată');
+      ok(indeplinesteCerinte(medic, state, ctx), 'acum poate fi medic rezident');
+      ok(ctx.joburi.size >= 50, `joburi: ${ctx.joburi.size}`);
+      return `${ctx.joburi.size} joburi`;
+    },
+
+    'lotul 5: artistul are venit variabil și faimă; mărirea nu există'() {
+      const { ctx, state } = jocAngajat('artist');
+      state.ascunse.skill = 50;
+      const r0 = actiune(state, ctx, 'devinoArtist', { job: 'pictor' });
+      ok(!r0.ok && /hobby/.test(r0.mesaj), `fără hobby: ${r0.mesaj}`);
+      flag(state, 'are_hobby');
+      ok(actiune(state, ctx, 'devinoArtist', { job: 'pictor' }).ok, 'devine pictor');
+      const c = state.produse.find((p) => p.tip === 'contractMunca');
+      egal(c.contract, 'pfa', 'pe cont propriu');
+      const venituri = [];
+      for (let i = 0; i < 36; i++) venituri.push(venitArtistLuna(state, ctx, c, ctx.joburi.get('pictor')));
+      const medie = venituri.reduce((s, x) => s + x, 0) / venituri.length;
+      const abatere = Math.sqrt(venituri.reduce((s, x) => s + (x - medie) ** 2, 0) / venituri.length);
+      ok(abatere / medie > 0.3, `venitul variază mult (abatere/medie ${(abatere / medie).toFixed(2)})`);
+      ok(c.faima !== ctx.balans.cariera.artist.faimaStart, 'faima s-a mișcat');
+      ok(!actiune(state, ctx, 'cereMarire').ok, 'nicio mărire la artist');
+      ok(state.concepte.includes('venit-variabil'), 'concept');
+    },
+
+    'lotul 5: ritmul intens obosește, dar crește reputația și scurtează drumul spre promovare'() {
+      const rul = (r) => {
+        const { ctx, state } = jocAngajat('ritm', 'vanzator');
+        actiune(state, ctx, 'seteazaRitm', { ritm: r });
+        const rep = state.ascunse.reputatie;
+        const luni = luniPanaLaPromovare(state, ctx);
+        a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+        return { energie: state.stat.energie, rep: state.ascunse.reputatie - rep, luni };
+      };
+      const intens = rul('intens');
+      const relaxat = rul('relaxat');
+      ok(intens.energie < relaxat.energie, `energie: intens ${intens.energie.toFixed(0)} < relaxat ${relaxat.energie.toFixed(0)}`);
+      ok(intens.rep > relaxat.rep, 'reputația crește mai mult în ritm intens');
+      ok(intens.luni < relaxat.luni, 'promovarea vine mai repede');
+    },
+
+    'lotul 5: orele suplimentare aduc bani cu spor și iau energie și timp'() {
+      const { ctx, state } = jocAngajat('ore', 'curier', 6000);
+      const bani = baniDisponibili(state);
+      const energie = state.stat.energie;
+      const timp = timpRamas(state, ctx);
+      const sim = simuleazaOreSuplimentare(state, ctx);
+      ok(actiune(state, ctx, 'oreSuplimentare').ok, 'ore suplimentare');
+      egal(baniDisponibili(state) - bani, sim.net, 'banii net');
+      ok(Math.abs(sim.brut - Math.round((inBani(6000) / 168) * 80 * 1.75)) < 2, 'sporul de 75%');
+      ok(state.stat.energie < energie, 'obosește');
+      egal(timpRamas(state, ctx), timp - 1, 'consumă o acțiune de timp');
+    },
+
+    'lotul 5: cursul plătit de firmă vine cu clauză; demisia în clauză costă'() {
+      const { ctx, state } = jocAngajat('clauza');
+      const c = state.produse.find((p) => p.tip === 'contractMunca');
+      c.luniVechime = 5;
+      ok(!actiune(state, ctx, 'cursFirma').ok, 'fără vechime: nu');
+      c.luniVechime = 24;
+      ok(actiune(state, ctx, 'cursFirma').ok, 'curs făcut');
+      ok(areFlag(state, 'clauza_fidelitate'), 'clauza e activă');
+      const bani = baniDisponibili(state);
+      const r = actiune(state, ctx, 'demisie');
+      ok(r.ok && /returnat/.test(r.mesaj), `demisie: ${r.mesaj}`);
+      egal(bani - baniDisponibili(state), pret(state, ctx, 'munca.costCursFirma'), 'a returnat costul cursului');
+      ok(!state.produse.some((p) => p.tip === 'contractMunca'), 'nu mai are job');
+    },
+
+    'lotul 5: jobul secundar aduce venit lunar, ia din timp; promovarea cerută are condiții'() {
+      const { ctx, state } = jocAngajat('secundar', 'vanzator');
+      state.ascunse.skill = 60;
+      const timpInainte = timpPeAn(state, ctx);
+      ok(actiune(state, ctx, 'incepeSecundar', { secundar: 'meditatii' }).ok, 'meditații');
+      egal(timpPeAn(state, ctx), timpInainte - 1, 'un job în plus ia din timpul anului');
+      const bani = baniDisponibili(state);
+      const r = proceseazaSecundar(state, ctx);
+      ok(r.net > 0 && baniDisponibili(state) === bani + r.net, 'venitul net intră');
+      ok(!actiune(state, ctx, 'incepeSecundar', { secundar: 'livrari-weekend' }).ok, 'doar o activitate în plus odată');
+      ok(actiune(state, ctx, 'opresteSecundar').ok, 'se oprește');
+      const p = actiune(state, ctx, 'cerePromovare');
+      ok(!p.ok && /luni/.test(p.mesaj), `prea devreme: ${p.mesaj}`);
+      state.produse.find((x) => x.tip === 'contractMunca').luniVechime = 60;
+      ok(actiune(state, ctx, 'cerePromovare').ok, 'promovat după vechime');
+      egal(state.produse.find((x) => x.tip === 'contractMunca').jobId, 'sef-tura', 'acum e șef de tură');
+    },
   };
 }
 
@@ -561,6 +678,14 @@ function lot0(ctxBaza, a) {
         rebalanseaza: [{ strategie: 'echilibrata' }, { strategie: 'nu-exista' }],
         cumparaImobil: [{ marime: 'garsoniera', finantare: 'credit' }, { marime: 'castel' }],
         vindeImobil: [{ id: id('contCurent') }],
+        seteazaRitm: [{ ritm: 'intens' }, { ritm: 'intens' }, { ritm: 'turbo' }],
+        oreSuplimentare: [{}],
+        cerePromovare: [{}],
+        cursFirma: [{}],
+        devinoArtist: [{ job: 'pictor' }, { job: 'curier' }],
+        incepeSecundar: [{ secundar: 'livrari-weekend' }, { secundar: 'nu-exista' }],
+        opresteSecundar: [{}, {}],
+        demisie: [{}, {}],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

@@ -24,7 +24,7 @@ import {
 } from './events.js';
 import { bilantNou, inregistreazaAn, inregistreazaLuna, verificaIndependenta } from './bilant.js';
 import { esteAsigurat } from './events.js';
-import { areJobFullTime, cereMarire, contractCurent, sansaMarire } from './cariera.js';
+import { areJobFullTime, cereMarire, contractCurent, ritm, sansaMarire } from './cariera.js';
 import { consumaTimp, faActivitate, motivTimp } from './activitati.js';
 import { achitaTot, consolideaza, esaloneaza, platesteRestanta, ramburseazaPartial, verificaEsalonare } from './datorii.js';
 import { inscrieCurs, inscrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna, renuntaStudii } from './educatie.js';
@@ -32,6 +32,9 @@ import {
   aplicaComisioaneAnuale, cumpara, depunePilon3, instantaneuAnual, miscaCompanii, proceseazaDCA, rebalanseaza, seteazaDCA, vinde,
 } from './investitii.js';
 import { actualizeazaImobileAnual, cumparaImobil, proceseazaImobile, vindeImobil } from './imobiliare.js';
+import {
+  cerePromovare, cursFirma, demisie, devinoArtist, incepeSecundar, opresteSecundar, oreSuplimentare, proceseazaSecundar, seteazaRitm, venitArtistLuna,
+} from './munca.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -270,6 +273,9 @@ export function proceseazaLuna(state, ctx) {
   // 2. Venituri
   const contract = gasesteProduse(state, 'contractMunca')[0];
   if (contract) proceseazaSalariu(state, ctx, contract);
+  const sec = proceseazaSecundar(state, ctx); // jobul secundar (side hustle)
+  ac.venituri += sec.net;
+  ac.taxe += sec.impozit;
   const im = proceseazaImobile(state, ctx); // chiria netă intră, costurile de proprietar ies
   ac.venituri += im.venit;
   ac.taxe += im.impozit;
@@ -417,6 +423,8 @@ function valoarePiata(state) {
 function proceseazaSalariu(state, ctx, contract) {
   const ac = state.an.ac;
   const job = ctx.joburi.get(contract.jobId);
+  // Artiștii: venitul lunii depinde de faimă și de noroc (comenzi, concerte, vânzări).
+  if (job.venitVariabil) contract.brut = venitArtistLuna(state, ctx, contract, job);
   const f = fluturas(contract.brut, contract.contract, ctx);
 
   // Poprirea se reține din net, până la limita legală (toate popririle la un loc).
@@ -445,10 +453,12 @@ function proceseazaSalariu(state, ctx, contract) {
   }
   state.pensie.pilon2 += f.pilon2;
 
-  state.stat.energie += job.energieLunara;
-  state.stat.fericire += job.fericireLunara;
-  state.ascunse.skill += job.skillAnual / 12;
-  state.ascunse.reputatie += (job.reputatieAnual ?? 0) / 12;
+  // Ritmul de muncă (relaxat / normal / intens) se adaugă peste efectele jobului.
+  const r = ritm(ctx, contract);
+  state.stat.energie += job.energieLunara + r.energie;
+  state.stat.fericire += job.fericireLunara + r.fericire;
+  state.ascunse.skill += (job.skillAnual + r.skillAnual) / 12;
+  state.ascunse.reputatie += ((job.reputatieAnual ?? 0) + r.reputatieAnual) / 12;
   contract.luniLucrate = (contract.luniLucrate ?? 0) + 1;
   contract.luniDeLaMarire = (contract.luniDeLaMarire ?? 0) + 1;
   if (contract.luniLucrate === bal(ctx, 'cariera.luniPentruExperienta')) seteazaFlag(state, 'experienta_munca');
@@ -464,6 +474,7 @@ function finalizeazaStudii(state, ctx) {
   state.situatie.nivelStudii = info.nivel;
   state.ascunse.skill += info.skillLaFinal;
   seteazaFlag(state, `absolvent_${info.nivel}`);
+  if (info.flagLaFinal) seteazaFlag(state, info.flagLaFinal); // ex. absolvent_medicina
   const TEXT_ABSOLVIRE = {
     licenta: 'Ai terminat facultatea!', master: 'Ai terminat masterul!', doctorat: 'Ai devenit doctor! Ai susținut teza.',
     postliceala: 'Ai terminat școala postliceală și ai o meserie.',
@@ -706,7 +717,8 @@ export { sansaMarire };
 // jucătorului (confirmarea sau motivul refuzului), ca nicio apăsare să nu rămână fără răspuns.
 export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate',
   'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza', 'inscrieProgram', 'renuntaStudii', 'inscrieCurs',
-  'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza', 'cumparaImobil', 'vindeImobil'];
+  'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza', 'cumparaImobil', 'vindeImobil',
+  'seteazaRitm', 'oreSuplimentare', 'cerePromovare', 'cursFirma', 'demisie', 'devinoArtist', 'incepeSecundar', 'opresteSecundar'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -871,6 +883,28 @@ function executaActiune(state, ctx, tip, param) {
     }
     case 'vindeImobil': {
       rez = vindeImobil(state, ctx, prod);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'seteazaRitm':
+    case 'oreSuplimentare':
+    case 'cerePromovare':
+    case 'cursFirma':
+    case 'demisie':
+    case 'devinoArtist':
+    case 'incepeSecundar':
+    case 'opresteSecundar': {
+      const f = {
+        seteazaRitm: () => seteazaRitm(state, ctx, param.ritm),
+        oreSuplimentare: () => oreSuplimentare(state, ctx),
+        cerePromovare: () => cerePromovare(state, ctx),
+        cursFirma: () => cursFirma(state, ctx),
+        demisie: () => demisie(state, ctx),
+        devinoArtist: () => devinoArtist(state, ctx, param.job),
+        incepeSecundar: () => incepeSecundar(state, ctx, param.secundar),
+        opresteSecundar: () => opresteSecundar(state, ctx),
+      }[tip];
+      rez = f();
       if (!rez.ok) return rez;
       break;
     }

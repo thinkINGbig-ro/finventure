@@ -84,7 +84,7 @@ export function plateste(state, suma, sursa = 'portofel') {
 // ---------- Produse ----------
 
 // „proprietate” = locuința ta; „imobil” = un apartament cumpărat ca să-l dai în chirie.
-export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil'];
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil', 'activitateSecundara'];
 export const CATEGORII_FACTURI = ['chirie', 'utilitati', 'telefon'];
 
 // Facturile lunii, în ordinea în care se plătesc când banii nu ajung.
@@ -169,6 +169,8 @@ export function creeazaProdus(spec, state, ctx) {
       return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime ?? 'apartament' };
     case 'imobil':
       return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime, chirias: false, luniGol: 0, creditId: spec.creditId ?? null, chirieIncasata: 0 };
+    case 'activitateSecundara':
+      return { ...baza, secundarId: spec.secundarId ?? null };
     case 'factura':
       // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
       return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };

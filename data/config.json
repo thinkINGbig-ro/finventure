@@ -14,6 +14,19 @@
     "procentRetineri": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "simplificare: impozit + CAS + CASS ca procent din venitul lunar" }
   },
 
+  "munca": {
+    "sporOreSuplimentare": { "valoare": 0.75, "deVerificat": true, "sursa": "Codul muncii (spor minim 75% dacă nu se compensează cu timp liber)" },
+    "oreSuplimentarePerTura": { "valoare": 80, "deVerificat": true, "sursa": "", "nota": "o „tură” de ore suplimentare în joc: cam 80 de ore în câteva luni" },
+    "oreLunareNormale": { "valoare": 168, "deVerificat": true, "sursa": "" },
+    "costCursFirma": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "cât returnezi dacă pleci înainte de termenul din clauza de fidelitate" },
+    "retineriVenitSecundar": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "simplificare: impozit pe venituri mici din activități independente / drepturi de autor; CASS apare peste anumite plafoane" },
+    "livrariWeekend": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "venit brut lunar din livrări în weekend" },
+    "meditatii": { "valoare": 1500, "deVerificat": true, "sursa": "", "nota": "câteva meditații pe săptămână" },
+    "freelancingIT": { "valoare": 3500, "deVerificat": true, "sursa": "" },
+    "vanzariOnline": { "valoare": 700, "deVerificat": true, "sursa": "", "nota": "revânzare / produse handmade, venit mediu lunar" },
+    "ilustratiiComanda": { "valoare": 1000, "deVerificat": true, "sursa": "" }
+  },
+
   "muncaLaNegru": {
     "procentNetDinBrut": { "valoare": 0.75, "deVerificat": true, "sursa": "", "nota": "cât primești în mână față de brutul unui job echivalent cu contract" }
   },
@@ -45,6 +58,37 @@
     "programatorJunior": { "valoare": 7500, "deVerificat": true, "sursa": "" },
     "programator": { "valoare": 11500, "deVerificat": true, "sursa": "" },
     "programatorSenior": { "valoare": 16500, "deVerificat": true, "sursa": "" },
+    "medicRezident": { "valoare": 7500, "deVerificat": true, "sursa": "" },
+    "medicSpecialist": { "valoare": 14000, "deVerificat": true, "sursa": "" },
+    "medicPrimar": { "valoare": 20000, "deVerificat": true, "sursa": "" },
+    "asistentMedical": { "valoare": 5500, "deVerificat": true, "sursa": "" },
+    "asistentPrincipal": { "valoare": 7000, "deVerificat": true, "sursa": "" },
+    "profesorDebutant": { "valoare": 4800, "deVerificat": true, "sursa": "" },
+    "profesorTitular": { "valoare": 6500, "deVerificat": true, "sursa": "" },
+    "profesorGradI": { "valoare": 8000, "deVerificat": true, "sursa": "" },
+    "agentPolitie": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "agentPrincipal": { "valoare": 7500, "deVerificat": true, "sursa": "" },
+    "ofiterPolitie": { "valoare": 10000, "deVerificat": true, "sursa": "" },
+    "avocatStagiar": { "valoare": 4500, "deVerificat": true, "sursa": "" },
+    "avocatDefinitiv": { "valoare": 9000, "deVerificat": true, "sursa": "" },
+    "avocatPartener": { "valoare": 18000, "deVerificat": true, "sursa": "" },
+    "bucatar": { "valoare": 4300, "deVerificat": true, "sursa": "" },
+    "bucatarSefPartida": { "valoare": 5500, "deVerificat": true, "sursa": "" },
+    "bucatarSef": { "valoare": 8000, "deVerificat": true, "sursa": "" },
+    "sofer": { "valoare": 5000, "deVerificat": true, "sursa": "" },
+    "soferTir": { "valoare": 8500, "deVerificat": true, "sursa": "", "nota": "inclusiv diurna" },
+    "electrician": { "valoare": 5500, "deVerificat": true, "sursa": "" },
+    "electricianAutorizat": { "valoare": 7500, "deVerificat": true, "sursa": "", "nota": "autorizat ANRE" },
+    "instalator": { "valoare": 5200, "deVerificat": true, "sursa": "" },
+    "instalatorAutorizat": { "valoare": 7000, "deVerificat": true, "sursa": "" },
+    "designerJunior": { "valoare": 5000, "deVerificat": true, "sursa": "" },
+    "designer": { "valoare": 7500, "deVerificat": true, "sursa": "" },
+    "artDirector": { "valoare": 12000, "deVerificat": true, "sursa": "" },
+    "agricultor": { "valoare": 3800, "deVerificat": true, "sursa": "", "nota": "lucrător agricol / fermier mic, venit mediu lunar" },
+    "jurnalist": { "valoare": 4500, "deVerificat": true, "sursa": "" },
+    "redactor": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "editor": { "valoare": 9000, "deVerificat": true, "sursa": "" },
+    "artistBaza": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "venitul brut lunar MEDIU al unui artist la început (pictor, muzician, ilustrator); de la o lună la alta variază mult" },
     "cresterePrinInflatie": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "fără negociere, salariul crește anual cu această fracție din inflație" }
   },
 
@@ -106,6 +150,10 @@
     "scoalaProfesionala": {
       "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "" },
       "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    },
+    "medicina": {
+      "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "Facultatea de medicină, pe loc bugetat" },
+      "durataLuni": { "valoare": 72, "deVerificat": true, "sursa": "", "nota": "6 ani" }
     },
     "postliceala": {
       "taxaAnuala": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "școală postliceală particulară; la stat există și locuri gratuite" },

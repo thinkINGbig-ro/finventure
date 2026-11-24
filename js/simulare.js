@@ -164,6 +164,23 @@ function cursuriAtent(state, ctx, ids, fondComplet) {
   }
 }
 
+// Munca unui jucător atent: cere promovarea când e cazul, cursul plătit de firmă, iar cât fondul
+// de urgență nu e complet, un venit în plus și ore suplimentare (doar cu energie destulă).
+function muncaAtent(state, ctx, fondComplet, { pastreazaSecundarul = false } = {}) {
+  const c = contractCurent(state);
+  if (c) {
+    actiune(state, ctx, 'cerePromovare');
+    actiune(state, ctx, 'cursFirma');
+  }
+  const sec = state.produse.find((p) => p.tip === 'activitateSecundara');
+  const energie = state.stat.energie;
+  if (sec && (energie < 45 || (fondComplet && !pastreazaSecundarul))) actiune(state, ctx, 'opresteSecundar');
+  if (!sec && !fondComplet && energie > 60 && c) {
+    actiune(state, ctx, 'incepeSecundar', { secundar: state.ascunse.skill >= 50 ? 'meditatii' : 'livrari-weekend' });
+  }
+  if (!fondComplet && energie > 55) actiune(state, ctx, 'oreSuplimentare');
+}
+
 // Frugal: modest toată viața, fond de 6 luni, aproape tot restul investit în ETF.
 function meniuFrugal(state, ctx) {
   asiguraCont(state, ctx);
@@ -192,6 +209,8 @@ function meniuFrugal(state, ctx) {
   }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
   cereMarireAnual(state, ctx);
+  // Frugalul păstrează venitul în plus cât are energie: toți banii în plus merg la investiții.
+  muncaAtent(state, ctx, fondUrgenta(state) >= 6 * lunar, { pastreazaSecundarul: true });
   cursuriAtent(state, ctx, ['educatie-financiara', 'engleza'], fondUrgenta(state) >= 6 * lunar);
   // Frugalul face doar ce e gratis: CV mai bun, odihnă, familie.
   faActivitati(state, ctx, [
@@ -229,6 +248,7 @@ function meniuPrudent(state, ctx) {
   }
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
   gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
+  muncaAtent(state, ctx, fondComplet);
   // Prudentul își crește valoarea pe piață: limbă străină și, fără facultate, o calificare căutată.
   cursuriAtent(state, ctx, ['educatie-financiara', 'engleza',
     ...(['liceu', 'profesionala'].includes(state.situatie.nivelStudii) && !state.situatie.studii ? ['contabilitate'] : [])], fondComplet);
@@ -275,6 +295,7 @@ function meniuPrudent(state, ctx) {
 // Riscant: card de credit pe minim cu cumpărăturile pe el, cheltuie aproape tot, nu economisește.
 function meniuRiscant(state, ctx, rnd) {
   asiguraCont(state, ctx);
+  actiune(state, ctx, 'seteazaRitm', { ritm: 'relaxat' }); // „lucrez cât să nu mă dea afară”
   if (areJobFullTime(state, ctx)) actiune(state, ctx, 'stilViata', { nivel: 'lux' });
   let card = gasesteProduse(state, 'cardCredit')[0];
   if (!card) {
@@ -358,6 +379,18 @@ const ACTIUNI_ALEATOARE = [
     if (im && rnd() < 0.3) return actiune(state, ctx, 'vindeImobil', { id: im.id });
     return actiune(state, ctx, 'cumparaImobil', { marime: rnd() < 0.5 ? 'garsoniera' : 'apartament', finantare: rnd() < 0.6 ? 'credit' : 'cash' });
   },
+  // munca: ritm, ore suplimentare, promovare, curs de firmă, venit în plus, artist, (rar) demisie
+  (state, ctx, rnd) => actiune(state, ctx, 'seteazaRitm', { ritm: ['relaxat', 'normal', 'intens'][Math.floor(rnd() * 3)] }),
+  (state, ctx) => actiune(state, ctx, 'oreSuplimentare'),
+  (state, ctx) => actiune(state, ctx, 'cerePromovare'),
+  (state, ctx) => actiune(state, ctx, 'cursFirma'),
+  (state, ctx, rnd) => {
+    if (state.produse.some((p) => p.tip === 'activitateSecundara')) return actiune(state, ctx, 'opresteSecundar');
+    const ids = [...ctx.secundare.keys()];
+    return actiune(state, ctx, 'incepeSecundar', { secundar: ids[Math.floor(rnd() * ids.length)] });
+  },
+  (state, ctx, rnd) => actiune(state, ctx, 'devinoArtist', { job: ['pictor', 'muzician', 'ilustrator'][Math.floor(rnd() * 3)] }),
+  (state, ctx, rnd) => (rnd() < 0.15 ? actiune(state, ctx, 'demisie') : null),
   // educația: un program lung (uneori cu credit), un curs sau renunțarea la studii
   (state, ctx, rnd) => {
     const ids = [...ctx.educatie.programe.keys()];

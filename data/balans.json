@@ -53,6 +53,7 @@
     "facultateTaxa": { "nivel": "licenta", "skillLaFinal": 15 },
     "scoalaProfesionala": { "nivel": "profesionala", "skillLaFinal": 10 },
     "postliceala": { "nivel": "postliceala", "skillLaFinal": 10 },
+    "medicina": { "nivel": "licenta", "skillLaFinal": 25, "flagLaFinal": "absolvent_medicina" },
     "master": { "nivel": "master", "skillLaFinal": 10 },
     "doctorat": { "nivel": "doctorat", "skillLaFinal": 12 }
   },
@@ -122,6 +123,20 @@
       "maxPestePiata": 1.3
     },
     "promovare": { "crestereMinima": 0.10 },
+    "ritm": {
+      "_info": "Cât de tare muncești. energie/fericire = în plus pe lună; reputatieAnual/skillAnual = în plus pe an; sansaMarire = se adună la șansa măririi; factorPromovare = înmulțește lunile până la promovare; faimaLunara = la artiști.",
+      "relaxat": { "energie": 2, "fericire": 1, "reputatieAnual": -2, "skillAnual": 0, "sansaMarire": -0.1, "factorPromovare": 1.5, "faimaLunara": -0.2 },
+      "normal": { "energie": 0, "fericire": 0, "reputatieAnual": 0, "skillAnual": 0, "sansaMarire": 0, "factorPromovare": 1, "faimaLunara": 0.15 },
+      "intens": { "energie": -3, "fericire": -1, "reputatieAnual": 3, "skillAnual": 1, "sansaMarire": 0.1, "factorPromovare": 0.75, "faimaLunara": 0.5 }
+    },
+    "artist": {
+      "_info": "Venitul unui artist: salariul de bază din config × (0,5 + faimă/40) × noroc (lognormal cu volatilitatea jobului); uneori o comandă mare; luniVarf = lunile cu concerte (indice în anul de joc, 0 = septembrie).",
+      "faimaStart": 10,
+      "faimaZgomotLunar": 1.5,
+      "multiplicatorLunaVarf": 1.8
+    },
+    "oreSuplimentare": { "energie": -12, "fericire": -2, "reputatie": 2 },
+    "cursFirma": { "luniVechimeMin": 12, "skill": 5, "reputatie": 2, "luniClauza": 24 },
     "luniPentruExperienta": 6
   },
 
@@ -155,6 +170,7 @@
     "jobFullTime": -2,
     "jobPartTime": -1,
     "studii": -1,
+    "jobSecundar": -1,
     "minim": 2,
     "costCautareJob": 1
   },

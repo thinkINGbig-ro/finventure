@@ -2,8 +2,9 @@
 // Enciclopedia și meniul jocului. Fiecare acțiune trece prin motor și afișează mesajul întors.
 
 import { actiune, sansaMarire } from '../engine.js';
-import { contractCurent, jobCurent } from '../cariera.js';
-import { cardDisponibil, contCurent, fluturas, fondUrgenta, plataMinimaCard } from '../finance.js';
+import { RITMURI, contractCurent, jobCurent, luniPanaLaPromovare } from '../cariera.js';
+import { cardDisponibil, contCurent, fluturas, fondUrgenta, plataMinimaCard, pret } from '../finance.js';
+import { descrieSecundare, simuleazaOreSuplimentare } from '../munca.js';
 import { bal, cfg, inBani, varstaLa } from '../util.js';
 import { ani, h, lei, procent } from './dom.js';
 import { confirma } from './ecrane.js';
@@ -514,22 +515,68 @@ function panouCariera(o, reranda) {
   const mesaj = h('p', { class: 'mesaj-actiune', role: 'status' });
   const c = contractCurent(state);
   const job = jobCurent(state, ctx);
-  const sectiuni = [mesaj];
+  const sectiuni = [mesaj, randTimp(state, ctx)];
+  const buton = (text, fn, clasa = 'btn-secundar') => h('button', { type: 'button', class: `btn ${clasa}`, onclick: fn }, text);
   if (c) {
     const f = fluturas(c.brut, c.contract, ctx);
     const ani = Math.floor((c.luniLucrate ?? 0) / 12);
     const luni = (c.luniLucrate ?? 0) % 12;
-    sectiuni.push(produs(job.titlu[0].toUpperCase() + job.titlu.slice(1), `${lei(f.net)} net`,
-      `${lei(c.brut)} brut · ${NUME_CONTRACT[c.contract]} · ${job.program} · aici de ${ani ? `${ani} ani și ` : ''}${luni} luni`));
-    if (c.contract !== 'negru') {
+    const detalii = job.artist
+      ? `Pe cont propriu (PFA) · faima ta: ${Math.round(c.faima ?? 0)}/100 · luna asta ${lei(c.brut)} brut${c.istoricVenit?.length > 1 ? ` · ultimele luni între ${lei(Math.min(...c.istoricVenit))} și ${lei(Math.max(...c.istoricVenit))}` : ''}`
+      : `${lei(c.brut)} brut · ${NUME_CONTRACT[c.contract]} · ${job.program} · aici de ${ani ? `${ani} ani și ` : ''}${luni} luni`;
+    sectiuni.push(produs(job.titlu[0].toUpperCase() + job.titlu.slice(1), `${lei(f.net)} net`, detalii));
+
+    // Ritmul de muncă
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Cât de tare tragi'),
+      h('div', { class: 'nivel-stil' }, RITMURI.map((r) => h('button', {
+        type: 'button', class: 'btn btn-secundar', 'aria-pressed': String((c.ritm ?? 'normal') === r), onclick: () => executa('seteazaRitm', { ritm: r }),
+      }, { relaxat: 'Relaxat', normal: 'Normal', intens: 'Intens' }[r],
+      h('span', { class: 'mic' }, { relaxat: 'mai multă energie, avansezi greu', normal: 'echilibrat', intens: 'promovare mai rapidă, obosești' }[r])))));
+
+    // Bani în plus și avansare
+    if (!job.artist && c.contract !== 'negru') {
       const sansa = Math.round(sansaMarire(state, ctx) * 100);
-      sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', {
-        type: 'button', class: 'btn btn-secundar', onclick: () => executa('cereMarire'),
-      }, 'Cere o mărire')));
-      sectiuni.push(h('p', { class: 'mic' }, `Șanse estimate: cam ${sansa}%. Cresc cu skill-ul, reputația și timpul de la ultima mărire.`));
+      const ore = simuleazaOreSuplimentare(state, ctx);
+      const luniProm = luniPanaLaPromovare(state, ctx);
+      sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'La job'),
+        produs('Cere o mărire', `~${sansa}%`, 'Șansele cresc cu pregătirea, reputația și timpul de la ultima mărire.', h('div', { class: 'rand-butoane' }, buton('Cere o mărire', () => executa('cereMarire')))),
+        job.urmator ? produs('Cere o promovare', ctx.joburi.get(job.urmator).titlu,
+          luniProm ? `Mai ai cam ${luniProm} luni de muncă până să fii luat în calcul.` : 'Ai vechimea necesară; contează și pregătirea.',
+          h('div', { class: 'rand-butoane' }, buton('Cere promovarea', () => executa('cerePromovare')))) : null,
+        ore.ok ? produs('Ore suplimentare', `+${lei(ore.net)} net`, 'Cam 80 de ore peste program, cu spor de 75%. O acțiune de timp și multă energie.',
+          h('div', { class: 'rand-butoane' }, buton('Fac ore suplimentare', () => executa('oreSuplimentare')))) : null,
+        c.contract === 'cim' ? produs('Curs plătit de firmă', '', `Pregătire gratuită, dar cu clauză de fidelitate: dacă pleci în 2 ani, returnezi cam ${lei(pret(state, ctx, 'munca.costCursFirma'))}.`,
+          h('div', { class: 'rand-butoane' }, buton('Cer un curs', () => executa('cursFirma')))) : null);
     }
+    sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', {
+      type: 'button', class: 'btn btn-text', onclick: async () => {
+        const da = await confirma('Îți dai demisia? Salariul se oprește de luna viitoare, iar la demisie nu primești ajutor de șomaj.', { da: 'Demisionez' });
+        const r = da ? actiune(state, ctx, 'demisie') : null;
+        o.laSchimbare();
+        deschidePanou('cariera', o);
+        if (r) arataMesaj(r.mesaj, r.ok, r.lectie);
+      },
+    }, 'Îmi dau demisia')));
   } else {
     sectiuni.push(h('p', {}, 'N-ai job acum.'));
+  }
+
+  // Venit în plus (side hustle)
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Venit în plus'),
+    h('p', { class: 'mic' }, 'O activitate pe lângă job: bani în plus, dar îți ia o acțiune din timpul fiecărui an și energie în fiecare lună.'));
+  for (const s of descrieSecundare(state, ctx)) {
+    sectiuni.push(produs(`${s.emoji} ${s.titlu}`, `~${lei(s.venitLunar)}/lună`, s.descriere,
+      h('div', { class: 'rand-butoane' }, s.activa ? buton('Renunț', () => executa('opresteSecundar'), 'btn-text')
+        : h('button', { type: 'button', class: 'btn btn-secundar', 'aria-disabled': s.disponibil ? null : 'true', onclick: () => (s.disponibil ? executa('incepeSecundar', { secundar: s.id }) : arataMesaj(s.motiv, false)) }, 'Încep')),
+      s.activa ? h('div', { class: 'mic marcaj-crestere' }, '✓ O faci acum') : !s.disponibil ? h('div', { class: 'mic motiv-indisponibil' }, s.motiv) : null));
+  }
+
+  // Meserii de artist
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Fă-ți din hobby o meserie'),
+    h('p', { class: 'mic' }, 'Pe cont propriu, cu venit care variază mult de la o lună la alta. Ai nevoie de un hobby (meniul Activități) și de exercițiu.'));
+  for (const j of [...ctx.joburi.values()].filter((x) => x.artist)) {
+    sectiuni.push(produs(`🎨 ${j.titlu[0].toUpperCase() + j.titlu.slice(1)}`, `~${lei(pret(state, ctx, j.salariu))}/lună la început`, 'Venitul crește cu faima: comenzi, vânzări, concerte.',
+      h('div', { class: 'rand-butoane' }, buton('Devin artist', () => executa('devinoArtist', { job: j.id })))));
   }
   sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Caută alt job'));
   sectiuni.push(h('p', { class: 'mic' }, `Îți faci CV-ul și primești până la 3 oferte. Un CV mai bun aduce oferte mai multe și mai bine plătite. Căutatul ia o acțiune mare din timpul anului (mai ai ${timpRamas(state, ctx)}).`));
