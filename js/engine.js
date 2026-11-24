@@ -42,15 +42,17 @@ import {
 } from './afacere.js';
 import { cumparaBun, proceseazaBunuri, vindeBun } from './cumparaturi.js';
 import { inDetentie, proceseazaDetentie } from './infractiuni.js';
+import { aplicaScenariu } from './scenarii.js';
 
 export const VARSTA_PENSIE = 65;
 
 // ---------- API ----------
 
-export function jocNou(ctx, optiuni) {
+export function jocNou(ctx, optiuni = {}) {
   const state = creeazaStare(ctx, optiuni);
   state.bilant = bilantNou();
-  adaugaJurnal(state, 'Ai terminat liceul. Urmează prima decizie mare.');
+  const sc = optiuni.scenariu && optiuni.scenariu !== 'obisnuit' ? aplicaScenariu(state, ctx, optiuni.scenariu) : null;
+  adaugaJurnal(state, sc?.jurnal ?? 'Ai terminat liceul. Urmează prima decizie mare.');
   persista(state, ctx);
   return state;
 }

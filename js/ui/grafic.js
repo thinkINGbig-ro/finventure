@@ -99,6 +99,19 @@ export function graficLinii({ titlu, x, serii, format, unitateX = '' }) {
         h('tbody', {}, x.map((xi, i) => h('tr', {}, h('td', {}, `${xi}${unitateX}`), serii.map((sr) => h('td', {}, format(sr.valori[i])))))))));
 }
 
+// Averea netă și datoriile, an de an, în lei de azi (din instantaneele de la sfârșitul fiecărui an).
+// Null dacă nu sunt încă 2 ani de istoric.
+export function graficAvere(state, titlu = 'Averea ta netă, an de an (în lei de azi)') {
+  const ist = state.istoricPortofoliu ?? [];
+  if (ist.length < 2) return null;
+  const azi = (p, camp) => (p[camp] ?? 0) / 100 / (p.indice || 1);
+  return graficLinii({
+    titlu, x: ist.map((p) => p.varsta), unitateX: ' ani',
+    serii: [{ nume: 'Avere netă', valori: ist.map((p) => azi(p, 'avere')) }, { nume: 'Datorii', valori: ist.map((p) => azi(p, 'datorii')), punctata: true }],
+    format: (v) => `${Math.round(v).toLocaleString('ro-RO')} lei`,
+  });
+}
+
 // 1.250.000 -> „1,3 mil.”, 48.000 -> „48 mii”
 function scurt(lei) {
   const a = Math.abs(lei);

@@ -526,6 +526,11 @@ function alegeAleator(oprire, state, ctx, rnd) {
 }
 
 // Ponderile comune ale jucătorilor atenți la bani (prudent și frugal).
+// Jucătorii atenți: cu rate de plătit și fără un venit din muncă, întâi muncesc, apoi studiază
+// (ex. scenariul de start „Începi cu datorii”).
+const rateFaraVenit = (state) => !state.produse.some((p) => p.tip === 'contractMunca')
+  && state.produse.some((p) => p.tip === 'credit' && p.stadiu === 'activ' && p.rata > 0);
+
 const PONDERI_ATENT = {
   ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
   fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
@@ -551,6 +556,7 @@ export const PROFILURI = {
       const accesibila = (loc) => (net && costLocuinta(loc) <= 0.35 * net ? 2 : -12);
       return {
         ...PONDERI_ATENT,
+        studii: rateFaraVenit(state) ? -4 : PONDERI_ATENT.studii,
         'locuinta:chirieSingur': accesibila('chirieSingur'), 'locuinta:chirieColegi': accesibila('chirieColegi'),
         vandPentruAvans: fondComplet ? 4 : -4, casaMare: 1, upgradeCasa: fondComplet ? 2 : -3,
         negociaza: areJobFullTime(state, ctx) ? 4 : -1,
@@ -568,6 +574,7 @@ export const PROFILURI = {
     descriere: 'modest toată viața, fond de 6 luni, investește aproape tot restul',
     alege: alegePrinScor((state, ctx) => ({
       ...PONDERI_ATENT,
+      studii: rateFaraVenit(state) ? -4 : PONDERI_ATENT.studii,
       negociaza: areJobFullTime(state, ctx) ? 4 : -1,
       stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
       cumparaCasa: -1, dobandaVariabila: -2, amanaCumpararea: 2,
@@ -596,8 +603,8 @@ export function strategieAleatoare(seed) {
 
 // ---------- O viață / multe vieți ----------
 
-export function simuleazaViata(ctx, seed, profil = PROFILURI.aleator, { aniMax = 60, laSfarsitDeAn } = {}) {
-  const state = jocNou(ctx, { seed });
+export function simuleazaViata(ctx, seed, profil = PROFILURI.aleator, { aniMax = 60, laSfarsitDeAn, scenariu } = {}) {
+  const state = jocNou(ctx, { seed, scenariu });
   const rnd = creeazaRnd(`${profil.nume}/${seed}`);
   const alese = [];
   const consuma = (oprire) => {
@@ -626,7 +633,7 @@ export function simuleazaViata(ctx, seed, profil = PROFILURI.aleator, { aniMax =
   return { state, alese, primulSalariu };
 }
 
-export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator', aniMax = 60, laSfarsitDeAn } = {}) {
+export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator', aniMax = 60, laSfarsitDeAn, scenariu } = {}) {
   const p = typeof profil === 'string' ? PROFILURI[profil] : profil;
   const finaluri = {};
   const cauze = {};
@@ -641,7 +648,7 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
   const locuinta = { cumparat: [], chirie: [], varstaCumparare: [], salariuCumparat: [], salariuChirie: [], garsoniera: 0, apartament: 0, upgrade: 0 };
 
   for (let i = 0; i < n; i++) {
-    const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn });
+    const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn, scenariu });
     const ani = state.luna / 12;
     if (ani >= 5) {
       medii.inflatie.push(Math.pow(state.indicePreturi, 1 / ani) - 1);

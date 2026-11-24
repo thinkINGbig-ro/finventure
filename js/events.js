@@ -143,6 +143,9 @@ const MOTIVE_STAT = {
 const lei = (x) => `${formateazaLei(x)} lei`;
 
 // Întoarce null dacă e îndeplinită, altfel motivul (text pentru jucător).
+// Scenariul „Fără bac”: mesajul lui are prioritate față de „motiv” din JSON.
+const MOTIV_BAC = 'Fără diplomă de bacalaureat nu poți intra. O poți lua din Educație → „Bacalaureatul, din nou”.';
+
 export function motivNeindeplinire(cond, state, ctx, vars = {}) {
   if (!cond) return null;
   const val = (v) => rezolvaValoare(v, vars, ctx);
@@ -153,7 +156,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     varstaMax: (n) => varsta <= n || `Doar până la ${n} ani.`,
     faza: (lista) => lista.includes(state.faza) || 'Nu e momentul potrivit.',
     flag: (lista) => lista.every((f) => areFlag(state, f)) || 'Nu e cazul acum.',
-    lipsaFlag: (lista) => lista.every((f) => !areFlag(state, f)) || 'Nu e cazul acum.',
+    lipsaFlag: (lista) => lista.every((f) => !areFlag(state, f)) || (lista.includes('fara_bac') && areFlag(state, 'fara_bac') ? MOTIV_BAC : 'Nu e cazul acum.'),
     stat: (praguri) => verificaPraguri(praguri, state.stat),
     ascunse: (praguri) => verificaPraguri(praguri, state.ascunse),
     areProdus: (lista) => {
@@ -220,7 +223,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     if (cheie === 'motiv') continue;
     const r = verificari[cheie](valoare);
     // Îndatorarea are mereu mesajul ei, cu cifre; „motiv” din JSON acoperă doar celelalte condiții.
-    if (r !== true) return cond.motiv && cheie !== 'indatorare' ? textCuVariabile(cond.motiv, vars) : r;
+    if (r !== true) return cond.motiv && cheie !== 'indatorare' && r !== MOTIV_BAC ? textCuVariabile(cond.motiv, vars) : r;
   }
   return null;
 }

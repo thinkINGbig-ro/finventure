@@ -10,7 +10,7 @@
         {
           "id": "facultate-buget",
           "eticheta": "Dau la facultate, la buget",
-          "cere": { "ascunse": { "skill": { "min": 30 } }, "motiv": "Media de la bac nu ajunge pentru buget." },
+          "cere": { "lipsaFlag": ["fara_bac"], "ascunse": { "skill": { "min": 30 } }, "motiv": "Media de la bac nu ajunge pentru buget." },
           "situatie": { "studii": "facultateBuget", "locuinta": "camin" },
           "recurente": [{ "tip": "venit", "suma": 1700, "luni": 36, "eticheta": "Bani de la părinți" }],
           "efecte": { "skill": 5, "fericire": 5 },
@@ -19,6 +19,7 @@
         {
           "id": "facultate-taxa",
           "eticheta": "Facultate cu taxă, stau acasă",
+          "cere": { "lipsaFlag": ["fara_bac"] },
           "situatie": { "studii": "facultateTaxa", "locuinta": "acasa" },
           "recurente": [{ "tip": "venit", "suma": 1900, "luni": 36, "eticheta": "Bani de la părinți (inclusiv taxa)" }],
           "efecte": { "skill": 5 },

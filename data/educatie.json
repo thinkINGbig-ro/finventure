@@ -6,7 +6,7 @@
       "titlu": "Facultate la buget",
       "emoji": "🏛️",
       "descriere": "Licență de 3 ani, fără taxă. Intri doar dacă ești pregătit la admitere. Cu note mari primești și bursă.",
-      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "ascunse": { "skill": { "min": 45 } }, "motiv": "Pentru buget îți trebuie o pregătire mai bună la admitere (sau ai deja o licență)." },
+      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "lipsaFlag": ["fara_bac"], "ascunse": { "skill": { "min": 45 } }, "motiv": "Pentru buget îți trebuie o pregătire mai bună la admitere (sau ai deja o licență)." },
       "bursaMerit": true,
       "lectie": "Facultatea la buget e gratuită, dar nu e gratis: 3 ani în care câștigi mai puțin. Diploma se întoarce în salariu ani la rând.",
       "concepte": ["educatie-investitie"]
@@ -16,7 +16,7 @@
       "titlu": "Facultatea de medicină",
       "emoji": "🩺",
       "descriere": "6 ani, la buget. Admitere grea, mult de învățat, dar la final poți deveni medic.",
-      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "ascunse": { "skill": { "min": 60 } }, "motiv": "Admiterea la medicină cere o pregătire foarte bună (sau ai deja o licență)." },
+      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "lipsaFlag": ["fara_bac"], "ascunse": { "skill": { "min": 60 } }, "motiv": "Admiterea la medicină cere o pregătire foarte bună (sau ai deja o licență)." },
       "bursaMerit": true,
       "lectie": "Medicina e cea mai lungă investiție în educație: 6 ani de studii plus rezidențiat. Salariile mari vin târziu.",
       "concepte": ["educatie-investitie"]
@@ -26,7 +26,7 @@
       "titlu": "Facultate cu taxă",
       "emoji": "🎓",
       "descriere": "Licență de 3 ani, cu o taxă anuală. Poți plăti taxa pe loc, în fiecare an, sau cu un credit de studii.",
-      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "motiv": "Ai deja o licență." },
+      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "lipsaFlag": ["fara_bac"], "motiv": "Ai deja o licență." },
       "creditStudii": true,
       "lectie": "Înainte de o taxă, uită-te la salariile din domeniu. O diplomă scumpă într-un domeniu prost plătit se întoarce greu.",
       "concepte": ["educatie-investitie"]
@@ -44,7 +44,7 @@
       "titlu": "Școală postliceală",
       "emoji": "🏥",
       "descriere": "2 ani, de exemplu asistent medical sau tehnician. Taxă anuală mică, meserie sigură.",
-      "conditii": { "studii": ["liceu", "profesionala"], "motiv": "Ai deja studii la nivelul ăsta sau mai sus." },
+      "conditii": { "studii": ["liceu", "profesionala"], "lipsaFlag": ["fara_bac"], "motiv": "Ai deja studii la nivelul ăsta sau mai sus." },
       "creditStudii": true,
       "concepte": ["educatie-investitie"]
     },
@@ -186,6 +186,21 @@
       "skillLaFinal": 2,
       "flag": "curs_financiar",
       "concepte": ["dobanda-compusa", "dae"]
+    },
+    {
+      "id": "bacalaureat",
+      "titlu": "Bacalaureatul, din nou",
+      "emoji": "📝",
+      "descriere": "Te pregătești un an (cu meditații) și dai din nou examenul. Cu diploma de bac te poți înscrie la facultate sau la postliceală.",
+      "pret": "pret:cursuri.bacalaureat",
+      "luni": 10,
+      "timp": 1,
+      "energieLunara": -1,
+      "skillLaFinal": 4,
+      "flag": "bac_promovat",
+      "stergeFlag": "fara_bac",
+      "conditii": { "flag": ["fara_bac"] },
+      "lectie": "Fără bac, multe drumuri sunt închise. Nu e niciodată prea târziu să-l iei."
     }
   ]
 }

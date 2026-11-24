@@ -8,6 +8,7 @@ import { estimeazaPensie } from '../bilant.js';
 import { bilantEducatie } from '../educatie.js';
 import { ani, h, lei, leiCuAzi } from './dom.js';
 import { blocConcepte } from './concepte.js';
+import { graficAvere } from './grafic.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 import { distribuie } from '../share.js';
 
@@ -33,6 +34,7 @@ export function arataFinalViata(oprire, d) {
       gameOver ? sectiuneDeclansator(state, d, gata) : d.tipare.pozitive.some((t) => t.id === 'contract') ? null : sectiunePensie(state, ctx),
       gameOver ? null : sectiuneTipare('Ce te-a ajutat', d.tipare.pozitive, ctx, true),
       sectiuneEducatie(state, ctx),
+      graficAvere(state, gameOver ? 'Averea ta netă și datoriile, an de an (în lei de azi)' : 'Averea ta netă, an de an (în lei de azi)'),
       sectiuneTipare(gameOver ? 'Tiparul' : 'Ce te-a costat', d.tipare.negative, ctx, false),
       h('div', { class: 'rand-butoane' },
         h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => distribuieFinal(oprire, d) }, 'Distribuie'),

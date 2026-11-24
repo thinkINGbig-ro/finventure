@@ -19,6 +19,7 @@ const FISIERE = {
   investitii: 'data/investitii.json',
   afaceri: 'data/afaceri.json',
   cumparaturi: 'data/cumparaturi.json',
+  scenarii: 'data/scenarii.json',
 };
 
 // citeste(cale) -> Promise<string>; cale relativă la rădăcina proiectului
@@ -52,6 +53,7 @@ export async function incarcaContinut(citeste) {
   const investitiiJson = (await citesteJson(FISIERE.investitii)) ?? { clase: [], companii: [], strategii: [] };
   const afaceriJson = (await citesteJson(FISIERE.afaceri)) ?? { domenii: [], forme: [] };
   const cumparaturiJson = (await citesteJson(FISIERE.cumparaturi)) ?? { categorii: [], bunuri: [] };
+  const scenariiJson = (await citesteJson(FISIERE.scenarii)) ?? { scenarii: [] };
 
   const brute = [];
   for (const nume of index.fisiere ?? []) {
@@ -65,13 +67,13 @@ export async function incarcaContinut(citeste) {
     json.evenimente.forEach((ev, i) => brute.push({ ev, fisier, pozitie: i }));
   }
 
-  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson, investitiiJson, afaceriJson, cumparaturiJson }, erori, avertismente);
+  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson, investitiiJson, afaceriJson, cumparaturiJson, scenariiJson }, erori, avertismente);
   return { ...rezultat, erori, avertismente };
 }
 
 export function construiesteContinut({
   config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] }, activitatiJson = { activitati: [] }, educatieJson = { programe: [], cursuri: [] },
-  investitiiJson = { clase: [], companii: [], strategii: [] }, afaceriJson = { domenii: [], forme: [] }, cumparaturiJson = { categorii: [], bunuri: [] },
+  investitiiJson = { clase: [], companii: [], strategii: [] }, afaceriJson = { domenii: [], forme: [] }, cumparaturiJson = { categorii: [], bunuri: [] }, scenariiJson = { scenarii: [] },
 }, erori = [], avertismente = []) {
   valideazaConfig(config, FISIERE.config, erori);
 
@@ -173,7 +175,36 @@ export function construiesteContinut({
 
   const afaceri = construiesteAfaceri(afaceriJson, config, erori);
 
-  return { ctx: { config, balans, joburi, secundare, concepte, evenimente, finaluri, activitati, educatie, investitii, afaceri, cumparaturi } };
+  const scenarii = construiesteScenarii(scenariiJson, config, concepte, erori);
+
+  return { ctx: { config, balans, joburi, secundare, concepte, evenimente, finaluri, activitati, educatie, investitii, afaceri, cumparaturi, scenarii } };
+}
+
+// ---------- Scenariile de start ----------
+
+const CAMPURI_SCENARIU = ['id', 'titlu', 'emoji', 'descriere', 'datorie', 'flaguri', 'imobil', 'efecte', 'jurnal', 'concepte'];
+
+function construiesteScenarii(json, config, concepte, erori) {
+  const scenarii = new Map();
+  for (const s of json.scenarii ?? []) {
+    const id = typeof s?.id === 'string' ? s.id : '?';
+    const err = (camp, mesaj) => erori.push({ fisier: FISIERE.scenarii, id, camp, mesaj });
+    campuriNecunoscute(s, CAMPURI_SCENARIU, '', err);
+    if (scenarii.has(id)) err('id', 'id duplicat');
+    for (const c of ['titlu', 'emoji', 'descriere', 'jurnal']) if (typeof s[c] !== 'string' || !s[c].trim()) err(c, 'trebuie să fie text');
+    if (s.datorie) {
+      campuriNecunoscute(s.datorie, ['suma', 'dae', 'luni'], 'datorie', err);
+      if (typeof s.datorie.suma !== 'number' || !Number.isInteger(s.datorie.luni)) err('datorie', 'suma (lei) și luni (întreg)');
+      const dae = s.datorie.dae;
+      if (!(typeof dae === 'number' || (typeof dae === 'string' && dae.startsWith('config:') && typeof dupaCale(config, dae.slice(7)) === 'number'))) err('datorie.dae', 'număr sau „config:…” existent');
+    }
+    if (s.imobil !== undefined && !['garsoniera', 'apartament'].includes(s.imobil)) err('imobil', 'garsoniera sau apartament');
+    for (const k of Object.keys(s.efecte ?? {})) if (!CAMPURI_EFECTE.includes(k) || k === 'numerar') err(`efecte.${k}`, 'statistică necunoscută');
+    for (const c of s.concepte ?? []) if (!concepte.has(c)) err('concepte', `conceptul „${c}” nu există`);
+    scenarii.set(id, s);
+  }
+  if (!scenarii.has('obisnuit')) erori.push({ fisier: FISIERE.scenarii, mesaj: 'lipsește scenariul „obisnuit”' });
+  return scenarii;
 }
 
 // ---------- Cumpărături (catalog) ----------
@@ -262,7 +293,7 @@ function construiesteInvestitii(json, erori) {
 // ---------- Educație (programe lungi + cursuri scurte) ----------
 
 const CAMPURI_PROGRAM = ['id', 'titlu', 'emoji', 'descriere', 'conditii', 'bursaMerit', 'creditStudii', 'lectie', 'concepte'];
-const CAMPURI_CURS = ['id', 'titlu', 'emoji', 'descriere', 'pret', 'luni', 'timp', 'energieLunara', 'skillLaFinal', 'flag', 'conditii', 'lectie', 'concepte'];
+const CAMPURI_CURS = ['id', 'titlu', 'emoji', 'descriere', 'pret', 'luni', 'timp', 'energieLunara', 'skillLaFinal', 'flag', 'stergeFlag', 'conditii', 'lectie', 'concepte'];
 
 function construiesteEducatie(json, cv, erori, avertismente) {
   const fisier = FISIERE.educatie;

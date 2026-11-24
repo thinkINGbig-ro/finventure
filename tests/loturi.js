@@ -1,6 +1,6 @@
 // Testele extinderii, grupate pe loturi. Primesc ajutoarele din tests/suite.js.
 
-import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, oprireCurenta } from '../js/engine.js';
+import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, jocNou, oprireCurenta } from '../js/engine.js';
 import { motivNeindeplinire as motivNeindeplinireTest, textRezultat } from '../js/events.js';
 import { baniDisponibili, creeazaProdus, datorieProdus, pret, valoareProdus } from '../js/finance.js';
 import { aplicaComisioaneAnuale, miscaCompanii, portofoliu, proceseazaDCA } from '../js/investitii.js';
@@ -13,7 +13,7 @@ import { optiuniPlata, proceseazaBunuri } from '../js/cumparaturi.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, motivTimp, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
-import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
+import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
 
 export function testeLoturi(ctxBaza, a) {
@@ -29,6 +29,65 @@ export function testeLoturi(ctxBaza, a) {
     ...lot6b(ctxBaza, a),
     ...lot7(ctxBaza, a),
     ...lot8(ctxBaza, a),
+    ...lot9a(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 9a: scenariile de start, averea netă an de an ----------
+
+function lot9a(ctxBaza, a) {
+  const { ok, egal } = a;
+  const ctx = ctxBaza;
+  return {
+    'lotul 9a: fiecare scenariu pornește un joc valid, cu prima decizie deschisă'() {
+      ok(ctx.scenarii.size >= 4 && ctx.scenarii.has('obisnuit'), `${ctx.scenarii.size} scenarii`);
+      for (const id of ctx.scenarii.keys()) {
+        const state = jocNou(ctx, { seed: `sc-${id}`, scenariu: id });
+        const oprire = oprireCurenta(state, ctx) ?? avanseaza(state, ctx);
+        ok(oprire?.tip === 'eveniment', `${id}: prima decizie`);
+      }
+    },
+
+    'lotul 9a: „Începi cu datorii” are un credit cu rată, fără banii pe mână'() {
+      const st = jocNou(ctx, { seed: 'datorii', scenariu: 'datorii' });
+      const c = st.produse.find((p) => p.tip === 'credit');
+      ok(c && c.rest === inBani(15_000) && c.rata > 0, 'creditul de 15.000 lei');
+      const normal = jocNou(ctx, { seed: 'datorii' });
+      egal(baniDisponibili(st), baniDisponibili(normal), 'banii au fost deja cheltuiți');
+    },
+
+    'lotul 9a: „Fără bac” închide facultatea (cu motiv), iar bacul luat o redeschide'() {
+      const st = jocNou(ctx, { seed: 'farabac', scenariu: 'fara-bac' });
+      const oprire = oprireCurenta(st, ctx) ?? avanseaza(st, ctx);
+      const taxa = oprire.alegeri.find((x) => x.id === 'facultate-taxa');
+      ok(!taxa.disponibil && /bacalaureat/.test(taxa.motiv), `facultatea cu taxă: ${taxa.motiv}`);
+      ok(oprire.alegeri.some((x) => x.disponibil), 'mai are ce alege');
+      ok(!indeplinesteCerinte(ctx.joburi.get('agent-politie'), st, ctx), 'fără școala de agenți');
+      // bacul, din Educație
+      st.pendinte = null;
+      st.numerar = inBani(10_000);
+      const r = actiune(st, ctx, 'inscrieCurs', { curs: 'bacalaureat' });
+      ok(r.ok, r.mesaj);
+      st.cursuri[0].luniRamase = 1;
+      proceseazaCursuriLuna(st, ctx);
+      ok(!st.flaguri.fara_bac, 'fara_bac s-a șters');
+      ok(st.jurnal.some((j) => /Ai luat bacalaureatul/.test(j.text)), 'jurnalul');
+    },
+
+    'lotul 9a: „Moștenești o garsonieră”: imobil de închiriat, fără credit, se poate vinde'() {
+      const st = jocNou(ctx, { seed: 'mostenire', scenariu: 'mostenire' });
+      const im = st.produse.find((p) => p.tip === 'imobil');
+      ok(im && !im.creditId && im.valoare > 0, 'garsoniera');
+      ok(avereNeta(st) >= im.valoare, 'intră în averea netă');
+      ok(st.concepte.includes('mostenire'), 'conceptul');
+    },
+
+    'lotul 9a: istoricul averii nete se adună an de an (pentru grafic)'() {
+      const { ctx: c, state } = a.jocCuJob('avere');
+      for (let i = 0; i < 3 && !state.final; i++) a.consuma(state, c, avanseaza(state, c), a.primaDisponibila);
+      ok(state.istoricPortofoliu.length >= 3, `${state.istoricPortofoliu.length} ani`);
+      ok(state.istoricPortofoliu.every((p) => typeof p.avere === 'number' && p.indice > 0), 'avere și indice pe fiecare an');
+    },
   };
 }
 

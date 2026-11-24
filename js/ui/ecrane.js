@@ -2,7 +2,8 @@
 // primul an pe plus), rezumatul anului și finalul (versiunea simplă; Faza D adaugă „Ce s-a întâmplat?”).
 
 import { procent, ani, h, lei, leiCuAzi, leiExact } from './dom.js';
-import { nivelStil } from '../state.js';
+import { avereNeta, nivelStil } from '../state.js';
+import { graficAvere } from './grafic.js';
 import { blocConcepte } from './concepte.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 
@@ -124,6 +125,38 @@ export function arataRezumat(r, state, ctx) {
     evenimenteAn.length ? h('ul', { class: 'lista-an' }, evenimenteAn.map((t) => h('li', {}, t))) : null,
   ];
   return arataCard(continut, { buton: 'Continuă', eticheta: 'Rezumatul anului' });
+}
+
+// 📈 din antet: averea netă acum și graficul anilor trecuți.
+export function arataAvere(state) {
+  const grafic = graficAvere(state);
+  const continut = [
+    h('h2', {}, 'Averea ta netă'),
+    h('p', {}, `Acum: ${leiCuAzi(avereNeta(state), state.indicePreturi)}`),
+    h('p', { class: 'mic' }, 'Averea netă = ce ai (bani, economii, investiții, casă, firmă, lucruri) minus ce datorezi.'),
+    grafic ?? h('p', { class: 'mic' }, 'Graficul apare după primii doi ani: avansează ca să-l vezi crescând (sau scăzând).'),
+  ];
+  return arataCard(continut, { buton: 'Închide', eticheta: 'Averea ta netă' });
+}
+
+// „Joc nou”: alegi cu ce pornești. Întoarce id-ul scenariului sau null (renunță).
+export function alegeScenariu(ctx, { avertisment = null, poateRenunta = true } = {}) {
+  return new Promise((rezolva) => {
+    const gata = (r) => {
+      inchideStrat();
+      rezolva(r);
+    };
+    const scenarii = [...(ctx.scenarii?.values() ?? [])];
+    const card = h('section', { class: 'card' },
+      h('h2', {}, 'O viață nouă'),
+      avertisment ? h('p', { class: 'mic' }, avertisment) : null,
+      h('p', {}, 'Cu ce pornești?'),
+      h('div', { class: 'lista-scenarii' }, scenarii.map((s, i) => h('button', {
+        type: 'button', class: `btn btn-scenariu ${i === 0 ? 'btn-principal' : 'btn-secundar'}`, 'data-focus': i === 0 ? '' : null, onclick: () => gata(s.id),
+      }, h('strong', {}, `${s.emoji} ${s.titlu}`), h('span', { class: 'mic' }, s.descriere)))),
+      poateRenunta ? h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => gata(null) }, 'Renunță')) : null);
+    deschideStrat(card, { centrat: true, eticheta: 'O viață nouă', laEscape: () => gata(poateRenunta ? null : 'obisnuit') });
+  });
 }
 
 export function confirma(text, { da = 'Da', nu = 'Renunță' } = {}) {

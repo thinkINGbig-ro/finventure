@@ -15,7 +15,7 @@ import { CHEI, creeazaStorage } from './storage.js';
 import { bal } from './util.js';
 import { $, h } from './ui/dom.js';
 import { arataEveniment } from './ui/eveniment.js';
-import { arataMoment, arataRezultat, arataRezumat, confirma } from './ui/ecrane.js';
+import { alegeScenariu, arataAvere, arataMoment, arataRezultat, arataRezumat } from './ui/ecrane.js';
 import { textRezultat } from './events.js';
 import { deschidePanou } from './ui/meniuri.js';
 import { creeazaEcranPrincipal } from './ui/principal.js';
@@ -83,7 +83,7 @@ async function porneste() {
             salveazaJoc(storage, state);
             ui.reseteaza();
           } else {
-            state = incepeDinNou();
+            state = incepeDinNou(await alegeScenariu(ctx, { poateRenunta: false }));
           }
           oprire = oprireCurenta(state, ctx);
         } else {
@@ -122,10 +122,10 @@ async function porneste() {
     };
   }
 
-  function incepeDinNou() {
+  function incepeDinNou(scenariu = 'obisnuit') {
     stergeJoc(storage);
     ui.reseteaza();
-    return stareNoua(ctx);
+    return stareNoua(ctx, scenariu);
   }
 
   btnAvanseaza.addEventListener('click', () => {
@@ -142,6 +142,10 @@ async function porneste() {
     });
   }
 
+  $('#btn-avere').addEventListener('click', () => {
+    if (!ocupat && !stratDeschis()) arataAvere(state);
+  });
+
   $('#btn-concepte').addEventListener('click', () => {
     if (ocupat) return;
     deschidePanou('enciclopedie', { state, ctx, conceptGlobale: storage.citeste(CHEI.concepte, []), laSchimbare: randeaza });
@@ -153,8 +157,9 @@ async function porneste() {
       state, ctx, laSchimbare: randeaza,
       colectie: { finaluri: storage.citeste(CHEI.achievements, []), clasament: storage.citeste(CHEI.clasament, []) },
       laJocNou: async () => {
-        if (await confirma('Începi o viață nouă? Jocul de acum se pierde (conceptele și finalurile descoperite rămân).', { da: 'Joc nou' })) {
-          state = incepeDinNou();
+        const scenariu = await alegeScenariu(ctx, { avertisment: 'Jocul de acum se pierde (conceptele și finalurile descoperite rămân).' });
+        if (scenariu) {
+          state = incepeDinNou(scenariu);
           ruleaza(oprireCurenta(state, ctx));
         }
       },
@@ -177,9 +182,9 @@ async function porneste() {
   ruleaza(oprireCurenta(state, ctx)); // reia o decizie rămasă deschisă (sau prima decizie, la joc nou)
 }
 
-function stareNoua(ctx) {
+function stareNoua(ctx, scenariu = 'obisnuit') {
   const nume = NUME[Math.floor(Math.random() * NUME.length)];
-  return jocNou(ctx, { seed: `${Date.now()}-${Math.random()}`, nume });
+  return jocNou(ctx, { seed: `${Date.now()}-${Math.random()}`, nume, scenariu });
 }
 
 function arataErori(erori) {

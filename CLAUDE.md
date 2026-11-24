@@ -410,7 +410,9 @@ Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
 | 6b | Afacere proprie, funcționarea: preț mic / mediu / mare (volum vs. marjă, reputație), marketing cu randament descrescător, angajați în plus (capacitate; fără ei pierzi clienți), extindere (2 niveluri), credit pentru firmă după 6 luni pe profit; profit vs. cash flow (clienți-firme care plătesc la 1–2 luni, marfă cumpărată înainte; rezerva de pornire crește cu aceste luni); riscuri ca evenimente (`data/events/afaceri.json`: client rău-platnic, concurență, control fiscal; efectul nou `afacere` în alegeri); vânzarea firmei (2,5 × profitul anual, impozit pe câștig); 4 concepte noi | ✅ |
 | 7 | Cumpărături (`data/cumparaturi.json`, `js/cumparaturi.js`): 18 bunuri în 6 categorii (tehnologie, haine, 4 mașini, hobby, câine / pisică cu cost lunar, cadouri), calitate, depreciere lunară, revânzare (animalele nu), plata cash / card / rate (DAE și costul total afișat) / BNPL; „Caut o locuință” deschide decizia de cumpărare; evenimentele-tentație „A ieșit noul model” și „Black Friday” (efectul nou `bunNou`, selectorul `bun:<categorie>`); 3 concepte noi | ✅ |
 | 8 | Infracțiuni și consecințe (`data/events/infractiuni.json`, `js/infractiuni.js`; doar decizii și urmări, fără „cum se face”): 4 tentații (money mule pe Instagram, furt mărunt la sfârșit de lună, decont fals, vânzări nedeclarate la firmă), șansa de a fi prins crește la fiecare repetare, „Dosar penal” (recunoști sau iei avocat), amendă / închisoare (fără job, fără timp, doar operațiuni cu bani), cazier 5 ani (credite refuzate, CV mai slab, 15 joburi închise prin `faraCazier`); test: nicio faptă nu e rentabilă; variabile `"text:…"`; salvări versiunea 5; 3 concepte noi | ✅ |
-| 9 | Partener și familie, asigurări, graficul averii nete, moștenire, scenarii de start | |
+| 9a | Scenariile de start (`data/scenarii.json`, `js/scenarii.js`), alese la „Joc nou”: Ca toată lumea, Începi cu 15.000 lei datorii, Fără bac (facultatea și postliceala închise, poliția la fel; cursul „Bacalaureatul, din nou”), Moștenești o garsonieră (de închiriat); graficul averii nete și al datoriilor (butonul 📈 din antet și ecranul de final); `node tests/simulare.js --scenariu <id>`; conceptul „moștenirea” | ✅ |
+| 9b | Asigurări (locuință, viață), moștenire, donații, ajutorul pentru părinți | |
+| 9c | Partener și familie: venit comun, copii, alocație, risc de divorț | |
 
 Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 500 de vieți pe profil):
 
@@ -431,6 +433,7 @@ Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 
 
 | 7 | 100 / 0 | 100 / 0 | 45,4 / 54,6 | 8,8 / 91,2 (verificat pe aceleași 500 de vieți: fără cumpărăturile lui, 19,8%; toți iau haine de 2.000 lei pe BNPL la 18 ani fără venit, iar 87% un telefon de top în rate) |
 | 8 | 100 / 0 | 100 / 0 | 42 / 58 (verificat pe aceleași 500 de vieți: când refuză faptele, 48,6%; ~29% dintre vieți comit măcar una, iar cele condamnate cad mai des în faliment) | 10 / 90 (fără fapte, 10,6%) |
+| 9a | 100 / 0 | 100 / 0 | 42,2 / 57,8 | 10 / 90 (jocul de bază neschimbat; pe scenarii, 200 de vieți: „datorii” 100 / 100 / 12 / 0, „fără bac” 100 / 100 / 26,5 / 9,5, „moștenire” 100 / 100 / 87 / 99,5: chiria plătește popririle, iar executarea nu poate vinde un imobil, limitare de discutat) |
 
 Atenție la citirea raportului de simulare: reușita = coloana „pensie” + coloana „independenta”.
 Aleatorul a coborât de la ~55% la ~41% pe parcursul extinderii, aproape de marginea țintei (40–60%): fiecare lot îi dă mai multe opțiuni riscante din care alege la întâmplare. De urmărit la loturile 7–8.

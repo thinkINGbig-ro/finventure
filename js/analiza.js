@@ -7,12 +7,14 @@
 // Ce face motorul singur, fără JSON (ținut aici ca să nu dea alarme false).
 export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
-    'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job', 'clauza_fidelitate', 'cazier'],
+    'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job', 'clauza_fidelitate', 'cazier',
+    'fara_bac'], // din scenariile de start (data/scenarii.json)
   flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat', 'clauza_fidelitate',
     'concurenta_afacere', 'cazier'],
   evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta',
     'imobil-reparatie', 'imobil-chirias-nu-plateste', 'afacere-client-neplatitor', 'afacere-concurenta', 'afacere-control-fiscal', 'dosar-penal'],
   concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare',
+    'mostenire', // din scenariile de start (data/scenarii.json)
     // din acțiunile meniului „Datoriile mele” (js/datorii.js)
     'rambursare-anticipata', 'avalansa-bulgare', 'refinantare', 'esalonare',
     // din meniul Investiții (js/investitii.js)

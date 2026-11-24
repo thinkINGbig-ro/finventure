@@ -215,6 +215,19 @@ button { cursor: pointer; }
 .rand-butoane { display: flex; gap: 10px; margin-top: 16px; }
 .rand-butoane .btn { flex: 1; }
 
+/* Joc nou: scenariile de start */
+.lista-scenarii { display: flex; flex-direction: column; gap: 10px; }
+.btn-scenariu {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%;
+  border-radius: 16px; padding: 12px 16px; text-align: left; font-size: 16px;
+}
+.btn-scenariu .mic { font-weight: 400; opacity: .9; }
+
+/* Ecranul principal: averea netă, an de an */
+.grafic-avere { margin: 8px 12px 0; }
+.grafic-avere summary { cursor: pointer; padding: 8px 4px; font-weight: 600; }
+.grafic-avere .mic { margin: 4px; }
+
 /* Tabele (fluturaș, rezumat) */
 .tabel { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-variant-numeric: tabular-nums; }
 .tabel td { padding: 7px 0; border-bottom: 1px solid var(--linie); }

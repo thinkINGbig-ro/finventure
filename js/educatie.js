@@ -161,7 +161,8 @@ export function proceseazaCursuriLuna(state, ctx) {
     state.cursuri = state.cursuri.filter((x) => x !== activ);
     state.ascunse.skill += c.skillLaFinal ?? 0;
     seteazaFlag(state, c.flag);
-    adaugaJurnal(state, `Ai terminat ${c.titlu.toLowerCase()} și ai primit certificatul.`);
+    if (c.stergeFlag) delete state.flaguri[c.stergeFlag]; // ex. bacul luat șterge „fara_bac”
+    adaugaJurnal(state, c.stergeFlag === 'fara_bac' ? 'Ai luat bacalaureatul. Facultatea și postliceala îți sunt deschise.' : `Ai terminat ${c.titlu.toLowerCase()} și ai primit certificatul.`);
   }
 }
 

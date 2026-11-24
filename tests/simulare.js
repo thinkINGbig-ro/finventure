@@ -1,5 +1,5 @@
 // Simulare de echilibru, pe profiluri de jucător:
-//   node tests/simulare.js [--n 500] [--profil aleator,prudent,riscant] [--seed sim] [--json raport.json]
+//   node tests/simulare.js [--n 500] [--profil aleator,prudent,riscant] [--seed sim] [--json raport.json] [--scenariu datorii]
 // --n = vieți per profil. --json scrie procentele pe profil într-un fișier (pentru grafice).
 // Raportul folosit în prezentare: node tests/simulare.js --n 500 --json docs/raport-simulare.json
 import { readFile, writeFile } from 'node:fs/promises';
@@ -24,7 +24,9 @@ const n = Number(arg('n', 500));
 const seed = arg('seed', 'sim');
 const profiluri = arg('profil', Object.keys(PROFILURI).join(',')).split(',');
 const start = Date.now();
-const rapoarte = profiluri.map((profil) => simuleazaVieti(ctx, { n, seed, profil }));
+const scenariu = arg('scenariu', 'obisnuit'); // scenariul de start (data/scenarii.json)
+if (scenariu !== 'obisnuit') console.log(`Scenariul de start: ${scenariu}\n`);
+const rapoarte = profiluri.map((profil) => simuleazaVieti(ctx, { n, seed, profil, scenariu }));
 console.log(formateazaRaport(rapoarte));
 
 // Chirie vs. cumpărare la prudent: aceleași vieți, jucate o dată cu casa și o dată în chirie.

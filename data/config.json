@@ -179,6 +179,7 @@
   "cursuri": {
     "_info": "Prețurile cursurilor scurte, la prețurile de start.",
     "bootcampIT": { "valoare": 9000, "deVerificat": true, "sursa": "", "nota": "bootcamp de programare, 6 luni" },
+    "bacalaureat": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "meditații pentru bacalaureat, un an (examenul e gratuit)" },
     "contabilitate": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "curs de contabil autorizat de ANC" },
     "electrician": { "valoare": 2200, "deVerificat": true, "sursa": "", "nota": "calificare de electrician (ANC)" },
     "instalator": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "calificare de instalator (ANC)" },
