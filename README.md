@@ -51,8 +51,4 @@ Taxele de pe salariu, dobânzile, prețurile și regulile băncilor din joc porn
 
 Finventure a fost realizat pentru concursul național de educație financiară **Banometru**.
 
-**Echipa:** [ECHIPA: nume, liceu, clasă]
-
 ---
-
-<sub>Pentru echipa de dezvoltare: [docs/DEZVOLTARE.md](docs/DEZVOLTARE.md)</sub>
