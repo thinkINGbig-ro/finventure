@@ -8,6 +8,7 @@ import {
 } from './finance.js';
 import { actualizeazaDerivate, adaugaJurnal, areFlag, cheltuieliLunare, schimbaStil, seteazaFlag } from './state.js';
 import { estimeazaPensie, inregistreazaDecizie, venitPasivLunar } from './bilant.js';
+import { adaugaBun } from './cumparaturi.js';
 import {
   areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
 } from './cariera.js';
@@ -21,7 +22,7 @@ export function potrivesteProdus(p, selector) {
   if (p.tip !== tip) return false;
   // „investitie:piata” = orice investiție care se poate vinde pe loc (tot în afară de titlurile de stat)
   if (detaliu === 'piata') return p.tip === 'investitie' && p.clasa !== 'titluriStat';
-  return !detaliu || p.furnizor === detaliu || p.pachet === detaliu || p.clasa === detaliu;
+  return !detaliu || p.furnizor === detaliu || p.pachet === detaliu || p.clasa === detaliu || p.categorie === detaliu;
 }
 
 // Asigurat medical: contract de muncă sau PFA (plătești CASS), student, sau imediat după concediere (șomaj).
@@ -331,7 +332,7 @@ export function areUrmareScadenta(state) {
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -423,6 +424,7 @@ export function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
       if (p.afacere.pret !== undefined) firma.pret = p.afacere.pret;
     }
   }
+  if (p.bunNou) adaugaBun(state, ctx, p.bunNou); // un lucru din catalogul de cumpărături (plata e în „efecte” / „produsNou”)
   for (const [sel, campuri] of Object.entries(p.seteazaProdus ?? {})) {
     for (const prod of gasesteProduse(state, sel)) Object.assign(prod, campuri);
   }

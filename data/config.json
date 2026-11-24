@@ -387,6 +387,37 @@
     }
   },
 
+  "cumparaturi": {
+    "_info": "Prețurile din catalogul de cumpărături (lei, la prețurile de start) și costurile lunare ale unor bunuri.",
+    "telefonBuget": { "valoare": 800, "deVerificat": true, "sursa": "" },
+    "telefonMediu": { "valoare": 2000, "deVerificat": true, "sursa": "" },
+    "telefonPremium": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "laptopMediu": { "valoare": 3500, "deVerificat": true, "sursa": "" },
+    "laptopGaming": { "valoare": 8000, "deVerificat": true, "sursa": "" },
+    "haineBasic": { "valoare": 400, "deVerificat": true, "sursa": "", "nota": "câteva haine de bază, de sezon" },
+    "haineBrand": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "câteva piese de firmă" },
+    "ceas": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "ceas mecanic de calitate" },
+    "consola": { "valoare": 2500, "deVerificat": true, "sursa": "" },
+    "bicicleta": { "valoare": 2000, "deVerificat": true, "sursa": "" },
+    "masinaSH": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "mașină la mâna a doua, 10 ani" },
+    "masinaCompacta": { "valoare": 85000, "deVerificat": true, "sursa": "", "nota": "mașină nouă, compactă" },
+    "masinaSuv": { "valoare": 170000, "deVerificat": true, "sursa": "", "nota": "SUV nou" },
+    "masinaElectrica": { "valoare": 150000, "deVerificat": true, "sursa": "", "nota": "mașină electrică nouă (fără subvenții)" },
+    "costLunarMasinaMica": { "valoare": 650, "deVerificat": true, "sursa": "", "nota": "RCA, revizii, benzină, parcare" },
+    "costLunarMasinaSuv": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "RCA, CASCO, revizii, combustibil" },
+    "costLunarMasinaElectrica": { "valoare": 450, "deVerificat": true, "sursa": "", "nota": "asigurare, încărcare, revizii puține" },
+    "caine": { "valoare": 1000, "deVerificat": true, "sursa": "", "nota": "adopție + primele cheltuieli (vaccinuri, cușcă, lesă)" },
+    "costLunarCaine": { "valoare": 350, "deVerificat": true, "sursa": "", "nota": "hrană, veterinar, medicamente, în medie" },
+    "pisica": { "valoare": 500, "deVerificat": true, "sursa": "" },
+    "costLunarPisica": { "valoare": 200, "deVerificat": true, "sursa": "" },
+    "cadouMic": { "valoare": 200, "deVerificat": true, "sursa": "" },
+    "cadouMare": { "valoare": 1500, "deVerificat": true, "sursa": "" },
+    "daeRate": { "valoare": 0.18, "deVerificat": true, "sursa": "", "nota": "credit de consum la magazin (fără promoție „0%”)" },
+    "luniRateMici": { "valoare": 12, "deVerificat": true, "sursa": "" },
+    "luniRateMasina": { "valoare": 60, "deVerificat": true, "sursa": "" },
+    "luniBnpl": { "valoare": 4, "deVerificat": true, "sursa": "", "nota": "patru rate lunare fără dobândă" }
+  },
+
   "imobiliare": {
     "_info": "Apartamente cumpărate ca să le dai în chirie. Prețurile de cumpărare sunt în locuinte.pretGarsoniera / pretApartament.",
     "chirieGarsoniera": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "chirie lunară de piață, oraș mare" },

@@ -52,6 +52,7 @@ js/ui/grafic.js     grafic cu linii în SVG (hover, tastatură, tabel)
 js/imobiliare.js    apartamente de închiriat: cumpărare, chiriași, impozit, vânzare
 js/munca.js         Carieră: ritm, ore suplimentare, promovare, curs de firmă, demisie, venit în plus, artiști
 js/afacere.js       afacerea proprie: pregătire, pornire, luna firmei, dividende, închidere, insolvență
+js/cumparaturi.js   catalogul de cumpărături: plată, depreciere, revânzare, costuri lunare
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -148,6 +149,10 @@ Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cer
 `data/afaceri.json`: `domenii` (texte + parametri de joc: `costVariabil`, `angajatiMinim`, `salariuAngajat`, `luniMaturitate`, `sezon` cu 12 factori de la septembrie, `experienta` = domeniile de job care contează) și `forme` (PFA / II / SRL). Banii fiecărui domeniu (`investitie`, `costuriFixe`, `venitPotential`) și taxele sunt în `config.json` → `afaceri`; pregătirea și calitatea în `balans.json` → `afaceri`. Joburile au `domeniu` (ex. `horeca`); după 24 de luni într-un job din domeniu se pune flag-ul `experienta_<domeniu>`. Afacerea e produsul `afacere`, cu contul ei: la PFA / II datoriile ei intră în datoriile tale, la SRL nu.
 
 Domeniile pot avea `incasareLuni` (clienții plătesc după 1–2 luni) și `stocLuni` (marfa se cumpără înainte): asta face diferența dintre profit și cash flow. Deciziile (preț, marketing, angajați, extindere) au parametrii în `balans.json` → `afaceri`. Evenimentele despre firmă (`data/events/afaceri.json`) folosesc efectul `"afacere": { "cont": "-{suma}" | ["{a}", "-{b}"], "reputatie": n, "pret": "mic" }`; motorul le programează cu probabilitățile din `balans.afaceri.riscuri`.
+
+## Cumpărăturile (catalogul)
+
+`data/cumparaturi.json`: `categorii` și `bunuri` (prețul și costul lunar din `config.json` → `cumparaturi`; `depreciere` anuală, `fericire`, `fericireLunara` la animale, `vandabil: false`, `consumabil: true` la cadouri, `rate` / `bnpl` = feluri de plată permise, `flag` pus la cumpărare, ex. `are_masina`). Bunurile cumpărate sunt produse `bun`, care se depreciază lunar și se revând la valoarea rămasă. În evenimente, `"bunNou": "telefon-premium"` adaugă un bun (plata se scrie separat, în `efecte` / `produsNou`), iar selectorul `bun:<categorie>` (ex. `bun:masini`) verifică dacă jucătorul are ceva din categoria aceea.
 
 ## Imobiliarele de închiriat
 

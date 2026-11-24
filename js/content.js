@@ -18,6 +18,7 @@ const FISIERE = {
   educatie: 'data/educatie.json',
   investitii: 'data/investitii.json',
   afaceri: 'data/afaceri.json',
+  cumparaturi: 'data/cumparaturi.json',
 };
 
 // citeste(cale) -> Promise<string>; cale relativă la rădăcina proiectului
@@ -50,6 +51,7 @@ export async function incarcaContinut(citeste) {
   const educatieJson = (await citesteJson(FISIERE.educatie)) ?? { programe: [], cursuri: [] };
   const investitiiJson = (await citesteJson(FISIERE.investitii)) ?? { clase: [], companii: [], strategii: [] };
   const afaceriJson = (await citesteJson(FISIERE.afaceri)) ?? { domenii: [], forme: [] };
+  const cumparaturiJson = (await citesteJson(FISIERE.cumparaturi)) ?? { categorii: [], bunuri: [] };
 
   const brute = [];
   for (const nume of index.fisiere ?? []) {
@@ -63,13 +65,13 @@ export async function incarcaContinut(citeste) {
     json.evenimente.forEach((ev, i) => brute.push({ ev, fisier, pozitie: i }));
   }
 
-  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson, investitiiJson, afaceriJson }, erori, avertismente);
+  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson, investitiiJson, afaceriJson, cumparaturiJson }, erori, avertismente);
   return { ...rezultat, erori, avertismente };
 }
 
 export function construiesteContinut({
   config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] }, activitatiJson = { activitati: [] }, educatieJson = { programe: [], cursuri: [] },
-  investitiiJson = { clase: [], companii: [], strategii: [] }, afaceriJson = { domenii: [], forme: [] },
+  investitiiJson = { clase: [], companii: [], strategii: [] }, afaceriJson = { domenii: [], forme: [] }, cumparaturiJson = { categorii: [], bunuri: [] },
 }, erori = [], avertismente = []) {
   valideazaConfig(config, FISIERE.config, erori);
 
@@ -110,6 +112,7 @@ export function construiesteContinut({
     concepte.set(c.id, c);
   }
 
+  const cumparaturi = construiesteCumparaturi(cumparaturiJson, config, erori);
   const ctxValidare = { config, balans, joburi, concepte, ids: new Set(), referinte: [] };
   const evenimente = new Map();
   for (const { ev, fisier, pozitie } of brute) {
@@ -128,6 +131,10 @@ export function construiesteContinut({
   for (const ref of ctxValidare.referinte) {
     if (ref.tip === 'eveniment' && !ctxValidare.ids.has(ref.valoare)) {
       erori.push({ ...ref.unde, mesaj: `evenimentul „${ref.valoare}” nu există` });
+      evenimente.delete(ref.unde.id);
+    }
+    if (ref.tip === 'bun' && !cumparaturi.bunuri.has(ref.valoare)) {
+      erori.push({ ...ref.unde, mesaj: `produsul „${ref.valoare}” nu există în data/cumparaturi.json` });
       evenimente.delete(ref.unde.id);
     }
   }
@@ -166,7 +173,28 @@ export function construiesteContinut({
 
   const afaceri = construiesteAfaceri(afaceriJson, config, erori);
 
-  return { ctx: { config, balans, joburi, secundare, concepte, evenimente, finaluri, activitati, educatie, investitii, afaceri } };
+  return { ctx: { config, balans, joburi, secundare, concepte, evenimente, finaluri, activitati, educatie, investitii, afaceri, cumparaturi } };
+}
+
+// ---------- Cumpărături (catalog) ----------
+
+function construiesteCumparaturi(json, config, erori) {
+  const fisier = FISIERE.cumparaturi;
+  const categorii = new Map((json.categorii ?? []).map((c) => [c.id, c]));
+  const bunuri = new Map();
+  for (const b of json.bunuri ?? []) {
+    const err = (camp, mesaj) => erori.push({ fisier, id: b?.id, camp, mesaj });
+    campuriNecunoscute(b, ['id', 'categorie', 'titlu', 'emoji', 'calitate', 'pret', 'depreciere', 'fericire', 'fericireLunara', 'energie', 'retea', 'skill',
+      'costLunar', 'vandabil', 'consumabil', 'rate', 'bnpl', 'flag'], '', err);
+    if (!categorii.has(b.categorie)) err('categorie', `categorie necunoscută „${b.categorie}”`);
+    for (const k of ['pret', 'costLunar']) if (b[k] !== undefined && typeof dupaCale(config, b[k]) !== 'number') err(k, `„${b[k]}” nu există în config.json`);
+    if (!(b.depreciere >= 0 && b.depreciere <= 1)) err('depreciere', 'fracție anuală între 0 și 1');
+    if (!['buget', 'mediu', 'premium'].includes(b.calitate)) err('calitate', 'buget, mediu sau premium');
+    if (b.flag !== undefined && !RE_FLAG_NUME.test(b.flag)) err('flag', 'nume de flag invalid');
+    if (bunuri.has(b.id)) err('id', 'id duplicat');
+    bunuri.set(b.id, b);
+  }
+  return { categorii, bunuri };
 }
 
 // ---------- Afaceri (domenii + forme juridice) ----------
@@ -297,7 +325,7 @@ function valideazaConfig(nod, fisier, erori, cale = '') {
 const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'oferte', 'alegeri'];
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -477,6 +505,10 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
   }
   if (r.transferaInCont !== undefined && r.transferaInCont !== 'tot') num(r.transferaInCont, 'transferaInCont');
   if (r.retrageEconomii !== undefined) num(r.retrageEconomii, 'retrageEconomii');
+  if (r.bunNou !== undefined) {
+    if (typeof r.bunNou !== 'string') err(`${cale}.bunNou`, 'id-ul unui produs din data/cumparaturi.json');
+    else cv.referinte.push({ tip: 'bun', valoare: r.bunNou, unde: { fisier, id: idEv, camp: `${cale}.bunNou` } });
+  }
   if (r.afacere !== undefined) {
     campuriNecunoscute(r.afacere, ['cont', 'reputatie', 'pret'], `${cale}.afacere`, err);
     if (r.afacere.cont !== undefined) [r.afacere.cont].flat().forEach((v) => num(v, 'afacere.cont'));

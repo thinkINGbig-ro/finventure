@@ -7,6 +7,7 @@ import { cardDisponibil, contCurent, fluturas, fondUrgenta, plataMinimaCard, pre
 import { descrieSecundare, simuleazaOreSuplimentare } from '../munca.js';
 import { afacereActiva, simuleazaExtindere, simuleazaPornire, simuleazaVanzare as simuleazaVanzareFirma } from '../afacere.js';
 import { areFlag } from '../state.js';
+import { bunuriDetinute, descrieCatalog } from '../cumparaturi.js';
 import { bal, cfg, inBani, varstaLa } from '../util.js';
 import { ani, h, lei, procent } from './dom.js';
 import { confirma } from './ecrane.js';
@@ -753,8 +754,59 @@ function panouCumparaturi(o, reranda) {
       type: 'button', class: 'btn btn-secundar', 'aria-pressed': String(n.id === state.stilViata),
       onclick: () => executa('stilViata', { nivel: n.id }),
     }, n.nume, h('span', { class: 'mic' }, `~${lei(Math.round(baza * n.multiplicator))} pe lună`)))),
-    h('p', { class: 'mic' }, 'Telefoane, mașini și alte cumpărături mari vin curând.'),
+    ...sectiuniCatalog(o, executa),
   ];
+}
+
+const NUME_PLATI = { cash: 'Cash', card: 'Card', rate: 'Rate', bnpl: 'Mai târziu' };
+
+function sectiuniCatalog(o, executa) {
+  const { state, ctx, laOprire } = o;
+  const s = [];
+  // Ce ai deja
+  const detinute = bunuriDetinute(state, ctx);
+  if (detinute.length) {
+    s.push(h('h3', { class: 'sectiune-titlu' }, 'Ce ai'));
+    for (const b of detinute) {
+      const vandabil = b.info?.vandabil !== false;
+      s.push(produs(`${b.info?.emoji ?? ''} ${b.info?.titlu ?? 'Bun'}`, vandabil ? lei(b.valoare) : '',
+        vandabil ? `Cumpărat cu ${lei(b.pretCumparare)}; acum valorează ${lei(b.valoare)}.${b.info?.costLunar ? ` Te costă ${lei(pret(state, ctx, b.info.costLunar))} pe lună.` : ''}`
+          : `Face parte din familie. Te costă ${lei(pret(state, ctx, b.info.costLunar))} pe lună.`,
+        vandabil ? h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-text', onclick: () => executa('vindeBun', { id: b.id }) }, `Vinde (${lei(b.valoare)})`)) : null));
+    }
+  }
+  // Locuința și vacanțele: în alte părți ale jocului
+  s.push(h('h3', { class: 'sectiune-titlu' }, '🏠 Locuințe'),
+    produs('O locuință pentru tine', '', 'Garsonieră sau apartament, cu sau fără credit ipotecar. Ia o acțiune de timp. (Apartamentele de închiriat sunt în Investiții.)',
+      h('div', { class: 'rand-butoane' }, h('button', {
+        type: 'button', class: 'btn btn-secundar', onclick: () => {
+          const r = actiune(state, ctx, 'vreauLocuinta');
+          if (!r.ok) return arataMesaj(r.mesaj, false);
+          inchideStrat();
+          laOprire?.(r.oprire);
+          return null;
+        },
+      }, 'Caut o locuință'))),
+    h('p', { class: 'mic' }, 'Vacanțele și ieșirile sunt în meniul 🎯 Activități.'));
+  // Catalogul, pe categorii
+  const catalog = descrieCatalog(state, ctx);
+  for (const cat of ctx.cumparaturi.categorii.values()) {
+    const dinCat = catalog.filter((b) => b.categorie === cat.id);
+    if (!dinCat.length) continue;
+    s.push(h('details', { class: 'detalii-catalog' }, h('summary', { class: 'sectiune-titlu' }, `${cat.emoji} ${cat.titlu}`),
+      dinCat.map((b) => {
+        const plati = Object.entries(b.plati);
+        const info = [`calitate ${b.calitate}`, b.costLunarAzi ? `+${lei(b.costLunarAzi)}/lună` : null, b.vandabil === false || b.consumabil ? null : `pierde ~${Math.round(b.depreciere * 100)}% din valoare pe an`].filter(Boolean).join(' · ');
+        const costuri = plati.map(([k, v]) => (k === 'rate' ? `rate: ${v.luni} × ${lei(v.rata)} = ${lei(v.total)}` : k === 'bnpl' ? `mai târziu: ${v.luni} × ${lei(v.rata)}` : null)).filter(Boolean).join(' · ');
+        return produs(`${b.emoji} ${b.titlu}`, lei(b.pretAzi), info,
+          costuri ? h('div', { class: 'mic' }, costuri) : null,
+          h('div', { class: 'rand-butoane' }, plati.map(([k, v]) => h('button', {
+            type: 'button', class: 'btn btn-secundar', 'aria-disabled': v.motiv ? 'true' : null,
+            onclick: () => (v.motiv ? arataMesaj(v.motiv, false) : executa('cumparaBun', { bun: b.id, plata: k })),
+          }, NUME_PLATI[k]))));
+      })));
+  }
+  return s;
 }
 
 // ---------- Meniul ⋯: colecția, clasamentul local, joc nou ----------

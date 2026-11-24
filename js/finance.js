@@ -84,7 +84,7 @@ export function plateste(state, suma, sursa = 'portofel') {
 // ---------- Produse ----------
 
 // „proprietate” = locuința ta; „imobil” = un apartament cumpărat ca să-l dai în chirie.
-export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil', 'activitateSecundara', 'afacere'];
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil', 'activitateSecundara', 'afacere', 'bun'];
 export const CATEGORII_FACTURI = ['chirie', 'utilitati', 'telefon'];
 
 // Facturile lunii, în ordinea în care se plătesc când banii nu ajung.
@@ -173,6 +173,8 @@ export function creeazaProdus(spec, state, ctx) {
       return { ...baza, secundarId: spec.secundarId ?? null };
     case 'afacere':
       return { ...baza }; // câmpurile se completează la pornire (js/afacere.js)
+    case 'bun':
+      return { ...baza }; // un lucru cumpărat (js/cumparaturi.js): bunId, categorie, valoare
     case 'factura':
       // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
       return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };
@@ -208,6 +210,7 @@ export function valoareProdus(p, state) {
       return p.sold;
     case 'proprietate':
     case 'imobil':
+    case 'bun':
       return p.valoare;
     case 'afacere':
       return Math.round(Math.max(0, p.cont ?? 0) * (p.cota ?? 1)); // partea ta din banii firmei

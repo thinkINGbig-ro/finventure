@@ -213,6 +213,15 @@ function afacereAtent(state, ctx, fondComplet, lunar) {
   return null;
 }
 
+// Cumpărăturile mari ale unui jucător atent: doar cash, doar cu fondul complet și cu bani peste el.
+function cumparaAtent(state, ctx, ids, rezerva) {
+  for (const id of ids) {
+    const b = ctx.cumparaturi.bunuri.get(id);
+    if (!b || state.produse.some((p) => p.tip === 'bun' && (p.bunId === id || (b.categorie === 'masini' && p.categorie === 'masini')))) continue;
+    if (baniDisponibili(state) - pret(state, ctx, b.pret) >= rezerva) actiune(state, ctx, 'cumparaBun', { bun: id, plata: 'cash' });
+  }
+}
+
 // Frugal: modest toată viața, fond de 6 luni, aproape tot restul investit în ETF.
 function meniuFrugal(state, ctx) {
   asiguraCont(state, ctx);
@@ -243,6 +252,7 @@ function meniuFrugal(state, ctx) {
   cereMarireAnual(state, ctx);
   // Frugalul păstrează venitul în plus cât are energie: toți banii în plus merg la investiții.
   muncaAtent(state, ctx, fondUrgenta(state) >= 6 * lunar, { pastreazaSecundarul: true });
+  if (fondUrgenta(state) >= 6 * lunar) cumparaAtent(state, ctx, ['telefon-buget', 'bicicleta'], 2 * lunar);
   cursuriAtent(state, ctx, ['educatie-financiara', 'engleza'], fondUrgenta(state) >= 6 * lunar);
   // Frugalul face doar ce e gratis: CV mai bun, odihnă, familie.
   faActivitati(state, ctx, [
@@ -282,6 +292,10 @@ function meniuPrudent(state, ctx) {
   gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
   muncaAtent(state, ctx, fondComplet);
   afacereAtent(state, ctx, fondComplet, lunar);
+  // telefon bun și, după 30 de ani, o mașină la mâna a doua; telefonul se schimbă când a pierdut 80% din valoare
+  const tel = state.produse.find((p) => p.tip === 'bun' && p.bunId === 'telefon-mediu');
+  if (tel && tel.valoare < tel.pretCumparare * 0.2) actiune(state, ctx, 'vindeBun', { id: tel.id });
+  if (fondComplet) cumparaAtent(state, ctx, ['telefon-mediu', ...(varstaLa(state.luna) >= 30 ? ['masina-sh'] : [])], 3 * lunar);
   // Prudentul își crește valoarea pe piață: limbă străină și, fără facultate, o calificare căutată.
   cursuriAtent(state, ctx, ['educatie-financiara', 'engleza',
     ...(['liceu', 'profesionala'].includes(state.situatie.nivelStudii) && !state.situatie.studii ? ['contabilitate'] : [])], fondComplet);
@@ -355,6 +369,10 @@ function meniuRiscant(state, ctx, rnd) {
     if (af.pret !== 'mic') actiune(state, ctx, 'seteazaAfacere', { pret: 'mic', marketing: 2000 }); // „volum, volum”
     if (af.cont > 0) actiune(state, ctx, 'retrageDinFirma', { suma: lei(af.cont) });
   } else actiune(state, ctx, 'pornesteAfacere', { domeniu: rnd() < 0.5 ? 'cafenea' : 'magazinOnline', forma: 'pfa' });
+  // Ce e mai nou și mai scump, în rate sau „mai târziu”.
+  for (const [id, plata] of [['telefon-premium', 'rate'], ['masina-suv', 'rate'], ['haine-brand', 'bnpl']]) {
+    if (!state.produse.some((p) => p.tip === 'bun' && p.bunId === id)) actiune(state, ctx, 'cumparaBun', { bun: id, plata });
+  }
   // „Imobiliarele nu pierd niciodată”: un apartament cu credit, de îndată ce banca zice da.
   if (!state.produse.some((p) => p.tip === 'imobil')) actiune(state, ctx, 'cumparaImobil', { marime: 'apartament', finantare: 'credit' });
   // Riscantul întinde datoriile pe cât mai mulți ani, ca să scadă rata (și să poată cheltui mai mult).
@@ -417,6 +435,13 @@ const ACTIUNI_ALEATOARE = [
     const im = state.produse.find((p) => p.tip === 'imobil');
     if (im && rnd() < 0.3) return actiune(state, ctx, 'vindeImobil', { id: im.id });
     return actiune(state, ctx, 'cumparaImobil', { marime: rnd() < 0.5 ? 'garsoniera' : 'apartament', finantare: rnd() < 0.6 ? 'credit' : 'cash' });
+  },
+  // cumpărături: orice din catalog, plătit oricum; uneori vinde ceva
+  (state, ctx, rnd) => {
+    const bunuri = state.produse.filter((p) => p.tip === 'bun');
+    if (bunuri.length && rnd() < 0.25) return actiune(state, ctx, 'vindeBun', { id: bunuri[Math.floor(rnd() * bunuri.length)].id });
+    const ids = [...ctx.cumparaturi.bunuri.keys()];
+    return actiune(state, ctx, 'cumparaBun', { bun: ids[Math.floor(rnd() * ids.length)], plata: ['cash', 'card', 'rate', 'bnpl'][Math.floor(rnd() * 4)] });
   },
   // afacerea: pregătire, grant, pornire (domeniu, formă, finanțare la întâmplare), bani scoși, închidere
   (state, ctx, rnd) => actiune(state, ctx, ['faPlanAfaceri', 'aplicaGrant'][Math.floor(rnd() * 2)]),

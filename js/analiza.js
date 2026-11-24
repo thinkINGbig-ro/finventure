@@ -22,7 +22,9 @@ export const MOTOR = {
     // din meniul Carieră (js/munca.js)
     'ore-suplimentare', 'clauza-fidelitate', 'venit-variabil',
     // din afacerea proprie (js/afacere.js)
-    'plan-de-afaceri', 'raspundere-limitata', 'capital-de-lucru', 'salariu-angajator', 'evaluare-afacere'],
+    'plan-de-afaceri', 'raspundere-limitata', 'capital-de-lucru', 'salariu-angajator', 'evaluare-afacere',
+    // din cumpărături (js/cumparaturi.js)
+    'cost-total-detinere'],
 };
 
 const numeFlag = (f) => f.split(':')[0];
@@ -106,6 +108,7 @@ export function analizeazaContinut(ctx) {
     if (j.cerinte?.flagNecesar) adauga(citite, j.cerinte.flagNecesar, `job ${j.id} (cerință)`);
   }
   for (const s of ctx.secundare?.values() ?? []) if (s.cerinte?.flagNecesar) adauga(citite, s.cerinte.flagNecesar, `job secundar ${s.id}`);
+  for (const b of ctx.cumparaturi?.bunuri.values() ?? []) if (b.flag) adauga(setate, b.flag, `cumpărătura ${b.id}`);
   // Studiile terminate setează absolvent_<nivel> și, unele, un flag propriu (balans.studii.<id>.flagLaFinal).
   for (const info of Object.values(ctx.balans?.studii ?? {})) {
     if (info?.nivel) adauga(setate, `absolvent_${info.nivel}`, 'motor (studii terminate)');

@@ -1,0 +1,31 @@
+{
+  "_info": "Catalogul de cumpărături. Prețul și costurile lunare vin din config.json → cumparaturi. Parametri de joc: deprecierea = cât din valoare se pierde pe an (revânzarea); fericire = bucuria la cumpărare (se estompează); fericireLunara = la animale; vandabil = false pentru ce nu se revinde; consumabil = nu rămâne nimic de vândut (cadouri); rate / bnpl = se poate plăti în rate la magazin / cu „cumpără acum, plătește mai târziu”; flag = pus la cumpărare (ex. are_masina, ca evenimentul „O mașină?” să nu mai apară).",
+  "categorii": [
+    { "id": "tehnologie", "titlu": "Tehnologie", "emoji": "📱" },
+    { "id": "haine", "titlu": "Haine și accesorii", "emoji": "👕" },
+    { "id": "masini", "titlu": "Mașini", "emoji": "🚗" },
+    { "id": "hobby", "titlu": "Hobby-uri", "emoji": "🎮" },
+    { "id": "animale", "titlu": "Animale de companie", "emoji": "🐾" },
+    { "id": "cadouri", "titlu": "Cadouri", "emoji": "🎁" }
+  ],
+  "bunuri": [
+    { "id": "telefon-buget", "categorie": "tehnologie", "titlu": "Telefon simplu", "emoji": "📱", "calitate": "buget", "pret": "cumparaturi.telefonBuget", "depreciere": 0.4, "fericire": 2, "rate": true, "bnpl": true },
+    { "id": "telefon-mediu", "categorie": "tehnologie", "titlu": "Telefon bun", "emoji": "📱", "calitate": "mediu", "pret": "cumparaturi.telefonMediu", "depreciere": 0.35, "fericire": 4, "rate": true, "bnpl": true },
+    { "id": "telefon-premium", "categorie": "tehnologie", "titlu": "Telefon de top", "emoji": "📱", "calitate": "premium", "pret": "cumparaturi.telefonPremium", "depreciere": 0.3, "fericire": 7, "rate": true, "bnpl": true },
+    { "id": "laptop-mediu", "categorie": "tehnologie", "titlu": "Laptop", "emoji": "💻", "calitate": "mediu", "pret": "cumparaturi.laptopMediu", "depreciere": 0.25, "fericire": 3, "skill": 1, "rate": true, "bnpl": true },
+    { "id": "laptop-gaming", "categorie": "tehnologie", "titlu": "Laptop de gaming", "emoji": "💻", "calitate": "premium", "pret": "cumparaturi.laptopGaming", "depreciere": 0.3, "fericire": 6, "rate": true },
+    { "id": "haine-basic", "categorie": "haine", "titlu": "Haine de bază", "emoji": "👕", "calitate": "buget", "pret": "cumparaturi.haineBasic", "depreciere": 0.8, "fericire": 2, "vandabil": false, "bnpl": true },
+    { "id": "haine-brand", "categorie": "haine", "titlu": "Haine de firmă", "emoji": "👟", "calitate": "premium", "pret": "cumparaturi.haineBrand", "depreciere": 0.6, "fericire": 5, "bnpl": true },
+    { "id": "ceas", "categorie": "haine", "titlu": "Ceas mecanic", "emoji": "⌚", "calitate": "premium", "pret": "cumparaturi.ceas", "depreciere": 0.05, "fericire": 4, "rate": true },
+    { "id": "masina-sh", "categorie": "masini", "titlu": "Mașină la mâna a doua", "emoji": "🚙", "calitate": "buget", "pret": "cumparaturi.masinaSH", "depreciere": 0.12, "fericire": 6, "energie": 3, "costLunar": "cumparaturi.costLunarMasinaMica", "rate": true, "flag": "are_masina" },
+    { "id": "masina-compacta", "categorie": "masini", "titlu": "Mașină nouă, compactă", "emoji": "🚗", "calitate": "mediu", "pret": "cumparaturi.masinaCompacta", "depreciere": 0.15, "fericire": 10, "energie": 4, "costLunar": "cumparaturi.costLunarMasinaMica", "rate": true, "flag": "are_masina" },
+    { "id": "masina-suv", "categorie": "masini", "titlu": "SUV nou", "emoji": "🚘", "calitate": "premium", "pret": "cumparaturi.masinaSuv", "depreciere": 0.18, "fericire": 14, "energie": 4, "costLunar": "cumparaturi.costLunarMasinaSuv", "rate": true, "flag": "are_masina" },
+    { "id": "masina-electrica", "categorie": "masini", "titlu": "Mașină electrică", "emoji": "🔌", "calitate": "premium", "pret": "cumparaturi.masinaElectrica", "depreciere": 0.2, "fericire": 12, "energie": 4, "costLunar": "cumparaturi.costLunarMasinaElectrica", "rate": true, "flag": "are_masina" },
+    { "id": "consola", "categorie": "hobby", "titlu": "Consolă de jocuri", "emoji": "🎮", "calitate": "mediu", "pret": "cumparaturi.consola", "depreciere": 0.25, "fericire": 6, "rate": true, "bnpl": true },
+    { "id": "bicicleta", "categorie": "hobby", "titlu": "Bicicletă", "emoji": "🚲", "calitate": "mediu", "pret": "cumparaturi.bicicleta", "depreciere": 0.12, "fericire": 4, "energie": 4, "bnpl": true },
+    { "id": "caine", "categorie": "animale", "titlu": "Un câine", "emoji": "🐕", "calitate": "mediu", "pret": "cumparaturi.caine", "depreciere": 1, "fericire": 8, "fericireLunara": 0.6, "costLunar": "cumparaturi.costLunarCaine", "vandabil": false },
+    { "id": "pisica", "categorie": "animale", "titlu": "O pisică", "emoji": "🐈", "calitate": "mediu", "pret": "cumparaturi.pisica", "depreciere": 1, "fericire": 6, "fericireLunara": 0.5, "costLunar": "cumparaturi.costLunarPisica", "vandabil": false },
+    { "id": "cadou-mic", "categorie": "cadouri", "titlu": "Un cadou pentru un prieten", "emoji": "🎁", "calitate": "buget", "pret": "cumparaturi.cadouMic", "depreciere": 1, "fericire": 3, "retea": 3, "consumabil": true },
+    { "id": "cadou-mare", "categorie": "cadouri", "titlu": "Un cadou mare pentru familie", "emoji": "💝", "calitate": "premium", "pret": "cumparaturi.cadouMare", "depreciere": 1, "fericire": 5, "retea": 6, "consumabil": true }
+  ]
+}

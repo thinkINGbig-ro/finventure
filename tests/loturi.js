@@ -9,6 +9,7 @@ import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, pro
 import { indeplinesteCerinte, luniPanaLaPromovare, schimbaJob } from '../js/cariera.js';
 import { proceseazaSecundar, simuleazaOreSuplimentare, venitArtistLuna } from '../js/munca.js';
 import { pregatire, proceseazaAfacere, simuleazaPornire, simuleazaVanzare as simuleazaVanzareFirma } from '../js/afacere.js';
+import { optiuniPlata, proceseazaBunuri } from '../js/cumparaturi.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
@@ -26,6 +27,78 @@ export function testeLoturi(ctxBaza, a) {
     ...lot5(ctxBaza, a),
     ...lot6a(ctxBaza, a),
     ...lot6b(ctxBaza, a),
+    ...lot7(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 7: cumpărături ----------
+
+function lot7(ctxBaza, a) {
+  const { ok, egal } = a;
+  const jocCumparator = (seed, bani = 200_000) => {
+    const { ctx, state } = a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    const c = state.produse.find((p) => p.tip === 'contractMunca');
+    Object.assign(c, { brut: inBani(8000), contract: 'cim' });
+    state.numerar = inBani(bani);
+    return { ctx, state };
+  };
+  return {
+    'lotul 7: fiecare fel de plată arată costul: ratele costă mai mult decât prețul, BNPL nu'() {
+      const { ctx, state } = jocCumparator('plati');
+      const o = optiuniPlata(state, ctx, ctx.cumparaturi.bunuri.get('telefon-premium'));
+      const p = pret(state, ctx, 'cumparaturi.telefonPremium');
+      egal(o.cash.total, p, 'cash = prețul');
+      ok(o.rate.total > p, `în rate plătești mai mult (${o.rate.total / 100} lei)`);
+      egal(o.bnpl.total, p, 'BNPL la timp = prețul');
+      ok(o.card.motiv, 'fără card de credit, plata cu cardul e indisponibilă');
+      ok(actiune(state, ctx, 'cumparaBun', { bun: 'telefon-premium', plata: 'rate' }).ok, 'cumpărat în rate');
+      ok(state.produse.some((x) => x.tip === 'credit' && x.furnizor === 'magazin'), 'creditul de la magazin există');
+      ok(state.produse.some((x) => x.tip === 'bun' && x.bunId === 'telefon-premium'), 'telefonul e al tău');
+    },
+
+    'lotul 7: bunurile se depreciază și se revând cu pierdere; ceasul își ține valoarea'() {
+      const { ctx, state } = jocCumparator('depreciere');
+      actiune(state, ctx, 'cumparaBun', { bun: 'telefon-premium', plata: 'cash' });
+      actiune(state, ctx, 'cumparaBun', { bun: 'ceas', plata: 'cash' });
+      for (let i = 0; i < 12; i++) proceseazaBunuri(state, ctx);
+      const tel = state.produse.find((x) => x.bunId === 'telefon-premium');
+      const ceas = state.produse.find((x) => x.bunId === 'ceas');
+      ok(tel.valoare < tel.pretCumparare * 0.8, `telefonul a pierdut mult (${tel.valoare / 100} lei)`);
+      ok(ceas.valoare > ceas.pretCumparare * 0.9, 'ceasul aproape deloc');
+      const bani = baniDisponibili(state);
+      const r = actiune(state, ctx, 'vindeBun', { id: tel.id });
+      ok(r.ok && /pierdut/.test(r.mesaj), r.mesaj);
+      egal(baniDisponibili(state) - bani, tel.valoare, 'primești valoarea de acum');
+    },
+
+    'lotul 7: mașina și animalele costă lunar; animalul nu se vinde; o singură mașină'() {
+      const { ctx, state } = jocCumparator('costuri');
+      ok(actiune(state, ctx, 'cumparaBun', { bun: 'masina-sh', plata: 'cash' }).ok, 'mașină');
+      ok(areFlag(state, 'are_masina'), 'flag-ul de mașină (evenimentul „O mașină?” nu mai apare)');
+      ok(!actiune(state, ctx, 'cumparaBun', { bun: 'masina-suv', plata: 'cash' }).ok, 'a doua mașină: nu');
+      ok(actiune(state, ctx, 'cumparaBun', { bun: 'caine', plata: 'cash' }).ok, 'câine');
+      const cost = proceseazaBunuri(state, ctx);
+      egal(cost, pret(state, ctx, 'cumparaturi.costLunarMasinaMica') + pret(state, ctx, 'cumparaturi.costLunarCaine'), 'costurile lunare');
+      const caine = state.produse.find((x) => x.bunId === 'caine');
+      ok(!actiune(state, ctx, 'vindeBun', { id: caine.id }).ok, 'un animal nu se vinde');
+      egal(caine.valoare, 0, 'nu intră în avere');
+      ok(actiune(state, ctx, 'vindeBun', { id: state.produse.find((x) => x.bunId === 'masina-sh').id }).ok, 'mașina se vinde');
+      ok(!areFlag(state, 'are_masina'), 'fără mașină, flag-ul dispare');
+    },
+
+    'lotul 7: tentația telefonului nou adaugă bunul; din meniu se poate deschide decizia despre locuință'() {
+      const { ctx, state } = jocCumparator('tentatie');
+      actiune(state, ctx, 'cumparaBun', { bun: 'telefon-buget', plata: 'cash' });
+      forteazaEveniment(state, ctx, 'tentatie-telefon-nou');
+      alege(state, ctx, 'cash');
+      ok(state.produse.some((x) => x.bunId === 'telefon-premium'), 'telefonul nou e în inventar');
+      ok(state.concepte.includes('cumparaturi-impuls'), 'concept');
+      state.pendinte = null;
+      state.an = null;
+      const r = actiune(state, ctx, 'vreauLocuinta');
+      ok(r.ok ? r.oprire?.eveniment === 'cumpara-locuinta' : r.mesaj.length > 3, `locuința: ${r.ok ? 'decizia s-a deschis' : r.mesaj}`);
+    },
   };
 }
 
@@ -895,6 +968,9 @@ function lot0(ctxBaza, a) {
         extindeAfacerea: [{}],
         imprumutFirma: [{ suma: 1000 }],
         vindeAfacerea: [{}],
+        cumparaBun: [{ bun: 'bicicleta', plata: 'cash' }, { bun: 'nu-exista', plata: 'cash' }, { bun: 'ceas', plata: 'bnpl' }],
+        vindeBun: [{ id: id('contCurent') }],
+        vreauLocuinta: [{}],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

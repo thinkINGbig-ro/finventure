@@ -20,7 +20,8 @@ import {
 } from './state.js';
 import {
   FLAG_FACTURA, NUME_FACTURI, alegeEvenimentAleator, aplicaAlegere, creeazaOprireEveniment, deschideProdus, descrieOprire,
-  extrageUrmareScadenta, gasesteProduse, inchideCredit, inchideFactura, lichideaza, planificaSloturi, programeazaUrmare, ramburseaza,
+  extrageUrmareScadenta, gasesteProduse, inchideCredit, inchideFactura, lichideaza, motivNeindeplinire, planificaSloturi, programeazaUrmare, ramburseaza,
+  rezolvaVariabile,
 } from './events.js';
 import { bilantNou, inregistreazaAn, inregistreazaLuna, verificaIndependenta } from './bilant.js';
 import { esteAsigurat } from './events.js';
@@ -39,6 +40,7 @@ import {
   aplicaGrant, depuneInFirma, extindeAfacerea, faPlanAfaceri, faStudiuPiata, imprumutFirma, inchideAfacere, pornesteAfacere, proceseazaAfacere,
   retrageDinFirma, seteazaAfacere, vindeAfacerea,
 } from './afacere.js';
+import { cumparaBun, proceseazaBunuri, vindeBun } from './cumparaturi.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -285,6 +287,7 @@ export function proceseazaLuna(state, ctx) {
   ac.venituri += im.venit;
   ac.taxe += im.impozit;
   ac.cheltuieliTrai += im.cheltuieli;
+  ac.cheltuieliTrai += proceseazaBunuri(state, ctx); // mașini, animale: costuri lunare; bunurile se depreciază
   for (const r of state.recurente) {
     if (r.tip === 'venit') {
       incaseaza(state, r.suma);
@@ -727,7 +730,7 @@ export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza'
   'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza', 'cumparaImobil', 'vindeImobil',
   'seteazaRitm', 'oreSuplimentare', 'cerePromovare', 'cursFirma', 'demisie', 'devinoArtist', 'incepeSecundar', 'opresteSecundar',
   'faPlanAfaceri', 'faStudiuPiata', 'aplicaGrant', 'pornesteAfacere', 'retrageDinFirma', 'depuneInFirma', 'inchideAfacere',
-  'seteazaAfacere', 'extindeAfacerea', 'imprumutFirma', 'vindeAfacerea'];
+  'seteazaAfacere', 'extindeAfacerea', 'imprumutFirma', 'vindeAfacerea', 'cumparaBun', 'vindeBun', 'vreauLocuinta'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -924,6 +927,30 @@ function executaActiune(state, ctx, tip, param) {
       rez = f();
       if (!rez.ok) return rez;
       break;
+    }
+    case 'cumparaBun': {
+      rez = cumparaBun(state, ctx, param.bun, param.plata);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'vindeBun': {
+      rez = vindeBun(state, ctx, prod);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'vreauLocuinta': {
+      // Deschide decizia „cumpără o locuință” din meniu, dacă îndeplinești condițiile ei.
+      if (state.an) return { ok: false, mesaj: 'Te poți uita după o locuință între ani.' };
+      const ev = ctx.evenimente.get('cumpara-locuinta');
+      if (!ev) return { ok: false, mesaj: 'Momentan nu se poate.' };
+      const motiv = motivNeindeplinire(ev.conditii, state, ctx, rezolvaVariabile(ev, state, ctx));
+      if (motiv) return { ok: false, mesaj: motiv };
+      const faraTimp = motivTimp(state, ctx, 1);
+      if (faraTimp) return { ok: false, mesaj: faraTimp };
+      consumaTimp(state, 1);
+      state.pendinte = creeazaOprireEveniment(ev, state, ctx);
+      persista(state, ctx);
+      return { ok: true, mesaj: 'Te uiți după o locuință.', oprire: oprireCurenta(state, ctx) };
     }
     case 'seteazaRitm':
     case 'oreSuplimentare':
