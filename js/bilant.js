@@ -91,7 +91,7 @@ export function estimeazaPensie(state, ctx) {
   const salariuMediuAzi = bl.luniCIM ? bl.sumaBrutRealCIM / bl.luniCIM : 0;
   const proportie = Math.min(1, ani / cfg(ctx, 'pensie.aniStagiuComplet'));
   const pilon1 = Math.round(salariuMediuAzi * cfg(ctx, 'pensie.rataInlocuireLaStagiuComplet') * proportie);
-  const pilon2 = Math.round(state.pensie.pilon2 / state.indicePreturi / bal(ctx, 'bilant.luniPlataPilon2'));
+  const pilon2 = Math.round((state.pensie.pilon2 + (state.pensie.pilon3 ?? 0)) / state.indicePreturi / bal(ctx, 'bilant.luniPlataPilon2'));
   return { aniContributie: Math.floor(ani), pilon1, pilon2 }; // în bani, „lei de azi”
 }
 

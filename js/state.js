@@ -27,7 +27,7 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     situatie: { studii: null, nivelStudii: 'liceu', locuinta: 'acasa', cauzaLocuinta: null },
     stilViata: s.stilViata,
     stilAnterior: null, // nivelul de dinainte de ultima schimbare (pentru rezumatul anului)
-    pensie: { luniContributie: 0, pilon2: 0 },
+    pensie: { luniContributie: 0, pilon2: 0, pilon3: 0 },
     indicePreturi: 1,
     piete: Object.fromEntries(CLASE_PIATA.map((c) => [c, 100])),
 
@@ -113,7 +113,7 @@ export function datoriiTotale(state) {
 }
 
 export function activeTotale(state) {
-  return state.numerar + state.produse.reduce((s, p) => s + valoareProdus(p, state), 0) + state.pensie.pilon2;
+  return state.numerar + state.produse.reduce((s, p) => s + valoareProdus(p, state), 0) + state.pensie.pilon2 + (state.pensie.pilon3 ?? 0);
 }
 
 export const avereNeta = (state) => activeTotale(state) - datoriiTotale(state);
@@ -126,7 +126,7 @@ export function activeLichidabile(state) {
 export function economiiLungTermen(state) {
   return state.produse
     .filter((p) => p.tip !== 'contCurent')
-    .reduce((s, p) => s + valoareProdus(p, state), 0) + state.pensie.pilon2;
+    .reduce((s, p) => s + valoareProdus(p, state), 0) + state.pensie.pilon2 + (state.pensie.pilon3 ?? 0);
 }
 
 export function calculeazaStatistici(state, ctx) {

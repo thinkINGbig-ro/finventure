@@ -7,7 +7,7 @@ import {
   incaseaza, plataMinimaCard, plateste, pret, valoareProdus, valoareVanzare,
 } from './finance.js';
 import { actualizeazaDerivate, adaugaJurnal, areFlag, cheltuieliLunare, schimbaStil, seteazaFlag } from './state.js';
-import { inregistreazaDecizie, venitPasivLunar } from './bilant.js';
+import { estimeazaPensie, inregistreazaDecizie, venitPasivLunar } from './bilant.js';
 import {
   areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
 } from './cariera.js';
@@ -48,6 +48,7 @@ const STARE = {
   venitPasiv: (s, _sel, ctx) => venitPasivLunar(s, ctx),
   cheltuieli: (s, _sel, ctx) => cheltuieliLunare(s, ctx),
   dobandaIpoteca: (s) => gasesteProduse(s, 'credit:banca').filter((c) => c.luni >= 240).reduce((t, c) => t + Math.max(0, c.rata * c.luniRamase - c.rest), 0),
+  pensieEstimata: (s, _sel, ctx) => estimeazaPensie(s, ctx).pilon1,
   datorieFacturi: (s) => gasesteProduse(s, 'factura').reduce((t, f) => t + f.restanta, 0),
   soldCard: (s) => gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0,
   minimCard: (s, _sel, ctx) => plataMinimaCard(gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0, ctx),
@@ -380,7 +381,7 @@ function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   const mesajeCariera = aplicaCariera(state, ctx, p, oprire, idDecizie);
   if (p.situatie) aplicaSituatie(state, ctx, p.situatie, idDecizie);
   for (const r of p.recurente ?? []) {
-    state.recurente.push({ tip: r.tip, suma: inBani(val(r.suma)), luniRamase: r.luni ?? null, eticheta: r.eticheta, locuinta: r.locuinta ?? null, cauza: idDecizie });
+    state.recurente.push({ tip: r.tip, suma: inBani(val(r.suma)), luniRamase: r.luni ?? null, eticheta: r.eticheta, locuinta: r.locuinta ?? null, destinatie: r.destinatie ?? null, cauza: idDecizie });
   }
   if (p.stilViata !== undefined) schimbaStil(state, ctx, p.stilViata);
   if (p.retragere) state.final = { tip: 'final', motiv: 'independenta', luna: state.luna, cauza: idDecizie };

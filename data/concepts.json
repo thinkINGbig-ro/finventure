@@ -220,6 +220,26 @@
       "id": "rca-casco",
       "titlu": "RCA și CASCO",
       "text": "RCA e asigurarea obligatorie: plătește pagubele pe care le faci altora cu mașina. CASCO e opțională: îți plătește ție reparațiile, chiar dacă ești vinovat, de obicei cu o franciză (o sumă mică pe care o plătești tu). Asigurarea transformă un risc mare și rar într-un cost mic și sigur. Exemplu: 250 lei pe lună CASCO față de o reparație de 9.000 lei pe care o plătești singur."
+    },
+    {
+      "id": "pfa-srl",
+      "titlu": "PFA sau SRL?",
+      "text": "PFA (persoană fizică autorizată) e cea mai simplă formă de a lucra pe cont propriu: plătești impozit și contribuții (CAS, CASS) din venitul tău. SRL-ul e o firmă separată de tine: plătește impozit pe venit sau pe profit, iar tu iei banii ca salariu sau ca dividende. PFA se potrivește pentru început; SRL când afacerea crește sau ai angajați. Exemplu: un venit extra de 1.500 lei pe lună ca PFA lasă după taxe cam 1.100 lei."
+    },
+    {
+      "id": "declaratia-unica",
+      "titlu": "Declarația unică",
+      "text": "Declarația unică e formularul prin care declari la ANAF veniturile care nu vin din salariu: PFA, chirii, dividende, câștiguri din investiții. Termenul e, de obicei, 25 mai pentru anul trecut, iar depunerea se poate face online, în SPV. Dacă o depui târziu sau deloc, plătești amenzi și dobânzi. Exemplu: chiria de 2.000 lei pe lună se declară, iar impozitul se plătește o dată pe an."
+    },
+    {
+      "id": "venituri-nedeclarate",
+      "titlu": "Veniturile nedeclarate",
+      "text": "Banii primiți „fără acte” nu au taxe azi, dar nu contează la pensie și nici ca venit dovedit la bancă (pentru un credit). Dacă ANAF află, recalculează impozitul și contribuțiile și adaugă dobânzi și penalități. Uneori, suma finală e mai mare decât câștigul. Exemplu: 18.000 lei încasați cash într-un an pot aduce o decizie de plată de peste 7.000 lei."
+    },
+    {
+      "id": "dividende",
+      "titlu": "Dividendele",
+      "text": "Dividendele sunt partea din profitul unei firme plătită acționarilor sau asociaților. La un SRL, profitul se impozitează întâi la firmă, apoi dividendul se impozitează când ajunge la tine. Dividendele vin doar dacă firma are profit, nu în fiecare lună, ca un salariu. Exemplu: dacă SRL-ul tău are 50.000 lei profit, după taxe îți pot rămâne în jur de 38.000 lei."
     }
   ]
 }

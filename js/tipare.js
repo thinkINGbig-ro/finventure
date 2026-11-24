@@ -101,7 +101,7 @@ const POZITIVE = [
     cand: (bl, state, ctx) => {
       if (ani(bl.luniCIM) < 10) return null;
       const p = estimeazaPensie(state, ctx);
-      return { scor: ani(bl.luniCIM) / 2, fapt: `${pluralAni(p.aniContributie)} de contribuții. Pensia de stat estimată: ${lei(p.pilon1)} pe lună, plus ${lei(p.pilon2)} din Pilonul II (în lei de azi).` };
+      return { scor: ani(bl.luniCIM) / 2, fapt: `${pluralAni(p.aniContributie)} de contribuții. Pensia de stat estimată: ${lei(p.pilon1)} pe lună, plus ${lei(p.pilon2)} din Pilonii II și III (în lei de azi).` };
     },
     deCe: 'Contribuțiile de azi sunt venitul tău de mâine. Anii la negru nu se adună aici.',
   },

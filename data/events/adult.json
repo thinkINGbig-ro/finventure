@@ -1,0 +1,381 @@
+{
+  "evenimente": [
+    {
+      "id": "freelance",
+      "titlu": "Un proiect pe lângă job",
+      "faza": [3, 4, 5],
+      "conditii": {
+        "jobProgram": ["full-time"],
+        "ascunse": { "skill": { "min": 50 } },
+        "lipsaFlag": ["freelance_recent", "are_srl"]
+      },
+      "pondere": 3,
+      "cooldownLuni": 24,
+      "variabile": { "venit": 1500, "taxe": 375 },
+      "text": "Un client îți propune un proiect pe lângă job: {venit} lei pe lună, timp de un an. Întreabă cum vrei să-ți plătească.",
+      "alegeri": [
+        {
+          "id": "pfa",
+          "eticheta": "Îmi deschid PFA și facturez",
+          "recurente": [
+            { "tip": "venit", "suma": "{venit}", "luni": 12, "eticheta": "Venit din PFA" },
+            { "tip": "cheltuiala", "suma": "{taxe}", "luni": 12, "eticheta": "Taxe PFA (impozit, CAS, CASS)" }
+          ],
+          "efecte": { "energie": -5, "reputatie": 3 },
+          "flaguri": ["freelance_recent:24", "are_pfa:24"],
+          "urmari": [{ "eveniment": "declaratia-unica", "dupaLuni": [6, 10] }],
+          "etichete": ["venitExtra"],
+          "concepte": ["pfa-srl", "declaratia-unica"],
+          "lectie": "Cu PFA, banii sunt legali și contează la pensie. Din fiecare factură, pune deoparte partea de taxe: o plătești la Declarația unică.",
+          "jurnal": "Ți-ai deschis PFA pentru un proiect pe lângă job."
+        },
+        {
+          "id": "cash",
+          "eticheta": "Mă plătește cash, fără acte",
+          "recurente": [{ "tip": "venit", "suma": "{venit}", "luni": 12, "eticheta": "Bani cash, nedeclarați" }],
+          "efecte": { "energie": -5 },
+          "flaguri": ["freelance_recent:24", "munca_la_negru"],
+          "urmari": [
+            {
+              "eveniment": "amenda-anaf",
+              "dupaLuni": [8, 20],
+              "probabilitate": 0.3,
+              "variabile": { "amenda": 7000 }
+            }
+          ],
+          "etichete": ["negru"],
+          "concepte": ["venituri-nedeclarate"],
+          "lectie": "Banii nedeclarați par „în plus”, dar nu contează la pensie, iar dacă ANAF află, plătești taxele înapoi cu penalități.",
+          "jurnal": "Ai făcut un proiect pe bani cash, fără acte."
+        },
+        {
+          "id": "nu",
+          "eticheta": "N-am timp, mă concentrez pe job",
+          "efecte": { "energie": 2 },
+          "flaguri": ["freelance_recent:12"]
+        }
+      ]
+    },
+    {
+      "id": "declaratia-unica",
+      "titlu": "Declarația unică",
+      "doarUrmare": true,
+      "text": "Se apropie 25 mai: termenul pentru Declarația unică, unde declari veniturile din PFA și plătești ce mai datorezi la stat.",
+      "alegeri": [
+        {
+          "id": "depun",
+          "eticheta": "O depun la timp, cu ajutorul unui contabil",
+          "efecte": { "numerar": -300, "reputatie": 2 },
+          "concepte": ["declaratia-unica"],
+          "lectie": "Un contabil costă puțin față de o greșeală la ANAF. Termenul e în fiecare an pe 25 mai.",
+          "jurnal": "Ai depus Declarația unică la timp."
+        },
+        {
+          "id": "singur",
+          "eticheta": "O completez singur online, în SPV",
+          "efecte": { "energie": -3, "skill": 2 },
+          "concepte": ["declaratia-unica"],
+          "lectie": "Declarația se poate depune online, în Spațiul Privat Virtual (SPV) de pe site-ul ANAF. Merită să înveți să o faci o dată.",
+          "jurnal": "Ți-ai completat singur Declarația unică."
+        },
+        {
+          "id": "uit",
+          "eticheta": "Las pe mai târziu",
+          "urmari": [{ "eveniment": "amenda-anaf", "dupaLuni": [4, 8], "variabile": { "amenda": 1000 } }],
+          "etichete": ["ignoraTaxe"],
+          "concepte": ["declaratia-unica"],
+          "lectie": "Termenele fiscale nu se mută. Pentru o declarație depusă târziu urmează amenda și dobânzile.",
+          "jurnal": "Ai uitat de Declarația unică."
+        }
+      ],
+      "conditii": { "flag": ["are_pfa"] }
+    },
+    {
+      "id": "amenda-anaf",
+      "titlu": "Scrisoare de la ANAF",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "variabile": { "amenda": 7000, "rata": 650 },
+      "text": "ANAF ți-a trimis o decizie: venituri nedeclarate sau declarație depusă târziu. Ai de plată {amenda} lei, cu tot cu dobânzi și penalități.",
+      "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "Plătesc tot",
+          "cere": { "baniMin": "{amenda}" },
+          "efecte": { "numerar": "-{amenda}", "fericire": -6 },
+          "concepte": ["venituri-nedeclarate"],
+          "lectie": "Ai închis problema. Taxele plătite la timp ar fi costat mai puțin decât taxele plus penalitățile.",
+          "jurnal": "Ai plătit {amenda} lei către ANAF."
+        },
+        {
+          "id": "esalonez",
+          "eticheta": "Cer eșalonare la plată",
+          "recurente": [{ "tip": "cheltuiala", "suma": "{rata}", "luni": 12, "eticheta": "Eșalonare ANAF" }],
+          "efecte": { "fericire": -4 },
+          "concepte": ["venituri-nedeclarate"],
+          "lectie": "Statul acceptă eșalonarea, dar dacă nu plătești, urmează executarea silită, cu poprire pe salariu și pe cont.",
+          "jurnal": "Ai cerut eșalonare pentru datoria la ANAF."
+        }
+      ]
+    },
+    {
+      "id": "srl",
+      "titlu": "Propria afacere",
+      "faza": [4, 5],
+      "conditii": {
+        "varstaMin": 28,
+        "lipsaFlag": ["srl_incercat"],
+        "sau": [
+          { "ascunse": { "skill": { "min": 60 } } },
+          { "flag": ["absolvent_licenta"], "ascunse": { "skill": { "min": 50 } } }
+        ]
+      },
+      "pondere": 2,
+      "checkpoint": true,
+      "variabile": { "capital": 30000, "dividende": 3000 },
+      "text": "Ai o idee de afacere care nu-ți dă pace. Ca să pornești un SRL, cu echipamente și primele luni de chirie, îți trebuie cam {capital} lei.",
+      "alegeri": [
+        {
+          "id": "pornesc",
+          "eticheta": "Pornesc SRL-ul",
+          "cere": {
+            "baniMin": "{capital}",
+            "motiv": "N-ai {capital} lei. Afacerile se pornesc cu economii, nu cu credite rapide."
+          },
+          "efecte": { "numerar": "-{capital}" },
+          "flaguri": ["srl_incercat"],
+          "etichete": ["afacere"],
+          "rezultate": [
+            {
+              "pondere": 4,
+              "efecte": { "fericire": 10, "reputatie": 8 },
+              "recurente": [{ "tip": "venit", "suma": "{dividende}", "eticheta": "Dividende din SRL (net)" }],
+              "flaguri": ["are_srl"],
+              "concepte": ["pfa-srl", "dividende"],
+              "lectie": "Afacerea merge. Profitul ajunge la tine ca dividende, după impozitul pe profit și pe dividende.",
+              "jurnal": "Afacerea ta merge: îți aduce {dividende} lei pe lună, ca dividende."
+            },
+            {
+              "pondere": 6,
+              "efecte": { "fericire": -10 },
+              "concepte": ["pfa-srl"],
+              "lectie": "Majoritatea afacerilor noi nu supraviețuiesc primilor ani. De asta se pornesc cu bani pe care îți permiți să-i pierzi.",
+              "jurnal": "Afacerea n-a mers: ai pierdut capitalul de pornire."
+            }
+          ]
+        },
+        {
+          "id": "pfa",
+          "eticheta": "Încerc întâi ca PFA, pe lângă job",
+          "concepte": ["pfa-srl"],
+          "lectie": "Testezi ideea cu risc mic. Dacă merge, treci la SRL când veniturile o cer.",
+          "urmari": [{ "eveniment": "freelance", "dupaLuni": [2, 6] }]
+        },
+        {
+          "id": "nu",
+          "eticheta": "Rămân angajat",
+          "concepte": ["pfa-srl"],
+          "lectie": "Un salariu sigur are și el valoare. Antreprenoriatul se potrivește cu cine are economii și toleranță la risc."
+        }
+      ]
+    },
+    {
+      "id": "pilon3",
+      "titlu": "Pilonul III",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 25, "jobProgram": ["full-time"], "lipsaFlag": ["pilon3"] },
+      "pondere": 3,
+      "maxAparitii": 2,
+      "variabile": { "contributie": 300 },
+      "text": "La HR: angajatorul oferă Pilonul III. Pui {contributie} lei pe lună, sunt deductibili din impozit, iar banii sunt investiți pentru pensia ta.",
+      "alegeri": [
+        {
+          "id": "da",
+          "eticheta": "Mă înscriu",
+          "recurente": [
+            {
+              "tip": "cheltuiala",
+              "suma": "{contributie}",
+              "eticheta": "Pilonul III",
+              "destinatie": "pilon3"
+            }
+          ],
+          "flaguri": ["pilon3"],
+          "etichete": ["economisire"],
+          "concepte": ["pilonii-pensiei"],
+          "lectie": "Pilonul III e o economie automată pentru pensie: banii pleacă înainte să apuci să-i cheltui.",
+          "jurnal": "Te-ai înscris la Pilonul III."
+        },
+        {
+          "id": "nu",
+          "eticheta": "Nu acum",
+          "concepte": ["pilonii-pensiei"],
+          "lectie": "Fiecare an amânat contează: banii puși la 25 de ani cresc de câteva ori mai mult decât cei puși la 45."
+        }
+      ]
+    },
+    {
+      "id": "calcul-pensie",
+      "titlu": "Cât vei avea la pensie?",
+      "faza": [5],
+      "conditii": { "varstaMin": 40, "lipsaFlag": ["pensie_calculata"] },
+      "pondere": 4,
+      "maxAparitii": 1,
+      "variabile": { "pensie": "stare:pensieEstimata", "contributie": 500 },
+      "text": "Ai intrat pe site-ul Casei de Pensii: cu stagiul de până acum, pensia ta de stat ar fi cam {pensie} lei pe lună (în bani de azi).",
+      "alegeri": [
+        {
+          "id": "pilon3",
+          "eticheta": "Încep să pun {contributie} lei lunar în Pilonul III",
+          "cere": { "lipsaFlag": ["pilon3"], "motiv": "Contribui deja la Pilonul III." },
+          "recurente": [
+            {
+              "tip": "cheltuiala",
+              "suma": "{contributie}",
+              "eticheta": "Pilonul III",
+              "destinatie": "pilon3"
+            }
+          ],
+          "flaguri": ["pilon3", "pensie_calculata"],
+          "etichete": ["economisire"],
+          "concepte": ["pilonii-pensiei"],
+          "lectie": "Pensia de stat acoperă de obicei mai puțin de jumătate din ultimul salariu. Restul trebuie construit de tine."
+        },
+        {
+          "id": "singur",
+          "eticheta": "Investesc singur pentru pensie",
+          "flaguri": ["pensie_calculata"],
+          "efecte": { "viitor": 3 },
+          "concepte": ["dobanda-compusa"],
+          "lectie": "Merge și așa, dacă ai disciplina să nu atingi banii până la pensie."
+        },
+        {
+          "id": "stat",
+          "eticheta": "Mă bazez pe pensia de stat",
+          "flaguri": ["pensie_calculata"],
+          "concepte": ["pilonii-pensiei"],
+          "lectie": "Pensia de stat e o bază, nu un plan. Fiecare an fără economii pentru pensie se simte mai târziu."
+        }
+      ]
+    },
+    {
+      "id": "anii-la-negru",
+      "titlu": "Anii care lipsesc",
+      "faza": [4, 5],
+      "conditii": { "varstaMin": 35, "flag": ["munca_la_negru"] },
+      "pondere": 4,
+      "maxAparitii": 1,
+      "variabile": { "contributie": 400 },
+      "text": "Ai cerut o estimare a pensiei. Surpriză: anii în care ai lucrat la negru nu apar nicăieri. Pentru stat, n-ai muncit atunci.",
+      "alegeri": [
+        {
+          "id": "pilon3",
+          "eticheta": "Compensez cu Pilonul III: {contributie} lei pe lună",
+          "cere": { "lipsaFlag": ["pilon3"], "motiv": "Contribui deja la Pilonul III." },
+          "recurente": [
+            {
+              "tip": "cheltuiala",
+              "suma": "{contributie}",
+              "eticheta": "Pilonul III",
+              "destinatie": "pilon3"
+            }
+          ],
+          "flaguri": ["pilon3"],
+          "etichete": ["economisire"],
+          "concepte": ["pilonii-pensiei", "cim"],
+          "lectie": "Nu poți recupera anii lipsă, dar poți construi altă sursă de venit pentru bătrânețe."
+        },
+        {
+          "id": "asta-e",
+          "eticheta": "Asta e, n-am ce face",
+          "efecte": { "fericire": -4 },
+          "concepte": ["cim"],
+          "lectie": "Banii „în plus” de la negru s-au dus de mult. Lipsa din pensie rămâne pe viață."
+        }
+      ]
+    },
+    {
+      "id": "work-and-travel",
+      "titlu": "Vara în altă țară",
+      "faza": [1, 2],
+      "conditii": { "flag": ["an_sabatic"] },
+      "pondere": 8,
+      "maxAparitii": 1,
+      "variabile": { "venit": 3500 },
+      "text": "În anul tău liber, un prieten îți propune Work and Travel: trei luni de muncă în străinătate, cam {venit} lei pe lună.",
+      "alegeri": [
+        {
+          "id": "work",
+          "eticheta": "Plec la Work and Travel",
+          "recurente": [{ "tip": "venit", "suma": "{venit}", "luni": 3, "eticheta": "Work and Travel" }],
+          "efecte": { "skill": 6, "retea": 6, "energie": -6, "fericire": 6 },
+          "flaguri": ["experienta_munca"],
+          "concepte": ["cv"],
+          "lectie": "Experiența în străinătate arată bine în CV: limbă, independență, muncă reală.",
+          "jurnal": "Ai plecat la Work and Travel, trei luni."
+        },
+        {
+          "id": "voluntariat",
+          "eticheta": "Fac voluntariat la un ONG",
+          "efecte": { "skill": 4, "retea": 8, "fericire": 4 },
+          "flaguri": ["cv_voluntariat:24"],
+          "concepte": ["cv"],
+          "lectie": "Voluntariatul nu aduce bani acum, dar aduce oameni și o poveste bună pentru CV.",
+          "jurnal": "Ai făcut voluntariat în anul sabatic."
+        },
+        { "id": "acasa", "eticheta": "Mă odihnesc acasă", "efecte": { "energie": 8 } }
+      ]
+    },
+    {
+      "id": "master",
+      "titlu": "Un master?",
+      "faza": [3, 4],
+      "conditii": { "flag": ["absolvent_licenta"], "jobProgram": ["full-time"], "lipsaFlag": ["master_incercat"] },
+      "pondere": 3,
+      "maxAparitii": 1,
+      "variabile": { "taxa": 400 },
+      "text": "Facultatea are un master la seral, în domeniul tău: doi ani, cu o taxă de {taxa} lei pe lună.",
+      "alegeri": [
+        {
+          "id": "da",
+          "eticheta": "Mă înscriu",
+          "recurente": [{ "tip": "cheltuiala", "suma": "{taxa}", "luni": 24, "eticheta": "Taxă master" }],
+          "efecte": { "skill": 10, "reputatie": 4, "energie": -6 },
+          "flaguri": ["master_incercat"],
+          "concepte": ["cv"],
+          "lectie": "Educația e o investiție: costă acum și se plătește în timp, prin joburi mai bune.",
+          "jurnal": "Te-ai înscris la un master."
+        },
+        {
+          "id": "nu",
+          "eticheta": "Învăț din practică",
+          "flaguri": ["master_incercat"],
+          "efecte": { "skill": 2 }
+        }
+      ]
+    },
+    {
+      "id": "atestat",
+      "titlu": "Un atestat în plus",
+      "faza": [3, 4],
+      "conditii": { "flag": ["absolvent_profesionala"], "jobProgram": ["full-time"], "lipsaFlag": ["atestat_incercat"] },
+      "pondere": 3,
+      "maxAparitii": 1,
+      "variabile": { "cost": 1500 },
+      "text": "Un curs de autorizare în meseria ta costă {cost} lei. Cu atestatul, poți lua lucrări mai bine plătite.",
+      "alegeri": [
+        {
+          "id": "da",
+          "eticheta": "Fac cursul",
+          "cere": { "baniMin": "{cost}" },
+          "efecte": { "numerar": "-{cost}", "skill": 8, "reputatie": 5 },
+          "flaguri": ["atestat_incercat"],
+          "concepte": ["cv"],
+          "lectie": "O calificare în plus te face mai greu de înlocuit și îți dă argumente la negocierea salariului.",
+          "jurnal": "Ai obținut un atestat profesional."
+        },
+        { "id": "nu", "eticheta": "Nu acum", "flaguri": ["atestat_incercat"] }
+      ]
+    }
+  ]
+}

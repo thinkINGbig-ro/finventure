@@ -307,7 +307,8 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
     if (!Array.isArray(r.recurente)) err(`${cale}.recurente`, 'trebuie să fie o listă');
     else r.recurente.forEach((x, i) => {
       const c = `${cale}.recurente[${i}]`;
-      campuriNecunoscute(x, ['tip', 'suma', 'luni', 'eticheta', 'locuinta'], c, err);
+      campuriNecunoscute(x, ['tip', 'suma', 'luni', 'eticheta', 'locuinta', 'destinatie'], c, err);
+      if (x.destinatie !== undefined && !(x.destinatie === 'pilon3' && x.tip === 'cheltuiala')) err(`${c}.destinatie`, 'singura destinație posibilă: „pilon3”, la o cheltuială');
       if (x.locuinta !== undefined && dupaCale(cv.config, `locuinte.${x.locuinta}`) === undefined) err(`${c}.locuinta`, `„${x.locuinta}” nu există în config.locuinte`);
       if (!['venit', 'cheltuiala'].includes(x.tip)) err(`${c}.tip`, 'trebuie să fie „venit” sau „cheltuiala”');
       verificaNumar(x.suma, `${c}.suma`, err, cv, vars);

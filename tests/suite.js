@@ -144,7 +144,7 @@ function teste(ctxBaza, incarcare) {
       egal(a.concepteFaraSursa.length, 0, `concepte fără sursă: ${a.concepteFaraSursa}`);
       egal(a.flaguriNesetate.length, 0, `flag-uri citite dar nesetate: ${a.flaguriNesetate.map((x) => x.flag)}`);
       egal(a.probleme.length, 0, 'condiții imposibile');
-      return `${a.flaguriNecitite.length} flag-uri setate dar necitite (memorie pentru Faza F)`;
+      return `${a.flaguriNecitite.length} flag-uri setate dar necitite`;
     },
 
     'brut → net la CIM'() {

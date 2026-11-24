@@ -265,7 +265,8 @@ export function proceseazaLuna(state, ctx) {
       ac.venituri += r.suma;
     } else {
       const platit = plateste(state, r.suma);
-      ac.cheltuieliTrai += platit;
+      if (r.destinatie === 'pilon3') state.pensie.pilon3 = (state.pensie.pilon3 ?? 0) + platit; // economie, nu cheltuială
+      else ac.cheltuieliTrai += platit;
       neplatit += r.suma - platit;
     }
     if (r.luniRamase != null) r.luniRamase -= 1;
@@ -356,6 +357,7 @@ export function proceseazaLuna(state, ctx) {
     }
   }
   state.pensie.pilon2 = Math.round(state.pensie.pilon2 * (1 + rataLunara(cfg(ctx, 'pilon2.randamentAnual'))));
+  if (state.pensie.pilon3) state.pensie.pilon3 = Math.round(state.pensie.pilon3 * (1 + rataLunara(cfg(ctx, 'pilon2.randamentAnual'))));
 
   // 8. Energie și fericire revin spre o țintă, proporțional cu distanța. Așa fiecare
   // încărcare (job, studii) are un echilibru: țintă − cost/revenire (ex. curier: 75 − 4/0.15 ≈ 48).

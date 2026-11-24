@@ -81,7 +81,7 @@ function sectiunePensie(state, ctx) {
   const p = estimeazaPensie(state, ctx);
   return h('div', { class: 'sectiune-final' },
     h('h3', {}, 'Pensia ta'),
-    h('p', {}, `Pensia de stat estimată: ${lei(p.pilon1)} pe lună, plus ${lei(p.pilon2)} din Pilonul II (în lei de azi), după ${ani(p.aniContributie)} de contribuții.`),
+    h('p', {}, `Pensia de stat estimată: ${lei(p.pilon1)} pe lună, plus ${lei(p.pilon2)} din Pilonii II și III (în lei de azi), după ${ani(p.aniContributie)} de contribuții.`),
     blocConcepte(['pilonii-pensiei'], ctx, { eticheta: null, nou: false }));
 }
 
