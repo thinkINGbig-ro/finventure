@@ -44,6 +44,7 @@ js/engine.js        bucla anuală, simularea lunară, restanțe, executare, fina
 js/events.js        condiții, variabile, alegeri, efecte, urmări
 js/finance.js       salariu brut/net, credite, carduri, depozite, investiții
 js/cariera.js       CV, oferte, negociere, mărire, promovare
+js/activitati.js    meniul „Activități” și bugetul de timp al anului
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -53,7 +54,7 @@ js/ui/*.js          ecranele
 data/config.json    valori economice (toate marcate „deVerificat”)
 data/balans.json    parametri de joc (echilibrare)
 data/events/*.json  evenimentele, pe teme
-data/concepts.json, data/jobs.json, data/endings.json
+data/concepts.json, data/jobs.json, data/endings.json, data/activitati.json
 tests/              teste (Node și browser) și simularea
 docs/raport-simulare.json  raportul de echilibru (regenerabil)
 ```
@@ -89,6 +90,35 @@ docs/raport-simulare.json  raportul de echilibru (regenerabil)
 4. Rulează simularea (mai jos) ca să vezi dacă evenimentul apare și cum schimbă echilibrul.
 
 Toate câmpurile disponibile (condiții, efecte, credite, sub-alegeri, oferte de job, urmări) sunt descrise în `CLAUDE.md`, secțiunea 5. Cifrele nu se scriu în evenimente: sumele de bază vin din `data/config.json`, iar sumele din `variabile` cresc automat cu inflația.
+
+## Cum adaugi o activitate (meniul „Activități”)
+
+Activitățile sunt lucruri pe care jucătorul le face din proprie inițiativă, între două „Avansează”. Stau în `data/activitati.json` și au aceleași câmpuri de efect ca o alegere dintr-un eveniment (`efecte`, `flaguri`, `concepte`, `lectie`, `jurnal`, `rezultate` cu `pondere` pentru un rezultat incert), plus:
+
+- `titlu`, `emoji`, `descriere`, `categorie` (`sanatate`, `social`, `timpLiber`, `dezvoltare`);
+- `timp`: câte „acțiuni mari” din bugetul anului consumă (implicit 1). Bugetul e în `data/balans.json` → `timp` (mai mic cu un job full-time sau la studii);
+- `conditii`: când e disponibilă (dacă nu, butonul apare cu motivul); `maxPeAn`: de câte ori se poate face într-un an;
+- `variabile`: ca la evenimente; prețurile vin din `config.json` → `activitati` (ex. `"cost": "pret:activitati.cityBreak"`).
+
+```json
+{
+  "id": "iesire-prieteni",
+  "titlu": "Ieși cu prietenii",
+  "emoji": "🍕",
+  "categorie": "social",
+  "descriere": "O seară în oraș, cam {cost} lei.",
+  "variabile": { "cost": "pret:activitati.iesirePrieteni" },
+  "conditii": { "baniMin": "{cost}" },
+  "efecte": { "numerar": "-{cost}", "fericire": 6, "retea": 3 },
+  "jurnal": "Ai ieșit în oraș cu prietenii."
+}
+```
+
+Operațiunile bancare (depune, retrage, plătește) nu consumă timp. Căutatul unui job consumă `timp.costCautareJob`.
+
+## Salvările și migrarea
+
+Starea are câmpul `versiune` (`VERSIUNE_SALVARE` în `js/state.js`). Când se schimbă formatul stării, crește versiunea și adaugă un pas în `MIGRARI` care completează câmpurile noi: salvările și checkpoint-urile vechi se încarcă migrate, nu se pierd. O salvare dintr-o versiune mai nouă decât jocul nu se încarcă.
 
 ## Teste și simulare
 

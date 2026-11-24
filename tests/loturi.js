@@ -1,13 +1,124 @@
 // Testele extinderii, grupate pe loturi. Primesc ajutoarele din tests/suite.js.
 
-import { ACTIUNI, actiune, alege, forteazaEveniment } from '../js/engine.js';
+import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, oprireCurenta } from '../js/engine.js';
 import { textRezultat } from '../js/events.js';
-import { creeazaProdus } from '../js/finance.js';
+import { baniDisponibili, creeazaProdus } from '../js/finance.js';
+import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
+import { creeazaStorageMemorie } from '../js/storage.js';
+import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
 
 export function testeLoturi(ctxBaza, a) {
   return {
     ...lot0(ctxBaza, a),
+    ...lot1(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 1: activități și bugetul de timp; migrarea salvărilor ----------
+
+function lot1(ctxBaza, a) {
+  const { ok, egal } = a;
+  // Joc între ani (nicio decizie deschisă), cu bani.
+  const jocLiber = (seed, faraJob = false) => {
+    const { ctx, state } = faraJob ? a.jocFaraVenit(seed) : a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.numerar = inBani(50_000);
+    return { ctx, state };
+  };
+  return {
+    'lotul 1: bugetul de timp depinde de job și se termină; anul următor se reface'() {
+      const { ctx, state } = jocLiber('timp', true);
+      egal(timpPeAn(state, ctx), ctx.balans.timp.baza, 'fără job și fără studii: bugetul de bază');
+      const cuJob = jocLiber('timp-job');
+      ok(timpPeAn(cuJob.state, cuJob.ctx) < ctx.balans.timp.baza, 'un job full-time lasă mai puțin timp');
+      const total = timpRamas(state, ctx);
+      for (let i = 0; i < total; i++) ok(actiune(state, ctx, 'activitate', { activitate: i % 2 ? 'alergare' : 'odihna' }).ok, `activitatea ${i + 1} trece`);
+      egal(timpRamas(state, ctx), 0, 'timpul s-a terminat');
+      const r = actiune(state, ctx, 'activitate', { activitate: 'alergare' });
+      ok(!r.ok && /timpul/.test(r.mesaj), `fără timp: refuz cu motiv („${r.mesaj}”)`);
+      a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+      if (!state.final) egal(timpRamas(state, ctx), timpPeAn(state, ctx), 'după un an, bugetul e din nou întreg');
+    },
+
+    'lotul 1: activitatea plătită scade banii și aplică efectele; fără bani e refuzată cu motiv'() {
+      const { ctx, state } = jocLiber('sala', true);
+      const inainte = baniDisponibili(state);
+      const energie = state.stat.energie;
+      const r = actiune(state, ctx, 'activitate', { activitate: 'sala' });
+      ok(r.ok, r.mesaj);
+      ok(baniDisponibili(state) < inainte, 'abonamentul s-a plătit');
+      ok(state.stat.energie > energie || state.stat.energie === 100, 'energia a crescut');
+      ok(state.concepte.includes('abonamente'), 'conceptul s-a deblocat');
+      state.numerar = 0;
+      for (const p of state.produse) if (p.tip === 'contCurent') p.sold = 0;
+      const fara = descrieActivitati(state, ctx).find((x) => x.id === 'vacanta-mare');
+      ok(!fara.disponibil && /lei/.test(fara.motiv), `motivul arată suma: ${fara.motiv}`);
+    },
+
+    'lotul 1: „maxPeAn” și flag-urile din activități (hobby, voluntariat pentru CV)'() {
+      const { ctx, state } = jocLiber('hobby', true);
+      ok(!descrieActivitati(state, ctx).find((x) => x.id === 'exersezi-hobby').disponibil, 'fără hobby nu poți exersa');
+      ok(actiune(state, ctx, 'activitate', { activitate: 'hobby' }).ok, 'te apuci de hobby');
+      ok(descrieActivitati(state, ctx).find((x) => x.id === 'exersezi-hobby').disponibil, 'acum poți exersa');
+      ok(actiune(state, ctx, 'activitate', { activitate: 'voluntariat' }).ok, 'voluntariat');
+      ok(areFlag(state, 'cv_voluntariat'), 'voluntariatul intră în CV');
+      ok(actiune(state, ctx, 'activitate', { activitate: 'vacanta-mare' }).ok, 'prima vacanță la mare');
+      const r = actiune(state, ctx, 'activitate', { activitate: 'vacanta-mare' });
+      ok(!r.ok && /deja/.test(r.mesaj), `a doua vacanță la mare în același an e refuzată („${r.mesaj}”)`);
+    },
+
+    'lotul 1: fiecare activitate din conținut se poate face și are rezultat; norocul nu schimbă evenimentele'() {
+      let n = 0;
+      for (const act of ctxBaza.activitati.values()) {
+        const { ctx, state } = jocLiber(`act-${act.id}`, true);
+        state.luna = 36; // 21 de ani: peste pragurile de vârstă din activități
+        if (act.conditii?.flag?.includes('are_hobby')) state.flaguri.are_hobby = { setatLa: 0, expiraLa: null };
+        if (act.conditii?.job) {
+          const cuJob = jocLiber(`act-${act.id}-job`);
+          Object.assign(state, cuJob.state);
+        }
+        const rngEv = state.rng.evenimente;
+        const r = actiune(state, ctx, 'activitate', { activitate: act.id });
+        ok(r.ok, `${act.id}: ${r.mesaj}`);
+        ok(r.mesaj && r.mesaj.length > 5, `${act.id}: mesaj gol`);
+        egal(state.rng.evenimente, rngEv, `${act.id}: fluxul de evenimente nu se atinge`);
+        n += 1;
+      }
+      ok(n >= 12, `prea puține activități: ${n}`);
+      return `${n} activități`;
+    },
+
+    'lotul 1: căutatul unui job consumă timp'() {
+      const { ctx, state } = jocLiber('cauta', true);
+      const inainte = timpRamas(state, ctx);
+      const r = actiune(state, ctx, 'cautaJob');
+      ok(r.ok, r.mesaj);
+      egal(timpRamas(state, ctx), inainte - ctx.balans.timp.costCautareJob, 'timpul a scăzut');
+    },
+
+    'lotul 1: o salvare veche (versiunea 1) și checkpoint-urile ei se încarcă și se joacă mai departe'() {
+      const { ctx, state } = jocLiber('migrare', true);
+      const veche = cloneaza(state);
+      veche.versiune = 1;
+      delete veche.timp;
+      delete veche.rng.actiuni;
+      const storage = creeazaStorageMemorie();
+      salveazaJoc(storage, veche);
+      adaugaCheckpoint(storage, veche, 'vechi');
+      const s = incarcaJoc(storage);
+      ok(s, 'salvarea veche nu se pierde');
+      egal(s.versiune, VERSIUNE_SALVARE, 'versiunea e adusă la zi');
+      ok(s.timp && typeof s.rng.actiuni === 'number', 'câmpurile noi sunt completate');
+      ok(actiune(s, ctx, 'activitate', { activitate: 'alergare' }).ok, 'activitățile merg pe salvarea migrată');
+      a.consuma(s, ctx, avanseaza(s, ctx), a.primaDisponibila);
+      a.verificaInvarianti(s);
+      const cp = incarcaCheckpoint(storage, listaCheckpointuri(storage)[0].id);
+      egal(cp.versiune, VERSIUNE_SALVARE, 'și checkpoint-ul e migrat');
+      const viitoare = { ...cloneaza(state), versiune: VERSIUNE_SALVARE + 1 };
+      salveazaJoc(storage, viitoare);
+      egal(incarcaJoc(storage), null, 'o salvare dintr-o versiune mai nouă nu se încarcă pe jumătate');
+    },
   };
 }
 
@@ -53,6 +164,7 @@ function lot0(ctxBaza, a) {
         stilViata: [{ nivel: 'confortabil' }, { nivel: 'confortabil' }],
         cereMarire: [{}],
         cautaJob: [{}],
+        activitate: [{ activitate: 'alergare' }, { activitate: 'nu-exista' }, { activitate: 'exersezi-hobby' }],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

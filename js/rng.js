@@ -1,7 +1,8 @@
 // RNG cu seed (mulberry32). Starea fiecărui flux e un singur întreg salvat în
 // state.rng, așa că o salvare reluată produce exact aceleași numere.
-// Fluxuri separate: „evenimente” (ce se întâmplă) și „piete” (randamente, inflație),
-// ca alegerile jucătorului să nu schimbe evoluția pieței.
+// Fluxuri separate: „evenimente” (ce se întâmplă), „piete” (randamente, inflație) și „actiuni”
+// (rezultatul acțiunilor din meniuri), ca alegerile jucătorului să nu schimbe evoluția pieței
+// și nici ce evenimente vin.
 
 export function hashSeed(seed) {
   const s = String(seed);
@@ -19,6 +20,7 @@ export function creeazaFluxuri(seed) {
   return {
     evenimente: hashSeed(`${seed}/evenimente`),
     piete: hashSeed(`${seed}/piete`),
+    actiuni: hashSeed(`${seed}/actiuni`),
   };
 }
 

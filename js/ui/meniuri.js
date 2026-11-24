@@ -9,9 +9,10 @@ import { cfg, inBani, varstaLa } from '../util.js';
 import { ani, h, lei, procent } from './dom.js';
 import { confirma } from './ecrane.js';
 import { deschideStrat, inchideStrat } from './strat.js';
+import { descrieActivitati, timpPeAn, timpRamas } from '../activitati.js';
 
 const TITLURI = {
-  meniu: 'Finventure', banca: 'Bancă', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
+  meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
 };
 const IN_CURAND = {
   investitii: 'Aici vei putea cumpăra ETF-uri, acțiuni, titluri de stat, aur sau crypto și vei vedea cum crește (sau scade) portofoliul.',
@@ -31,6 +32,7 @@ export function deschidePanou(tab, optiuni) {
 }
 
 function continutPanou(tab, o, reranda) {
+  if (tab === 'activitati') return panouActivitati(o, reranda);
   if (tab === 'banca') return panouBanca(o, reranda);
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
   if (tab === 'cariera') return panouCariera(o, reranda);
@@ -48,16 +50,52 @@ function executor({ state, ctx, laSchimbare }, reranda) {
     const r = actiune(state, ctx, tip, param);
     laSchimbare();
     reranda();
-    arataMesaj(r.mesaj, r.ok && r.succes !== false);
+    arataMesaj(r.mesaj, r.ok && r.succes !== false, r.lectie);
     return r;
   };
 }
 
-function arataMesaj(text, ok) {
+function arataMesaj(text, ok, lectie) {
   const m = document.querySelector('.panou .mesaj-actiune');
   if (!m) return;
-  m.textContent = text;
+  m.replaceChildren(text, lectie ? h('span', { class: 'mesaj-lectie' }, lectie) : '');
   m.className = `mesaj-actiune ${ok ? 'ok' : 'eroare'}`;
+}
+
+// ---------- Activități ----------
+
+const CATEGORII = { sanatate: 'Sănătate și energie', social: 'Prieteni, familie, oameni', timpLiber: 'Timp liber', dezvoltare: 'Te dezvolți' };
+
+function panouActivitati(o, reranda) {
+  const { state, ctx } = o;
+  const executa = executor(o, reranda);
+  const total = timpPeAn(state, ctx);
+  const ramas = timpRamas(state, ctx);
+  const lista = descrieActivitati(state, ctx);
+  const sectiuni = [
+    h('p', { class: 'mesaj-actiune', role: 'status' }),
+    h('div', { class: 'timp-an' },
+      h('span', {}, `Timp anul ăsta: ${ramas} din ${total} ${total === 1 ? 'acțiune mare' : 'acțiuni mari'}`),
+      h('span', { class: 'timp-puncte', 'aria-hidden': 'true' }, Array.from({ length: total }, (_, i) => h('span', { class: i < ramas ? 'punct plin' : 'punct' })))),
+    h('p', { class: 'mic' }, 'Jobul și studiile îți iau din timp. Operațiunile din Bancă nu consumă timp.'),
+  ];
+  for (const [cat, titlu] of Object.entries(CATEGORII)) {
+    const dinCat = lista.filter((a) => a.categorie === cat);
+    if (!dinCat.length) continue;
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, titlu));
+    for (const a of dinCat) {
+      const info = [a.timp === 1 ? '1 acțiune' : `${a.timp} acțiuni`, a.efecte].filter(Boolean).join(' · ');
+      sectiuni.push(produs(`${a.emoji} ${a.titlu}`, '', a.descriere,
+        h('div', { class: 'mic' }, info),
+        h('div', { class: 'rand-butoane' },
+          h('button', {
+            type: 'button', class: 'btn btn-secundar', 'aria-disabled': a.disponibil ? null : 'true',
+            onclick: () => (a.disponibil ? executa('activitate', { activitate: a.id }) : arataMesaj(a.motiv, false)),
+          }, 'Fă asta')),
+        a.disponibil ? null : h('div', { class: 'mic motiv-indisponibil' }, a.motiv)));
+    }
+  }
+  return sectiuni;
 }
 
 function panouBanca(o, reranda) {
@@ -208,7 +246,7 @@ function panouCariera(o, reranda) {
     sectiuni.push(h('p', {}, 'N-ai job acum.'));
   }
   sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Caută alt job'));
-  sectiuni.push(h('p', { class: 'mic' }, 'Îți faci CV-ul și primești până la 3 oferte. Un CV mai bun aduce oferte mai multe și mai bine plătite.'));
+  sectiuni.push(h('p', { class: 'mic' }, `Îți faci CV-ul și primești până la 3 oferte. Un CV mai bun aduce oferte mai multe și mai bine plătite. Căutatul ia o acțiune mare din timpul anului (mai ai ${timpRamas(state, ctx)}).`));
   sectiuni.push(h('div', { class: 'rand-butoane' }, h('button', {
     type: 'button', class: 'btn btn-principal', onclick: () => {
       const r = actiune(state, ctx, 'cautaJob');

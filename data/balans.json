@@ -139,6 +139,16 @@
     "tipareMax": 3
   },
 
+  "timp": {
+    "_info": "Bugetul anual de acțiuni mari (activități, cursuri, căutat job, afacere). Operațiunile bancare sunt nelimitate.",
+    "baza": 6,
+    "jobFullTime": -2,
+    "jobPartTime": -1,
+    "studii": -1,
+    "minim": 2,
+    "costCautareJob": 1
+  },
+
   "salvare": {
     "checkpointuriRecente": 5,
     "checkpointuriMax": 10

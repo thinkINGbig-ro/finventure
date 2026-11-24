@@ -142,6 +142,11 @@ async function porneste() {
     });
   }
 
+  $('#btn-concepte').addEventListener('click', () => {
+    if (ocupat) return;
+    deschidePanou('enciclopedie', { state, ctx, conceptGlobale: storage.citeste(CHEI.concepte, []), laSchimbare: randeaza });
+  });
+
   $('#btn-meniu').addEventListener('click', () => {
     if (ocupat) return;
     deschidePanou('meniu', {

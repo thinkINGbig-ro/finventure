@@ -5,7 +5,27 @@ import { creeazaFluxuri } from './rng.js';
 import { CLASE_PIATA, baniDisponibili, contCurent, datorieProdus, facturiLunare, pret, valoareProdus } from './finance.js';
 import { CHEI } from './storage.js';
 
-export const VERSIUNE_SALVARE = 1;
+export const VERSIUNE_SALVARE = 2;
+
+// Migrările salvărilor: fiecare pas aduce o salvare de la versiunea `de` la `de + 1`, completând
+// câmpurile noi cu valori neutre. Așa, un joc început pe GitHub Pages merge și după o actualizare.
+const MIGRARI = {
+  1: (s) => {
+    s.timp = { an: Math.floor(s.luna / 12), folosit: 0, activitati: {} };
+    s.rng.actiuni ??= creeazaFluxuri(`${s.seed}`).actiuni;
+  },
+};
+
+export function migreaza(s) {
+  if (!s || typeof s.versiune !== 'number' || s.versiune > VERSIUNE_SALVARE) return null;
+  while (s.versiune < VERSIUNE_SALVARE) {
+    const pas = MIGRARI[s.versiune];
+    if (!pas) return null;
+    pas(s);
+    s.versiune += 1;
+  }
+  return s;
+}
 
 export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
   const s = { ...bal(ctx, 'start'), stilViata: bal(ctx, 'stilViata.start') };
@@ -43,6 +63,8 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     jurnal: [],
     concepte: [],
     contoare: { id: 0, decizii: 0, luniFaliment: 0 },
+    // Bugetul de timp al anului: câte acțiuni mari (activități, cursuri, căutat job) ai folosit.
+    timp: { an: 0, folosit: 0, activitati: {} },
     final: null,
   };
   state.pendinte = {
@@ -199,8 +221,7 @@ export function salveazaJoc(storage, state) {
 }
 
 export function incarcaJoc(storage) {
-  const s = storage.citeste(CHEI.salvare);
-  return s && s.versiune === VERSIUNE_SALVARE ? s : null;
+  return migreaza(storage.citeste(CHEI.salvare));
 }
 
 export function stergeJoc(storage) {
@@ -227,7 +248,7 @@ export function listaCheckpointuri(storage) {
 
 export function incarcaCheckpoint(storage, id) {
   const cp = storage.citeste(CHEI.checkpointuri, []).find((c) => c.id === id);
-  return cp ? cloneaza(cp.stare) : null;
+  return cp ? migreaza(cloneaza(cp.stare)) : null;
 }
 
 // Finalurile descoperite sunt globale (colecția). Întoarce true dacă finalul e nou.

@@ -25,6 +25,7 @@ import {
 import { bilantNou, inregistreazaAn, inregistreazaLuna, verificaIndependenta } from './bilant.js';
 import { esteAsigurat } from './events.js';
 import { areJobFullTime, cereMarire, contractCurent, sansaMarire } from './cariera.js';
+import { consumaTimp, faActivitate, motivTimp } from './activitati.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -682,7 +683,7 @@ export { sansaMarire };
 
 // Toate acțiunile din meniuri. Fiecare întoarce { ok, mesaj }: mesajul e mereu un text de arătat
 // jucătorului (confirmarea sau motivul refuzului), ca nicio apăsare să nu rămână fără răspuns.
-export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob'];
+export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -802,11 +803,21 @@ function executaActiune(state, ctx, tip, param) {
       // Deschide imediat CV-ul; jocul continuă cu oprirea întoarsă aici.
       if (state.an) return { ok: false, mesaj: 'Poți căuta alt job între ani.' };
       if (areFlag(state, 'cautare_job')) return { ok: false, mesaj: 'Ai căutat de curând. Mai așteaptă puțin.' };
+      const costTimp = bal(ctx, 'timp.costCautareJob');
+      const faraTimp = motivTimp(state, ctx, costTimp);
+      if (faraTimp) return { ok: false, mesaj: faraTimp };
+      consumaTimp(state, costTimp);
       seteazaFlag(state, 'cautare_job:12');
       const ev = ctx.evenimente.get(bal(ctx, 'cariera.evenimentCV'));
       state.pendinte = creeazaOprireEveniment(ev, state, ctx);
       persista(state, ctx);
       return { ok: true, mesaj: 'Hai să-ți facem CV-ul.', oprire: oprireCurenta(state, ctx) };
+    }
+    case 'activitate': {
+      const r = faActivitate(state, ctx, param.activitate);
+      if (!r.ok) return r;
+      rez = r;
+      break;
     }
     default:
       return { ok: false, mesaj: `Acțiune necunoscută: ${tip}` };

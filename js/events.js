@@ -371,7 +371,8 @@ export function textRezultat({ decizie, jurnal }) {
   return decizie?.eticheta ? `Ai ales: ${decizie.eticheta}.` : null;
 }
 
-function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
+// Aplică efectele unei alegeri (sau ale unei activități din meniu, cu idDecizie = null).
+export function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   const val = (v) => rezolvaValoare(v, vars, ctx);
   const rezultat = { lectie: null, concepteNoi: [], jurnal: null, neplatit: 0 };
 

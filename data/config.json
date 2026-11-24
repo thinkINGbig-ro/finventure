@@ -238,5 +238,18 @@
       "comision": { "valoare": 0, "deVerificat": true, "sursa": "" }
     },
     "probabilitateCrashAnual": { "valoare": 0.06, "deVerificat": true, "sursa": "" }
+  },
+
+  "activitati": {
+    "_info": "Prețurile activităților din meniul „Activități”, la prețurile de start (se ajustează cu inflația).",
+    "abonamentSala3Luni": { "valoare": 450, "deVerificat": true, "sursa": "", "nota": "abonament la sală pe 3 luni" },
+    "iesirePrieteni": { "valoare": 150, "deVerificat": true, "sursa": "", "nota": "o seară în oraș" },
+    "controlMedical": { "valoare": 250, "deVerificat": true, "sursa": "", "nota": "analize și consult la privat; la stat, cu asigurare, e gratuit dar cu programare" },
+    "cityBreak": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "un weekend într-un oraș din țară, de persoană" },
+    "vacantaMare": { "valoare": 3500, "deVerificat": true, "sursa": "", "nota": "o săptămână la mare, de persoană" },
+    "vacantaStrainatate": { "valoare": 7000, "deVerificat": true, "sursa": "", "nota": "o săptămână în străinătate, de persoană, cu zborul" },
+    "hobby": { "valoare": 600, "deVerificat": true, "sursa": "", "nota": "echipament de început (chitară, set de desen, aparat foto la mâna a doua)" },
+    "evenimentNetworking": { "valoare": 100, "deVerificat": true, "sursa": "", "nota": "bilet la o conferință sau un meetup" },
+    "premiuHackathon": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "premiul pentru locul întâi, împărțit în echipă" }
   }
 }

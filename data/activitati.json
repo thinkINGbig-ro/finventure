@@ -1,0 +1,199 @@
+{
+  "_info": "Meniul „Activități”: lucruri pe care jucătorul le face din proprie inițiativă. Fiecare consumă din bugetul de timp al anului („timp”, implicit 1). Câmpurile de efect sunt aceleași ca la alegerile din evenimente (efecte, flaguri, concepte, lectie, jurnal, rezultate). „conditii” decide dacă butonul e activ (motivul se afișează). Categorii: sanatate, social, timpLiber, dezvoltare.",
+  "activitati": [
+    {
+      "id": "alergare",
+      "titlu": "Alergi în parc",
+      "emoji": "🏃",
+      "categorie": "sanatate",
+      "descriere": "Gratis și bun pentru cap. Te ține în formă dacă o faci des.",
+      "efecte": { "energie": 6, "fericire": 2 },
+      "jurnal": "Ai început să alergi în parc."
+    },
+    {
+      "id": "sala",
+      "titlu": "Abonament la sală pe 3 luni",
+      "emoji": "🏋️",
+      "categorie": "sanatate",
+      "descriere": "Te costă {cost} lei, dar ai mai multă energie.",
+      "variabile": { "cost": "pret:activitati.abonamentSala3Luni" },
+      "conditii": { "baniMin": "{cost}", "motiv": "Nu ai {cost} lei disponibili." },
+      "efecte": { "numerar": "-{cost}", "energie": 10, "fericire": 4 },
+      "lectie": "Un abonament plătit și nefolosit e doar o cheltuială. Verifică-ți abonamentele o dată pe an.",
+      "concepte": ["abonamente"],
+      "jurnal": "Ți-ai luat abonament la sală."
+    },
+    {
+      "id": "control-medical",
+      "titlu": "Îți faci un control medical",
+      "emoji": "🩺",
+      "categorie": "sanatate",
+      "descriere": "Analize și un consult la privat: {cost} lei. Prevenția e mai ieftină decât tratamentul.",
+      "variabile": { "cost": "pret:activitati.controlMedical" },
+      "conditii": { "baniMin": "{cost}", "motiv": "Nu ai {cost} lei disponibili." },
+      "efecte": { "numerar": "-{cost}", "energie": 5, "fericire": 1 },
+      "lectie": "Cu asigurarea de sănătate (CASS), consultul la medicul de familie e gratuit. La privat plătești viteza.",
+      "concepte": ["asigurare-sanatate"],
+      "jurnal": "Ți-ai făcut un control medical. Totul e în regulă."
+    },
+    {
+      "id": "odihna",
+      "titlu": "Îți iei o zi doar pentru tine",
+      "emoji": "😴",
+      "categorie": "sanatate",
+      "descriere": "Fără telefon, fără obligații. Odihna e și ea o investiție.",
+      "efecte": { "energie": 12, "fericire": 3 },
+      "jurnal": "Ți-ai luat o zi liberă doar pentru tine."
+    },
+    {
+      "id": "iesire-prieteni",
+      "titlu": "Ieși cu prietenii",
+      "emoji": "🍕",
+      "categorie": "social",
+      "descriere": "O seară în oraș, cam {cost} lei.",
+      "variabile": { "cost": "pret:activitati.iesirePrieteni" },
+      "conditii": { "baniMin": "{cost}", "motiv": "Nu ai {cost} lei disponibili." },
+      "efecte": { "numerar": "-{cost}", "fericire": 6, "retea": 3 },
+      "jurnal": "Ai ieșit în oraș cu prietenii."
+    },
+    {
+      "id": "vizita-parinti",
+      "titlu": "Mergi în vizită la familie",
+      "emoji": "🏡",
+      "categorie": "social",
+      "descriere": "Masă gătită, povești și, uneori, un sfat bun.",
+      "efecte": { "fericire": 4, "retea": 4 },
+      "jurnal": "Ai petrecut un weekend cu familia."
+    },
+    {
+      "id": "voluntariat",
+      "titlu": "Faci voluntariat",
+      "emoji": "🤝",
+      "categorie": "social",
+      "descriere": "Nu te plătește nimeni, dar cunoști oameni și ai ce pune în CV.",
+      "efecte": { "fericire": 3, "retea": 3, "reputatie": 3 },
+      "flaguri": ["cv_voluntariat"],
+      "lectie": "Voluntariatul contează la angajare: arată că știi să lucrezi în echipă și să duci ceva la capăt.",
+      "concepte": ["cv"],
+      "jurnal": "Ai făcut voluntariat la un ONG din oraș."
+    },
+    {
+      "id": "networking",
+      "titlu": "Mergi la un eveniment din domeniul tău",
+      "emoji": "🎤",
+      "categorie": "social",
+      "descriere": "Un meetup sau o conferință, bilet de {cost} lei. Multe joburi bune nu ajung niciodată pe site-uri.",
+      "variabile": { "cost": "pret:activitati.evenimentNetworking" },
+      "conditii": { "job": ["orice"], "baniMin": "{cost}" },
+      "efecte": { "numerar": "-{cost}", "retea": 5, "reputatie": 3, "energie": -3 },
+      "jurnal": "Ai fost la un eveniment din domeniul tău și ai cunoscut oameni noi."
+    },
+    {
+      "id": "city-break",
+      "titlu": "City break de un weekend",
+      "emoji": "🏙️",
+      "categorie": "timpLiber",
+      "descriere": "Două zile într-un oraș din țară, cam {cost} lei.",
+      "variabile": { "cost": "pret:activitati.cityBreak" },
+      "conditii": { "baniMin": "{cost}", "motiv": "Nu ai {cost} lei disponibili." },
+      "efecte": { "numerar": "-{cost}", "fericire": 8, "energie": 5 },
+      "etichete": ["dorinte"],
+      "jurnal": "Ai fost într-un city break de un weekend."
+    },
+    {
+      "id": "vacanta-mare",
+      "titlu": "O săptămână la mare",
+      "emoji": "🏖️",
+      "categorie": "timpLiber",
+      "descriere": "Cazare, mâncare, drum: cam {cost} lei.",
+      "variabile": { "cost": "pret:activitati.vacantaMare" },
+      "conditii": { "baniMin": "{cost}", "motiv": "Nu ai {cost} lei disponibili." },
+      "maxPeAn": 1,
+      "efecte": { "numerar": "-{cost}", "fericire": 12, "energie": 10 },
+      "lectie": "O vacanță plătită din economii pentru ea te bucură de două ori: și acolo, și când nu vine extrasul de card.",
+      "concepte": ["buget"],
+      "etichete": ["dorinte"],
+      "jurnal": "Ai stat o săptămână la mare."
+    },
+    {
+      "id": "vacanta-strainatate",
+      "titlu": "Vacanță în străinătate",
+      "emoji": "✈️",
+      "categorie": "timpLiber",
+      "descriere": "O săptămână departe, cu zbor inclus: cam {cost} lei.",
+      "variabile": { "cost": "pret:activitati.vacantaStrainatate" },
+      "conditii": { "varstaMin": 19, "baniMin": "{cost}" },
+      "maxPeAn": 1,
+      "efecte": { "numerar": "-{cost}", "fericire": 16, "energie": 10 },
+      "etichete": ["dorinte"],
+      "jurnal": "Ai fost într-o vacanță în străinătate."
+    },
+    {
+      "id": "hobby",
+      "titlu": "Te apuci de un hobby",
+      "emoji": "🎸",
+      "categorie": "timpLiber",
+      "descriere": "Chitară, desen, fotografie. Echipamentul de început costă cam {cost} lei.",
+      "variabile": { "cost": "pret:activitati.hobby" },
+      "conditii": { "lipsaFlag": ["are_hobby"], "baniMin": "{cost}" },
+      "efecte": { "numerar": "-{cost}", "fericire": 6, "skill": 1 },
+      "flaguri": ["are_hobby"],
+      "jurnal": "Te-ai apucat de un hobby nou."
+    },
+    {
+      "id": "exersezi-hobby",
+      "titlu": "Exersezi la hobby-ul tău",
+      "emoji": "🎨",
+      "categorie": "timpLiber",
+      "descriere": "Echipamentul îl ai deja. Acum e doar timp.",
+      "conditii": { "flag": ["are_hobby"], "motiv": "Întâi te apuci de un hobby." },
+      "efecte": { "fericire": 5, "energie": 2 },
+      "jurnal": "Ai petrecut ore bune exersând la hobby-ul tău."
+    },
+    {
+      "id": "citesti-bani",
+      "titlu": "Citești despre bani",
+      "emoji": "📚",
+      "categorie": "dezvoltare",
+      "descriere": "O carte de la bibliotecă despre buget și investiții. Gratis.",
+      "efecte": { "skill": 1, "viitor": 1 },
+      "lectie": "Banii puși deoparte devreme cresc cel mai mult: dobânda se adună la dobândă.",
+      "concepte": ["dobanda-compusa"],
+      "jurnal": "Ai citit o carte despre bani."
+    },
+    {
+      "id": "proiect-personal",
+      "titlu": "Construiești un proiect personal",
+      "emoji": "🛠️",
+      "categorie": "dezvoltare",
+      "descriere": "Un site, o aplicație, o colecție de lucrări. Durează (2 acțiuni) și obosește, dar arată ce știi să faci.",
+      "timp": 2,
+      "efecte": { "skill": 3, "energie": -6, "fericire": 2 },
+      "flaguri": ["cv_proiecte"],
+      "lectie": "Un proiect pe care îl poți arăta convinge mai mult decât o listă de cursuri.",
+      "concepte": ["cv"],
+      "jurnal": "Ai terminat un proiect personal pe care îl poți arăta la interviu."
+    },
+    {
+      "id": "hackathon",
+      "titlu": "Participi la un hackathon",
+      "emoji": "💻",
+      "categorie": "dezvoltare",
+      "descriere": "Un weekend de muncă în echipă, cu premii. Nu știi dinainte cum iese.",
+      "conditii": { "varstaMax": 35, "motiv": "Hackathoanele de aici sunt pentru tineri." },
+      "rezultate": [
+        {
+          "pondere": 1,
+          "efecte": { "numerar": "{premiu}", "reputatie": 5, "skill": 2, "energie": -8, "fericire": 6 },
+          "jurnal": "Echipa ta a câștigat hackathonul! Partea ta din premiu: {premiu} lei."
+        },
+        {
+          "pondere": 3,
+          "efecte": { "skill": 2, "retea": 3, "energie": -8 },
+          "jurnal": "N-ați câștigat hackathonul, dar ai învățat mult și ai cunoscut oameni buni."
+        }
+      ],
+      "variabile": { "premiu": "pret:activitati.premiuHackathon*0.25" }
+    }
+  ]
+}

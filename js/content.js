@@ -14,6 +14,7 @@ const FISIERE = {
   concepte: 'data/concepts.json',
   indexEvenimente: 'data/events/index.json',
   finaluri: 'data/endings.json',
+  activitati: 'data/activitati.json',
 };
 
 // citeste(cale) -> Promise<string>; cale relativă la rădăcina proiectului
@@ -42,6 +43,7 @@ export async function incarcaContinut(citeste) {
   const concepteJson = (await citesteJson(FISIERE.concepte)) ?? { concepte: [] };
   const index = (await citesteJson(FISIERE.indexEvenimente)) ?? { fisiere: [] };
   const finaluriJson = (await citesteJson(FISIERE.finaluri)) ?? { finaluri: [] };
+  const activitatiJson = (await citesteJson(FISIERE.activitati)) ?? { activitati: [] };
 
   const brute = [];
   for (const nume of index.fisiere ?? []) {
@@ -55,11 +57,11 @@ export async function incarcaContinut(citeste) {
     json.evenimente.forEach((ev, i) => brute.push({ ev, fisier, pozitie: i }));
   }
 
-  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson }, erori, avertismente);
+  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson }, erori, avertismente);
   return { ...rezultat, erori, avertismente };
 }
 
-export function construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] } }, erori = [], avertismente = []) {
+export function construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] }, activitatiJson = { activitati: [] } }, erori = [], avertismente = []) {
   valideazaConfig(config, FISIERE.config, erori);
 
   const joburi = new Map();
@@ -117,7 +119,21 @@ export function construiesteContinut({ config, balans, joburiJson, concepteJson,
     finaluri.set(f.id, f);
   }
 
-  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri } };
+  const activitati = new Map();
+  for (const a of activitatiJson.activitati ?? []) {
+    const id = typeof a?.id === 'string' ? a.id : '?';
+    const eroriA = [];
+    const err = (camp, mesaj) => eroriA.push({ fisier: FISIERE.activitati, id, camp, mesaj });
+    const warn = (camp, mesaj) => avertismente.push({ fisier: FISIERE.activitati, id, camp, mesaj });
+    if (activitati.has(id)) err('id', 'id duplicat');
+    const cvA = { ...ctxValidare, referinte: [] };
+    valideazaActivitate(a, err, warn, cvA, FISIERE.activitati);
+    for (const ref of cvA.referinte) if (!evenimente.has(ref.valoare)) err(ref.unde.camp, `evenimentul „${ref.valoare}” nu există`);
+    if (eroriA.length) erori.push(...eroriA);
+    else activitati.set(id, a);
+  }
+
+  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri, activitati } };
 }
 
 export function formateazaEroare(e) {
@@ -187,11 +203,22 @@ function valideazaEveniment(ev, err, warn, cv, fisier) {
     if (ev[c] !== undefined && typeof ev[c] !== 'boolean') err(c, 'trebuie să fie true sau false');
   }
 
-  const vars = new Set(Object.keys(ev.variabile ?? {}));
+  const vars = valideazaVariabile(ev.variabile, err, cv);
   if (ev.oferte !== undefined && typeof ev.oferte !== 'boolean') err('oferte', 'trebuie să fie true sau false');
   // Cu "oferte": true, motorul generează variabilele {oferta1..3} (text) și {brut1..3} (lei).
   if (ev.oferte) for (let i = 1; i <= 3; i++) vars.add(`oferta${i}`).add(`brut${i}`);
-  for (const [nume, def] of Object.entries(ev.variabile ?? {})) {
+
+  verificaText(ev.text, 'text', err, vars);
+  verificaText(ev.titlu, 'titlu', err, vars);
+  valideazaConditii(ev.conditii, 'conditii', err, cv, vars);
+
+  valideazaListaAlegeri(ev.alegeri, 'alegeri', { err, warn, cv, vars, fisier, idEv: ev.id, permiteGrup: true });
+}
+
+// „variabile” (la evenimente și activități): număr, „pret:…”, „stare:…”, „config:…”, „balans:…”.
+function valideazaVariabile(variabile, err, cv) {
+  const vars = new Set(Object.keys(variabile ?? {}));
+  for (const [nume, def] of Object.entries(variabile ?? {})) {
     const camp = `variabile.${nume}`;
     if (typeof def === 'number') continue;
     if (typeof def !== 'string') { err(camp, 'trebuie să fie număr sau text („config:…”, „stare:…”)'); continue; }
@@ -203,12 +230,35 @@ function valideazaEveniment(ev, err, warn, cv, fisier) {
       if (!m || !SURSE_STARE.includes(m[1])) err(camp, `„${def}” nu e validă; surse: ${SURSE_STARE.join(', ')}`);
     } else verificaReferinta(def, camp, err, cv, vars);
   }
+  return vars;
+}
 
-  verificaText(ev.text, 'text', err, vars);
-  verificaText(ev.titlu, 'titlu', err, vars);
-  valideazaConditii(ev.conditii, 'conditii', err, cv, vars);
+// ---------- Activități (meniul „Activități”) ----------
 
-  valideazaListaAlegeri(ev.alegeri, 'alegeri', { err, warn, cv, vars, fisier, idEv: ev.id, permiteGrup: true });
+export const CATEGORII_ACTIVITATI = ['sanatate', 'social', 'timpLiber', 'dezvoltare'];
+const CAMPURI_ACTIVITATE = ['id', 'titlu', 'emoji', 'descriere', 'categorie', 'timp', 'maxPeAn', 'variabile', 'conditii', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
+
+function valideazaActivitate(a, err, warn, cv, fisier) {
+  if (!a || typeof a !== 'object') return err('', 'activitatea trebuie să fie un obiect');
+  campuriNecunoscute(a, CAMPURI_ACTIVITATE, '', err);
+  if (typeof a.id !== 'string' || !RE_ID.test(a.id)) err('id', 'id-ul: litere mici, cifre și cratime');
+  for (const c of ['titlu', 'descriere', 'emoji']) if (typeof a[c] !== 'string' || !a[c].trim()) err(c, 'trebuie să fie text');
+  if (!CATEGORII_ACTIVITATI.includes(a.categorie)) err('categorie', `una dintre: ${CATEGORII_ACTIVITATI.join(', ')}`);
+  for (const c of ['timp', 'maxPeAn']) if (a[c] !== undefined && !(Number.isInteger(a[c]) && a[c] >= (c === 'timp' ? 0 : 1))) err(c, 'trebuie să fie un număr întreg');
+  const vars = valideazaVariabile(a.variabile, err, cv);
+  verificaText(a.titlu, 'titlu', err, vars);
+  verificaText(a.descriere, 'descriere', err, vars);
+  valideazaConditii(a.conditii, 'conditii', err, cv, vars);
+  // Pe card: doar efecte directe (fără oferte de job, credite sau programarea unui final).
+  for (const c of ['acceptaOferta', 'negociazaOferta', 'retragere']) if (a[c] !== undefined) err(c, 'nu se poate folosi la o activitate');
+  valideazaRezultat(a, '', err, warn, cv, vars, fisier, a.id);
+  if (a.rezultate !== undefined) {
+    if (!Array.isArray(a.rezultate) || a.rezultate.length < 2) return err('rezultate', 'trebuie să fie o listă cu cel puțin 2 rezultate');
+    a.rezultate.forEach((r, j) => {
+      campuriNecunoscute(r, CAMPURI_REZULTAT, `rezultate[${j}]`, err);
+      valideazaRezultat(r, `rezultate[${j}]`, err, warn, cv, vars, fisier, a.id);
+    });
+  }
 }
 
 // Max. `alegeriMax` pe ecran, pe fiecare nivel. O alegere cu „subalegeri” e un grup (al doilea pas):

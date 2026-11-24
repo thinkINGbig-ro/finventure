@@ -63,6 +63,7 @@ button { cursor: pointer; }
 
 .antet { padding: 12px 16px 10px; background: var(--bg); border-bottom: 1px solid var(--linie); }
 .antet-sus { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.antet-butoane { display: flex; gap: 2px; }
 .wordmark { font-weight: 700; font-size: 18px; letter-spacing: .2px; }
 .fin { color: var(--accent); }
 .btn-icon {
@@ -254,6 +255,13 @@ button { cursor: pointer; }
 .mesaj-actiune { min-height: 22px; margin: 8px 0 0; font-size: 14px; }
 .mesaj-actiune.eroare { color: var(--loss); }
 .mesaj-actiune.ok { color: var(--gain); }
+.mesaj-lectie { display: block; color: var(--text-2); font-size: 13px; margin-top: 2px; }
+.timp-an { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-weight: 600; margin: 8px 0 2px; }
+.timp-puncte { display: flex; gap: 4px; }
+.punct { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--main); }
+.punct.plin { background: var(--main); }
+.motiv-indisponibil { margin-top: 4px; }
+.btn[aria-disabled="true"] { opacity: .55; }
 .lectie-rezultat { background: var(--bg-3); border-left: 4px solid var(--main); border-radius: var(--raza-mica); padding: 10px 12px; font-size: 15px; }
 
 .concept-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }

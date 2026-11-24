@@ -8,7 +8,8 @@ import { baniDisponibili, contCurent, fluturas, fondUrgenta, pret } from './fina
 import { hashSeed } from './rng.js';
 import { areFlag, avereNeta, cheltuieliLunare, multiplicatorStil } from './state.js';
 import { areJobFullTime, contractCurent } from './cariera.js';
-import { cfg, inLei, varstaLa } from './util.js';
+import { bal, cfg, inLei, varstaLa } from './util.js';
+import { timpRamas } from './activitati.js';
 import { rezumatViata } from './bilant.js';
 import { alegeFinal } from './finaluri.js';
 
@@ -100,6 +101,16 @@ function asiguraCont(state, ctx) {
   if (cont && state.numerar > 0) actiune(state, ctx, 'depune', { id: cont.id, suma: lei(state.numerar) });
 }
 
+// Activitățile din meniu, în ordinea preferată a profilului, cât mai e timp în an.
+// Păstrează o acțiune de timp pentru căutatul unui job, dacă profilul o să caute.
+function faActivitati(state, ctx, ids) {
+  const rezerva = !areJobFullTime(state, ctx) && !state.situatie.studii && !areFlag(state, 'cautare_job') ? bal(ctx, 'timp.costCautareJob') : 0;
+  for (const id of ids) {
+    if (timpRamas(state, ctx) - (ctx.activitati.get(id)?.timp ?? 1) < rezerva) break;
+    actiune(state, ctx, 'activitate', { activitate: id });
+  }
+}
+
 function cautaJobDacaTrebuie(state, ctx) {
   if (areJobFullTime(state, ctx) || state.situatie.studii || areFlag(state, 'cautare_job')) return null;
   const r = actiune(state, ctx, 'cautaJob');
@@ -146,6 +157,12 @@ function meniuFrugal(state, ctx) {
   }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
   cereMarireAnual(state, ctx);
+  // Frugalul face doar ce e gratis: CV mai bun, odihnă, familie.
+  faActivitati(state, ctx, [
+    ...(!areFlag(state, 'cv_voluntariat') ? ['voluntariat'] : []),
+    ...(!areFlag(state, 'cv_proiecte') && !state.situatie.studii ? ['proiect-personal'] : []),
+    ...(state.stat.energie < 50 ? ['odihna'] : []), 'alergare', 'vizita-parinti', 'citesti-bani',
+  ]);
   return cautaJobDacaTrebuie(state, ctx);
 }
 
@@ -186,9 +203,18 @@ function meniuPrudent(state, ctx) {
       if (laConfortabil <= 0.8 * netLunar) actiune(state, ctx, 'stilViata', { nivel: 'confortabil' });
     }
     // ce mai rămâne peste două luni de cheltuieli se duce pe dorințe, până la 30% din venitul anual
-    const peDorinte = Math.min(Math.round(0.3 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
-    if (peDorinte > 50000) actiune(state, ctx, 'cumpara', { suma: lei(peDorinte), fericire: 3 });
+    // dorințele încep cu o vacanță (dacă bugetul de dorințe o acoperă), iar ce rămâne merge pe cumpărături
+    let buget = Math.min(Math.round(0.3 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
+    const costVacanta = pret(state, ctx, 'activitati.vacantaMare');
+    if (buget >= costVacanta && actiune(state, ctx, 'activitate', { activitate: 'vacanta-mare' }).ok) buget -= costVacanta;
+    if (buget > 50000) actiune(state, ctx, 'cumpara', { suma: lei(buget), fericire: 3 });
   }
+  faActivitati(state, ctx, [
+    ...(!areFlag(state, 'cv_voluntariat') ? ['voluntariat'] : []),
+    ...(!areFlag(state, 'cv_proiecte') && !state.situatie.studii ? ['proiect-personal'] : []),
+    ...(state.stat.energie < 50 ? ['odihna'] : []),
+    ...(areJobFullTime(state, ctx) ? ['networking', 'control-medical'] : []), 'alergare', 'iesire-prieteni', 'citesti-bani',
+  ]);
   // Bugetul: dacă cheltuielile trec de 85% din venitul net sau fondul scade sub 3 luni, coboară stilul.
   if (state.stilViata !== 'modest' && (fondUrgenta(state) < 3 * lunar || (netLunar && lunar > 0.85 * netLunar))) {
     actiune(state, ctx, 'stilViata', { nivel: state.stilViata === 'lux' ? 'confortabil' : 'modest' });
@@ -214,6 +240,8 @@ function meniuRiscant(state, ctx, rnd) {
     const peCard = Math.round(card.limita * 0.3);
     actiune(state, ctx, 'cumpara', { suma: lei(peCard), fericire: 3, peCard: true });
   }
+  // Riscantul își face timp de distracție, cât îl țin banii.
+  faActivitati(state, ctx, ['vacanta-strainatate', 'city-break', 'iesire-prieteni', 'iesire-prieteni']);
   return cautaJobDacaTrebuie(state, ctx);
 }
 
@@ -250,6 +278,11 @@ const ACTIUNI_ALEATOARE = [
   (state, ctx, rnd) => actiune(state, ctx, 'cumpara', { suma: lei(Math.round(baniDisponibili(state) * (0.1 + rnd() * 0.5))), fericire: 4 }),
   (state, ctx) => actiune(state, ctx, 'cereMarire'),
   (state, ctx) => actiune(state, ctx, 'cautaJob'),
+  // o activitate la întâmplare din meniu (de două ori mai probabil: e meniul cel mai des folosit)
+  ...Array(2).fill((state, ctx, rnd) => {
+    const ids = [...ctx.activitati.keys()];
+    return actiune(state, ctx, 'activitate', { activitate: ids[Math.floor(rnd() * ids.length)] });
+  }),
 ];
 
 function meniuAleator(state, ctx, rnd) {

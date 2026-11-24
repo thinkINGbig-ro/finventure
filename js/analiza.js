@@ -69,6 +69,18 @@ export function analizeazaContinut(ctx) {
     const contra = (co.flag ?? []).filter((f) => (co.lipsaFlag ?? []).includes(f));
     if (contra.length) probleme.push({ id: ev.id, mesaj: `cere și interzice același flag: ${contra.join(', ')}` });
   }
+  // Activitățile din meniu: setează și citesc flag-uri, deblochează concepte, pot programa urmări.
+  for (const act of ctx.activitati?.values() ?? []) {
+    const unde = `activitate ${act.id}`;
+    const c = new Set();
+    flaguriDinConditii(act.conditii, c);
+    c.forEach((f) => adauga(citite, f, `${unde} (condiții)`));
+    for (const p of [act, ...(act.rezultate ?? [])]) {
+      for (const f of p.flaguri ?? []) adauga(setate, numeFlag(f), unde);
+      for (const k of p.concepte ?? []) concepteFolosite.add(k);
+      for (const u of p.urmari ?? []) referite.add(u.eveniment);
+    }
+  }
   for (const f of Object.keys(ctx.balans?.cariera?.cv?.bonusFlaguri ?? {})) adauga(citite, f, 'motor (scorul CV-ului)');
   MOTOR.flaguriSetate.forEach((f) => adauga(setate, f, 'motor'));
   MOTOR.flaguriCitite.forEach((f) => adauga(citite, f, 'motor'));
@@ -92,6 +104,7 @@ export function analizeazaContinut(ctx) {
       concepte: toateConceptele.length,
       finaluri: ctx.finaluri?.size ?? 0,
       joburi: ctx.joburi.size,
+      activitati: ctx.activitati?.size ?? 0,
     },
   };
 }

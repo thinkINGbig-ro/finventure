@@ -400,8 +400,8 @@ Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
 | Lot | Ce conține | Stare |
 |---|---|---|
 | 0 | Bug-uri: plata restanțelor din Bancă, mesaj la fiecare acțiune din meniu, ecranul „Ce s-a întâmplat” după o decizie urmată de alt card | ✅ pe `main` |
-| 1 | Meniul „Activități”: acțiuni din proprie inițiativă, cu un buget anual de acțiuni mari (balans.json); migrarea salvărilor (`versiune` în stare) | în lucru |
-| 2 | Datoriile mele: lista unificată, rambursare parțială/anticipată, eșalonare, refinanțare/consolidare, avalanșă vs. bulgăre de zăpadă | |
+| 1 | Meniul „Activități” (`data/activitati.json`, `js/activitati.js`): 16 activități cu buget anual de timp (`balans.timp`); Enciclopedia mutată în antet (📖); salvări versiunea 2 cu migrare | ✅ |
+| 2 | Datoriile mele: lista unificată, rambursare parțială/anticipată, eșalonare, refinanțare/consolidare, avalanșă vs. bulgăre de zăpadă | în lucru |
 | 3 | Educație: studii la orice vârstă, master, doctorat, postliceală, cursuri, certificări, permis, credit de studii, bursă | |
 | 4a/4b | Investiții: meniu complet, DCA, portofoliu, rebalansare, grafic; imobiliare de închiriat | |
 | 5 | Joburi și muncă: joburi noi (inclusiv artist, cu venit variabil), ritm de muncă, ore suplimentare, al doilea job, demisie | |
@@ -409,6 +409,13 @@ Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
 | 7 | Cumpărături: catalog cu calitate, depreciere, revânzare, plata cash/card/rate/BNPL, animale de companie, tentații | |
 | 8 | Infracțiuni și consecințe (doar decizii și urmări, fără „cum se face”; niciodată rentabile): cazier, money mule, evaziune | |
 | 9 | Partener și familie, asigurări, graficul averii nete, moștenire, scenarii de start | |
+
+Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 500 de vieți pe profil):
+
+| După lotul | prudent | frugal | aleator | riscant |
+|---|---|---|---|---|
+| înainte (faza F) | 100 / 0 | 100 / 0 | ~55 / ~45 | ~24 / ~76 |
+| 1 | 100 / 0 | 100 / 0 | 54,2 / 45,8 | 24 / 76 |
 
 Reguli pentru extindere:
 - Fiecare lot: teste noi (`tests/loturi.js`), analiza conținutului fără erori, simularea cu cele 4 profiluri (`--n 200` intermediar, `--n 500` la final de lot; profilurile folosesc și opțiunile noi), UI verificat la 360 px, commit separat per lot / sub-lot.
