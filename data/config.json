@@ -337,6 +337,9 @@
     "costStudiuPiata": { "valoare": 1500, "deVerificat": true, "sursa": "", "nota": "un studiu de piață simplu (chestionare, analiza concurenței)" },
     "creditFirmaDae": { "valoare": 0.11, "deVerificat": true, "sursa": "", "nota": "credit de investiții pentru o firmă mică" },
     "creditFirmaLuni": { "valoare": 60, "deVerificat": true, "sursa": "" },
+    "impozitVanzareFirma": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "impozit pe câștigul din vânzarea firmei (prețul minus cât ai investit)" },
+    "amendaControlFiscal": { "valoare": 5000, "deVerificat": true, "sursa": "", "nota": "o amendă tipică pentru greșeli de acte; depinde mult de caz" },
+    "costAvocat": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "un proces simplu de recuperare a unei datorii" },
     "cafenea": {
       "investitie": { "valoare": 80000, "deVerificat": true, "sursa": "", "nota": "amenajare, espressor, mobilier, avize" },
       "costuriFixe": { "valoare": 6000, "deVerificat": true, "sursa": "", "nota": "chirie spațiu + utilități + contabil" },

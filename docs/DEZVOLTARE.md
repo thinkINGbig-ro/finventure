@@ -147,6 +147,8 @@ Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cer
 
 `data/afaceri.json`: `domenii` (texte + parametri de joc: `costVariabil`, `angajatiMinim`, `salariuAngajat`, `luniMaturitate`, `sezon` cu 12 factori de la septembrie, `experienta` = domeniile de job care contează) și `forme` (PFA / II / SRL). Banii fiecărui domeniu (`investitie`, `costuriFixe`, `venitPotential`) și taxele sunt în `config.json` → `afaceri`; pregătirea și calitatea în `balans.json` → `afaceri`. Joburile au `domeniu` (ex. `horeca`); după 24 de luni într-un job din domeniu se pune flag-ul `experienta_<domeniu>`. Afacerea e produsul `afacere`, cu contul ei: la PFA / II datoriile ei intră în datoriile tale, la SRL nu.
 
+Domeniile pot avea `incasareLuni` (clienții plătesc după 1–2 luni) și `stocLuni` (marfa se cumpără înainte): asta face diferența dintre profit și cash flow. Deciziile (preț, marketing, angajați, extindere) au parametrii în `balans.json` → `afaceri`. Evenimentele despre firmă (`data/events/afaceri.json`) folosesc efectul `"afacere": { "cont": "-{suma}" | ["{a}", "-{b}"], "reputatie": n, "pret": "mic" }`; motorul le programează cu probabilitățile din `balans.afaceri.riscuri`.
+
 ## Imobiliarele de închiriat
 
 Produsul `imobil` (apartamentul de închiriat) e separat de `proprietate` (locuința jucătorului), ca evenimentele despre casă să nu-l confunde cu investiția. Prețurile, chiriile, impozitele și costurile sunt în `config.json` → `imobiliare` (prețul de cumpărare: `locuinte.pretGarsoniera` / `pretApartament`); probabilitățile (chiriaș care pleacă, reparații, chiriaș rău-platnic) în `balans.json` → `imobiliare`. În evenimente, `"seteazaProdus": { "imobil": { "chirias": false } }` îl lasă fără chiriaș.

@@ -190,6 +190,11 @@ function afacereAtent(state, ctx, fondComplet, lunar) {
     const d = ctx.afaceri.domenii.get(af.domeniu);
     const ultimul = af.istoric.slice(-12);
     if (af.luniActiva > d.luniMaturitate + 6 && ultimul.reduce((s, x) => s + x.profit, 0) < 0) return actiune(state, ctx, 'inchideAfacere');
+    // un marketing modest de la început; oameni în plus doar dacă pierde clienți și e pe profit
+    if (af.marketing == null) actiune(state, ctx, 'seteazaAfacere', { marketing: Math.round(lei(pret(state, ctx, `afaceri.${d.id}.venitPotential`)) * 0.03) });
+    if (af.clientiPierduti > 0 && ultimul.reduce((s, x) => s + x.profit, 0) > 0 && (af.angajatiExtra ?? 0) < 2) {
+      actiune(state, ctx, 'seteazaAfacere', { angajatiExtra: (af.angajatiExtra ?? 0) + 1 });
+    }
     const rezerva = 6 * (pret(state, ctx, `afaceri.${d.id}.costuriFixe`));
     if (af.cont > rezerva && !af.datorii) actiune(state, ctx, 'retrageDinFirma', { suma: lei(af.cont - rezerva) });
     return null;
@@ -347,6 +352,7 @@ function meniuRiscant(state, ctx, rnd) {
   // „Îmi deschid ceva al meu”: o cafenea ca PFA, fără pregătire, de cum are banii; scoate tot ce intră.
   const af = afacereActiva(state);
   if (af) {
+    if (af.pret !== 'mic') actiune(state, ctx, 'seteazaAfacere', { pret: 'mic', marketing: 2000 }); // „volum, volum”
     if (af.cont > 0) actiune(state, ctx, 'retrageDinFirma', { suma: lei(af.cont) });
   } else actiune(state, ctx, 'pornesteAfacere', { domeniu: rnd() < 0.5 ? 'cafenea' : 'magazinOnline', forma: 'pfa' });
   // „Imobiliarele nu pierd niciodată”: un apartament cu credit, de îndată ce banca zice da.
@@ -419,6 +425,15 @@ const ACTIUNI_ALEATOARE = [
     const domeniu = ids[Math.floor(rnd() * ids.length)];
     if (rnd() < 0.4) return actiune(state, ctx, 'faStudiuPiata', { domeniu });
     return actiune(state, ctx, 'pornesteAfacere', { domeniu, forma: ['pfa', 'ii', 'srl'][Math.floor(rnd() * 3)], credit: rnd() < 0.4, investitor: rnd() < 0.3 });
+  },
+  (state, ctx, rnd) => {
+    if (!afacereActiva(state)) return null;
+    const x = rnd();
+    if (x < 0.3) return actiune(state, ctx, 'seteazaAfacere', { pret: ['mic', 'mediu', 'mare'][Math.floor(rnd() * 3)] });
+    if (x < 0.5) return actiune(state, ctx, 'seteazaAfacere', { marketing: Math.round(rnd() * 5000), angajatiExtra: Math.floor(rnd() * 3) });
+    if (x < 0.65) return actiune(state, ctx, 'extindeAfacerea');
+    if (x < 0.8) return actiune(state, ctx, 'vindeAfacerea');
+    return actiune(state, ctx, 'imprumutFirma', { suma: Math.round(5000 + rnd() * 50000) });
   },
   (state, ctx, rnd) => {
     const af = afacereActiva(state);

@@ -331,7 +331,7 @@ export function areUrmareScadenta(state) {
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -413,6 +413,16 @@ export function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   for (const k of ['skill', 'scorCredit', 'retea', 'reputatie']) if (e[k]) state.ascunse[k] = clamp(state.ascunse[k] + val(e[k]), 0, 100);
   if (e.viitor) state.viitorAjustare += val(e.viitor);
 
+  // Efecte asupra afacerii proprii: bani în / din contul firmei, reputația ei, prețul.
+  if (p.afacere) {
+    const firma = state.produse.find((x) => x.tip === 'afacere');
+    if (firma) {
+      // „cont” poate fi o sumă sau o listă de sume care se adună (ex. ["{suma}", "-{avocat}"]).
+      if (p.afacere.cont !== undefined) for (const v of [p.afacere.cont].flat()) firma.cont += inBani(val(v));
+      if (p.afacere.reputatie !== undefined) firma.reputatie = clamp((firma.reputatie ?? 30) + val(p.afacere.reputatie), 0, 100);
+      if (p.afacere.pret !== undefined) firma.pret = p.afacere.pret;
+    }
+  }
   for (const [sel, campuri] of Object.entries(p.seteazaProdus ?? {})) {
     for (const prod of gasesteProduse(state, sel)) Object.assign(prod, campuri);
   }

@@ -177,7 +177,8 @@ function construiesteAfaceri(json, config, erori) {
   const forme = new Map();
   for (const d of json.domenii ?? []) {
     const err = (camp, mesaj) => erori.push({ fisier, id: d?.id, camp, mesaj });
-    campuriNecunoscute(d, ['id', 'titlu', 'emoji', 'descriere', 'costVariabil', 'angajatiMinim', 'salariuAngajat', 'luniMaturitate', 'sezon', 'experienta'], '', err);
+    campuriNecunoscute(d, ['id', 'titlu', 'emoji', 'descriere', 'costVariabil', 'angajatiMinim', 'salariuAngajat', 'luniMaturitate', 'sezon', 'experienta', 'incasareLuni', 'stocLuni'], '', err);
+    for (const k of ['incasareLuni', 'stocLuni']) if (d[k] !== undefined && !(Number.isInteger(d[k]) && d[k] >= 0 && d[k] <= 3)) err(k, 'număr întreg între 0 și 3');
     for (const k of ['investitie', 'costuriFixe', 'venitPotential']) if (typeof dupaCale(config, `afaceri.${d.id}.${k}`) !== 'number') err(k, `lipsește config.afaceri.${d.id}.${k}`);
     if (typeof dupaCale(config, d.salariuAngajat ?? '') !== 'number') err('salariuAngajat', `„${d.salariuAngajat}” nu există în config.json`);
     if (!(d.costVariabil >= 0 && d.costVariabil < 1)) err('costVariabil', 'fracție între 0 și 1');
@@ -296,7 +297,7 @@ function valideazaConfig(nod, fisier, erori, cale = '') {
 const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'oferte', 'alegeri'];
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -476,6 +477,12 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
   }
   if (r.transferaInCont !== undefined && r.transferaInCont !== 'tot') num(r.transferaInCont, 'transferaInCont');
   if (r.retrageEconomii !== undefined) num(r.retrageEconomii, 'retrageEconomii');
+  if (r.afacere !== undefined) {
+    campuriNecunoscute(r.afacere, ['cont', 'reputatie', 'pret'], `${cale}.afacere`, err);
+    if (r.afacere.cont !== undefined) [r.afacere.cont].flat().forEach((v) => num(v, 'afacere.cont'));
+    if (r.afacere.reputatie !== undefined) num(r.afacere.reputatie, 'afacere.reputatie');
+    if (r.afacere.pret !== undefined && !['mic', 'mediu', 'mare'].includes(r.afacere.pret)) err(`${cale}.afacere.pret`, 'mic, mediu sau mare');
+  }
   if (r.job !== undefined && r.job !== null) {
     const job = cv.joburi.get(r.job?.id);
     if (!job) err(`${cale}.job.id`, `jobul „${r.job?.id}” nu există în jobs.json`);

@@ -5,7 +5,7 @@ import { actiune, sansaMarire } from '../engine.js';
 import { RITMURI, contractCurent, jobCurent, luniPanaLaPromovare } from '../cariera.js';
 import { cardDisponibil, contCurent, fluturas, fondUrgenta, plataMinimaCard, pret } from '../finance.js';
 import { descrieSecundare, simuleazaOreSuplimentare } from '../munca.js';
-import { afacereActiva, simuleazaPornire } from '../afacere.js';
+import { afacereActiva, simuleazaExtindere, simuleazaPornire, simuleazaVanzare as simuleazaVanzareFirma } from '../afacere.js';
 import { areFlag } from '../state.js';
 import { bal, cfg, inBani, varstaLa } from '../util.js';
 import { ani, h, lei, procent } from './dom.js';
@@ -627,7 +627,9 @@ function panouAfacere(o, reranda) {
         h('tr', {}, h('td', {}, 'Vânzări luna trecută'), h('td', {}, lei(ultima.venit))),
         h('tr', { class: 'minus' }, h('td', {}, 'Costuri (chirie, echipă, marfă)'), h('td', {}, `− ${lei(ultima.costuri)}`)),
         h('tr', { class: 'minus' }, h('td', {}, 'Taxe'), h('td', {}, `− ${lei(ultima.taxe)}`)),
-        h('tr', { class: 'total' }, h('td', {}, ultima.profit >= 0 ? 'Profit' : 'Pierdere'), h('td', {}, lei(Math.abs(ultima.profit)))))) : h('p', { class: 'mic' }, 'Primele rezultate apar după prima lună.'),
+        h('tr', { class: 'total' }, h('td', {}, ultima.profit >= 0 ? 'Profit' : 'Pierdere'), h('td', {}, lei(Math.abs(ultima.profit)))),
+        ultima.cash != null && ultima.cash !== ultima.profit ? h('tr', {}, h('td', {}, 'Bani intrați efectiv în cont (net)'), h('td', {}, `${ultima.cash < 0 ? '− ' : ''}${lei(Math.abs(ultima.cash))}`)) : null)) : h('p', { class: 'mic' }, 'Primele rezultate apar după prima lună.'),
+      af.clientiPierduti > 0 ? h('div', { class: 'mic restanta' }, `Ai pierdut cam ${lei(af.clientiPierduti)} din vânzări: echipa nu face față. Ia oameni în plus.`) : null,
       af.datorii ? h('div', { class: 'mic restanta' }, `⚠ Datorii neplătite la furnizori: ${lei(af.datorii)}`, textDatoriiFirma(af, ctx)) : null,
       af.credit ? h('div', { class: 'mic' }, `Creditul firmei: mai sunt ${lei(af.credit.rest)}, rata ${lei(af.credit.rata)}${af.garantiePersonala ? ' (garantat de tine)' : ''}.`) : null));
     if (af.istoric.length >= 3) {
@@ -637,6 +639,39 @@ function panouAfacere(o, reranda) {
         format: (v) => `${Math.round(v).toLocaleString('ro-RO')} lei`,
       }));
     }
+    // Deciziile
+    const pretCurent = af.pret ?? 'mediu';
+    const selEchipa = h('select', { 'aria-label': 'Angajați în plus' }, Array.from({ length: bal(ctx, 'afaceri.angajatiMax') + 1 }, (_, i) => h('option', { value: i, selected: (af.angajatiExtra ?? 0) === i || null }, i === 0 ? 'niciunul' : `${i} în plus`)));
+    const costAngajat = Math.round(pret(state, ctx, d.salariuAngajat) * (1 + cfg(ctx, 'afaceri.contributieAngajator')));
+    const ext = simuleazaExtindere(state, ctx);
+    const vz = simuleazaVanzareFirma(state, ctx);
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Deciziile tale'),
+      h('div', { class: 'mic' }, 'Prețurile:'),
+      h('div', { class: 'nivel-stil' }, ['mic', 'mediu', 'mare'].map((p) => h('button', {
+        type: 'button', class: 'btn btn-secundar', 'aria-pressed': String(pretCurent === p), onclick: () => executa('seteazaAfacere', { pret: p }),
+      }, { mic: 'Mici', mediu: 'Ca piața', mare: 'Mari' }[p], h('span', { class: 'mic' }, { mic: 'mai mulți clienți', mediu: 'echilibrat', mare: 'marjă mare' }[p])))),
+      produs('📣 Marketing lunar', lei(af.marketing ?? 0), 'Aduce clienți noi, dar fiecare leu în plus aduce tot mai puțin.',
+        campSuma('Bugetul de marketing pe lună', [['Setează', (s) => executa('seteazaAfacere', { marketing: s || 0 })]], 'Lei pe lună')),
+      produs('👥 Echipa', (n => (n === 1 ? '1 angajat' : `${n} angajați`))(d.angajatiMinim + (af.angajatiExtra ?? 0)), `Fiecare angajat în plus costă cam ${lei(costAngajat)} pe lună (cu contribuția angajatorului) și poate servi mai mulți clienți.`,
+        h('div', { class: 'rand-butoane' }, selEchipa, buton('Setează', () => executa('seteazaAfacere', { angajatiExtra: Number(selEchipa.value) })))),
+      produs('🏗️ Extinde afacerea', lei(ext.cost ?? 0), ext.ok ? 'Mai mult spațiu, mai multe vânzări posibile, dar și costuri fixe mai mari.' : ext.mesaj,
+        h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-secundar', 'aria-disabled': ext.ok ? null : 'true', onclick: () => (ext.ok ? executa('extindeAfacerea') : arataMesaj(ext.mesaj, false)) }, 'Extind'))),
+      produs('🏦 Credit pentru firmă', '', af.forma === 'srl' ? 'Banca cere garanția ta personală.' : 'La PFA / II, creditul e pe numele tău.',
+        campSuma('Suma creditului', [['Cer creditul', (s) => executa('imprumutFirma', { suma: s })]])),
+      produs('🤝 Vinde afacerea', vz.ok ? lei(vz.net) : '', vz.ok ? `Un cumpărător ar da cam ${lei(vz.pretFirma)} (profitul pe un an: ${lei(Math.round(vz.profitAn))}). Tu primești ${lei(vz.net)} după datorii și impozit.` : vz.mesaj,
+        h('div', { class: 'rand-butoane' }, h('button', {
+          type: 'button', class: 'btn btn-secundar', 'aria-disabled': vz.ok ? null : 'true',
+          onclick: async () => {
+            if (!vz.ok) return arataMesaj(vz.mesaj, false);
+            const da = await confirma(`Vinzi afacerea? Primești ${lei(vz.net)}.`, { da: 'Vând' });
+            const r = da ? actiune(state, ctx, 'vindeAfacerea') : null;
+            o.laSchimbare();
+            deschidePanou('afacere', o);
+            if (r) arataMesaj(r.mesaj, r.ok, r.lectie);
+            return null;
+          },
+        }, 'Vând'))));
+
     sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Banii între tine și firmă'),
       h('p', { class: 'mic' }, af.forma === 'srl'
         ? 'Banii firmei nu sunt ai tăi: îi scoți ca dividende, cu 10% impozit și CASS.'
@@ -683,7 +718,7 @@ function panouAfacere(o, reranda) {
         s.grant ? h('tr', {}, h('td', {}, 'Din grant'), h('td', {}, lei(s.grant))) : null,
         s.investitor ? h('tr', {}, h('td', {}, `De la investitor (ia ${Math.round((1 - s.cota) * 100)}% din firmă)`), h('td', {}, lei(s.investitor))) : null,
         s.credit ? h('tr', {}, h('td', {}, `Credit (rata ${lei(s.rataCredit)})`), h('td', {}, lei(s.credit))) : null,
-        h('tr', {}, h('td', {}, 'Rezervă: 3 luni de costuri fixe'), h('td', {}, lei(s.capitalLucru))),
+        h('tr', {}, h('td', {}, `Rezervă: ${s.luniRezerva} luni de costuri fixe${s.luniRezerva > 3 ? ' (clienții plătesc târziu / marfa se cumpără înainte)' : ''}`), h('td', {}, lei(s.capitalLucru))),
         h('tr', { class: 'total' }, h('td', {}, 'Din banii tăi'), h('td', {}, lei(s.dinEconomii))))),
       h('p', { class: 'mic' }, `Pregătirea ta pentru domeniul ăsta: ${p.total}/100 (plan ${p.parti.plan}, studiu de piață ${p.parti.studiuPiata}, curs ${p.parti.curs}, experiență ${p.parti.experienta}, pregătire generală ${p.parti.skill}).`),
       h('p', { class: 'mic' }, `Când clienții te cunosc (după ~${NUME_LUNI(d.luniMaturitate)}), o lună medie ar arăta cam așa: vânzări ${lei(s.estimare.venit)}, costuri ${lei(s.estimare.costuri)}, ${s.estimare.profit >= 0 ? `profit ${lei(s.estimare.profit)}` : `pierdere ${lei(-s.estimare.profit)}`} înainte de taxe.`),

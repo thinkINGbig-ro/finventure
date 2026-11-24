@@ -8,7 +8,7 @@ import { actualizeazaImobileAnual, proceseazaImobile, simuleazaCumparare, simule
 import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
 import { indeplinesteCerinte, luniPanaLaPromovare, schimbaJob } from '../js/cariera.js';
 import { proceseazaSecundar, simuleazaOreSuplimentare, venitArtistLuna } from '../js/munca.js';
-import { pregatire, proceseazaAfacere, simuleazaPornire } from '../js/afacere.js';
+import { pregatire, proceseazaAfacere, simuleazaPornire, simuleazaVanzare as simuleazaVanzareFirma } from '../js/afacere.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
@@ -25,6 +25,101 @@ export function testeLoturi(ctxBaza, a) {
     ...lot4b(ctxBaza, a),
     ...lot5(ctxBaza, a),
     ...lot6a(ctxBaza, a),
+    ...lot6b(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 6b: funcționarea afacerii ----------
+
+function lot6b(ctxBaza, a) {
+  const { ok, egal } = a;
+  // O firmă pornită (SRL, pregătire dată), cu lunile rulate direct prin proceseazaAfacere.
+  const firma = (seed, domeniu, pregatireTotal = 70, setari = {}) => {
+    const { ctx, state } = a.jocFaraVenit(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.luna = 10 * 12;
+    state.numerar = inBani(400_000);
+    state.recurente = [];
+    state.an = null; // între ani, ca într-un joc real (evenimentele forțate se pot alege)
+    const r = actiune(state, ctx, 'pornesteAfacere', { domeniu, forma: 'srl' });
+    if (!r.ok) throw new Error(r.mesaj);
+    const af = state.produse.find((p) => p.tip === 'afacere');
+    af.pregatire = pregatireTotal;
+    if (Object.keys(setari).length) actiune(state, ctx, 'seteazaAfacere', setari);
+    const luni = (n) => { for (let i = 0; i < n; i++) { proceseazaAfacere(state, ctx); state.luna += 1; } };
+    return { ctx, state, af, luni };
+  };
+  const suma = (xs, k) => xs.reduce((s, x) => s + x[k], 0);
+  return {
+    'lotul 6b: prețul mic aduce mai multe vânzări; prețul mare, mai puțină marfă pe aceeași lună'() {
+      const mic = firma('pret', 'cafenea', 70, { pret: 'mic' });
+      const mare = firma('pret', 'cafenea', 70, { pret: 'mare' });
+      mic.luni(18);
+      mare.luni(18);
+      ok(suma(mic.af.istoric, 'venit') > suma(mare.af.istoric, 'venit'), 'vânzări mai mari cu preț mic');
+      ok(suma(mic.af.istoric, 'costuri') > suma(mare.af.istoric, 'costuri'), 'dar și mai multă marfă (costuri)');
+    },
+
+    'lotul 6b: fără angajați în plus pierzi clienții peste capacitate; marketingul are randament descrescător'() {
+      const plin = firma('capacitate', 'salon', 100, { marketing: 3000, pret: 'mic' });
+      plin.luni(14);
+      ok(plin.state.produse.includes(plin.af), 'firma e încă activă');
+      ok(plin.af.clientiPierduti > 0, 'cererea depășește capacitatea echipei');
+      const pierduti = plin.af.clientiPierduti;
+      actiune(plin.state, plin.ctx, 'seteazaAfacere', { angajatiExtra: 3 });
+      plin.luni(1);
+      ok(plin.af.clientiPierduti < pierduti, `cu 3 angajați în plus pierzi mai puțini clienți (${pierduti / 100} → ${plin.af.clientiPierduti / 100} lei)`);
+      const b = plin.ctx.balans.afaceri.marketing;
+      const bonus = (m) => b.bonusMax * (1 - Math.exp(-m / (b.scalaMarketing * 1)));
+      ok(bonus(0.1) - bonus(0) > bonus(0.2) - bonus(0.1), 'primii lei de marketing aduc mai mult decât următorii');
+    },
+
+    'lotul 6b: la IT clienții plătesc după 2 luni: profit pe hârtie, cont gol la început'() {
+      const { af, luni } = firma('cash', 'it', 80);
+      luni(2);
+      const profit = suma(af.istoric, 'profit');
+      const cash = suma(af.istoric, 'cash');
+      ok(cash < profit, `primele 2 luni: profit ${profit / 100} lei, bani intrați net ${cash / 100} lei`);
+      luni(10);
+      // Pe tot anul: banii intrați = profitul minus facturile ultimelor 2 luni, încă neîncasate.
+      const neincasat = af.istoric.slice(-2).reduce((s, x) => s + x.venit, 0);
+      egal(suma(af.istoric, 'cash'), suma(af.istoric, 'profit') - neincasat, 'diferența dintre profit și cash = facturile neîncasate');
+    },
+
+    'lotul 6b: riscurile sunt decizii: clientul rău-platnic, concurența, controlul fiscal'() {
+      const { ctx, state, af, luni } = firma('riscuri', 'constructii', 70);
+      luni(8);
+      const cont = af.cont;
+      forteazaEveniment(state, ctx, 'afacere-client-neplatitor', { suma: 3000 });
+      alege(state, ctx, 'renunt');
+      egal(af.cont, cont, 'renunțarea nu aduce bani');
+      forteazaEveniment(state, ctx, 'afacere-concurenta');
+      alege(state, ctx, 'nimic');
+      ok(areFlag(state, 'concurenta_afacere'), 'concurența ține un an');
+      const cont2 = af.cont;
+      forteazaEveniment(state, ctx, 'afacere-control-fiscal');
+      alege(state, ctx, 'platesc');
+      egal(af.cont, cont2 - pret(state, ctx, 'afaceri.amendaControlFiscal'), 'amenda iese din contul firmei');
+      ok(state.concepte.includes('control-fiscal'), 'concept');
+    },
+
+    'lotul 6b: vânzarea după un an pe profit; extinderea cere afacere așezată și bani'() {
+      const { ctx, state, af, luni } = firma('vanzare', 'it', 90);
+      ok(!actiune(state, ctx, 'vindeAfacerea').ok, 'nimeni nu cumpără o firmă nouă');
+      ok(!actiune(state, ctx, 'extindeAfacerea').ok, 'nici extinderea nu merge de la început');
+      luni(24);
+      const potentialInainte = af.nivel ?? 0;
+      af.cont += inBani(100_000);
+      ok(actiune(state, ctx, 'extindeAfacerea').ok, 'extinsă');
+      egal(af.nivel, potentialInainte + 1, 'un nivel în plus');
+      luni(12);
+      const sim = simuleazaVanzareFirma(state, ctx);
+      ok(sim.ok && sim.pretFirma > 0, `prețul firmei: ${sim.pretFirma / 100} lei`);
+      const bani = baniDisponibili(state);
+      ok(actiune(state, ctx, 'vindeAfacerea').ok, 'vândută');
+      egal(baniDisponibili(state) - bani, sim.net, 'primești prețul net');
+      ok(!state.produse.includes(af), 'firma nu mai e a ta');
+    },
   };
 }
 
@@ -796,6 +891,10 @@ function lot0(ctxBaza, a) {
         retrageDinFirma: [{ suma: 10 }, {}],
         depuneInFirma: [{ suma: 10 }],
         inchideAfacere: [{}, {}],
+        seteazaAfacere: [{ pret: 'mic' }, { pret: 'gratis' }, { marketing: 100 }, { angajatiExtra: 9 }],
+        extindeAfacerea: [{}],
+        imprumutFirma: [{ suma: 1000 }],
+        vindeAfacerea: [{}],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

@@ -1,0 +1,106 @@
+{
+  "evenimente": [
+    {
+      "id": "afacere-client-neplatitor",
+      "titlu": "Un client nu plătește",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["afacere"] },
+      "variabile": { "suma": 5000, "avocat": "pret:afaceri.costAvocat" },
+      "text": "Un client mare n-a plătit factura de {suma} lei, deși termenul a trecut de mult. În contabilitate apar ca vânduți, dar în contul firmei nu sunt.",
+      "alegeri": [
+        {
+          "id": "judecata",
+          "eticheta": "Îl dau în judecată ({avocat} lei avocatul)",
+          "rezultate": [
+            { "pondere": 3, "afacere": { "cont": ["{suma}", "-{avocat}"] }, "jurnal": "Ai câștigat procesul: clientul a plătit cei {suma} lei (avocatul a costat {avocat} lei)." },
+            { "pondere": 2, "afacere": { "cont": "-{avocat}" }, "jurnal": "Clientul a dat faliment înainte de proces. Banii nu mai vin, iar avocatul a costat {avocat} lei." }
+          ],
+          "efecte": { "fericire": -3 },
+          "lectie": "Un contract scris și un avans cerut de la început te scutesc de procese.",
+          "concepte": ["profit-vs-cash-flow"]
+        },
+        {
+          "id": "esalonare",
+          "eticheta": "Accept să-mi plătească în rate",
+          "rezultate": [
+            { "pondere": 7, "afacere": { "cont": "{suma}" }, "jurnal": "Clientul a plătit în rate toți cei {suma} lei." },
+            { "pondere": 3, "jurnal": "Clientul a plătit o rată, apoi a dispărut." }
+          ],
+          "lectie": "Profitul de pe hârtie nu plătește salariile: contează banii care chiar intră în cont.",
+          "concepte": ["profit-vs-cash-flow"]
+        },
+        {
+          "id": "renunt",
+          "eticheta": "Las-o baltă, mă ocup de alți clienți",
+          "efecte": { "fericire": -2 },
+          "afacere": { "reputatie": -2 },
+          "lectie": "O factură neîncasată e o pierdere reală, chiar dacă la profit apăruse ca vânzare.",
+          "concepte": ["profit-vs-cash-flow"],
+          "jurnal": "Ai renunțat la cei {suma} lei pe care ți-i datora un client."
+        }
+      ]
+    },
+    {
+      "id": "afacere-concurenta",
+      "titlu": "Concurență nouă",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["afacere"] },
+      "variabile": { "investitie": "pret:afaceri.costStudiuPiata*4" },
+      "text": "Peste drum s-a deschis o afacere ca a ta, cu reclame peste tot și prețuri de lansare. Primii clienți fideli încep să încerce și la ei.",
+      "alegeri": [
+        {
+          "id": "pret",
+          "eticheta": "Scad și eu prețurile",
+          "afacere": { "pret": "mic" },
+          "flaguri": ["concurenta_afacere:6"],
+          "lectie": "Un război al prețurilor îl câștigă cine are mai mulți bani de pierdut. Nu întotdeauna tu.",
+          "jurnal": "Ai scăzut prețurile ca să ții clienții."
+        },
+        {
+          "id": "calitate",
+          "eticheta": "Investesc în calitate și reclamă ({investitie} lei)",
+          "afacere": { "cont": "-{investitie}", "reputatie": 15 },
+          "flaguri": ["concurenta_afacere:3"],
+          "lectie": "Clienții rămân pentru ce primesc, nu doar pentru preț. O afacere cu o identitate clară rezistă mai bine.",
+          "jurnal": "Ai investit în calitate ca să răspunzi concurenței."
+        },
+        {
+          "id": "nimic",
+          "eticheta": "Nu fac nimic, o să treacă",
+          "flaguri": ["concurenta_afacere:12"],
+          "lectie": "Concurența nu trece de la sine: pierzi clienți luni la rând dacă nu răspunzi.",
+          "jurnal": "N-ai făcut nimic când a apărut concurența."
+        }
+      ]
+    },
+    {
+      "id": "afacere-control-fiscal",
+      "titlu": "Control fiscal",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["afacere"] },
+      "variabile": { "amenda": "pret:afaceri.amendaControlFiscal", "avocat": "pret:afaceri.costAvocat" },
+      "text": "ANAF a venit în control la firma ta. Au găsit niște facturi înregistrate greșit și vor să-ți dea o amendă de {amenda} lei.",
+      "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "Plătesc amenda și angajez un contabil mai bun",
+          "afacere": { "cont": "-{amenda}" },
+          "efecte": { "fericire": -3 },
+          "lectie": "Un contabil bun costă mai puțin decât amenzile. Actele în regulă sunt parte din afacere.",
+          "concepte": ["control-fiscal"],
+          "jurnal": "Ai plătit o amendă de {amenda} lei după un control fiscal."
+        },
+        {
+          "id": "contest",
+          "eticheta": "Contest amenda în instanță",
+          "rezultate": [
+            { "pondere": 1, "afacere": { "cont": "-{avocat}" }, "jurnal": "Ai câștigat contestația: amenda a fost anulată (avocatul a costat {avocat} lei)." },
+            { "pondere": 1, "afacere": { "cont": ["-{amenda}", "-{avocat}"] }, "jurnal": "Ai pierdut contestația: ai plătit și amenda, și avocatul." }
+          ],
+          "lectie": "Contestația are sens când chiar ai dreptate; altfel plătești de două ori.",
+          "concepte": ["control-fiscal"]
+        }
+      ]
+    }
+  ]
+}

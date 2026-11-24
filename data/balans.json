@@ -196,7 +196,20 @@
     "timpPornire": 2,
     "energieLunara": -3,
     "luniExperienta": 24,
-    "luniInsolventa": 6
+    "luniInsolventa": 6,
+    "_decizii": "Prețul: volum × preț pe bucată (marfa urmează volumul). Marketingul: creștere de cerere cu randament descrescător (bonusMax la un buget mult peste scalaMarketing × venitul potențial). Fiecare angajat în plus adaugă capacitateAngajat din potențial. Extinderea: × factorPotential la venitul potențial, × factorCosturi la costurile fixe, costă factorInvestitie × investiția inițială.",
+    "pret": {
+      "mic": { "volum": 1.25, "pret": 0.85, "reputatie": 1 },
+      "mediu": { "volum": 1, "pret": 1, "reputatie": 0.5 },
+      "mare": { "volum": 0.75, "pret": 1.2, "reputatie": 0 }
+    },
+    "marketing": { "bonusMax": 0.3, "scalaMarketing": 0.08 },
+    "capacitateBaza": 1.0,
+    "capacitateAngajat": 0.3,
+    "angajatiMax": 4,
+    "extindere": { "factorPotential": 1.4, "factorCosturi": 1.3, "factorInvestitie": 0.5, "nivelMax": 2 },
+    "riscuri": { "sansaClientNeplatitorAnual": 0.15, "sansaConcurentaAnual": 0.12, "sansaControlFiscalAnual": 0.08, "factorConcurenta": 0.85 },
+    "vanzare": { "multiplicatorProfitAnual": 2.5, "luniMinime": 12 }
   },
 
   "imobiliare": {

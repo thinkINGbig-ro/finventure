@@ -36,7 +36,8 @@ import {
   cerePromovare, cursFirma, demisie, devinoArtist, incepeSecundar, opresteSecundar, oreSuplimentare, proceseazaSecundar, seteazaRitm, venitArtistLuna,
 } from './munca.js';
 import {
-  aplicaGrant, depuneInFirma, faPlanAfaceri, faStudiuPiata, inchideAfacere, pornesteAfacere, proceseazaAfacere, retrageDinFirma,
+  aplicaGrant, depuneInFirma, extindeAfacerea, faPlanAfaceri, faStudiuPiata, imprumutFirma, inchideAfacere, pornesteAfacere, proceseazaAfacere,
+  retrageDinFirma, seteazaAfacere, vindeAfacerea,
 } from './afacere.js';
 
 export const VARSTA_PENSIE = 65;
@@ -725,7 +726,8 @@ export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza'
   'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza', 'inscrieProgram', 'renuntaStudii', 'inscrieCurs',
   'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza', 'cumparaImobil', 'vindeImobil',
   'seteazaRitm', 'oreSuplimentare', 'cerePromovare', 'cursFirma', 'demisie', 'devinoArtist', 'incepeSecundar', 'opresteSecundar',
-  'faPlanAfaceri', 'faStudiuPiata', 'aplicaGrant', 'pornesteAfacere', 'retrageDinFirma', 'depuneInFirma', 'inchideAfacere'];
+  'faPlanAfaceri', 'faStudiuPiata', 'aplicaGrant', 'pornesteAfacere', 'retrageDinFirma', 'depuneInFirma', 'inchideAfacere',
+  'seteazaAfacere', 'extindeAfacerea', 'imprumutFirma', 'vindeAfacerea'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -899,8 +901,18 @@ function executaActiune(state, ctx, tip, param) {
     case 'pornesteAfacere':
     case 'retrageDinFirma':
     case 'depuneInFirma':
-    case 'inchideAfacere': {
+    case 'inchideAfacere':
+    case 'seteazaAfacere':
+    case 'extindeAfacerea':
+    case 'imprumutFirma':
+    case 'vindeAfacerea': {
       const f = {
+        seteazaAfacere: () => seteazaAfacere(state, ctx, {
+          pret: param.pret, marketing: param.marketing != null ? Number(param.marketing) : undefined, angajatiExtra: param.angajatiExtra != null ? Number(param.angajatiExtra) : undefined,
+        }),
+        extindeAfacerea: () => extindeAfacerea(state, ctx),
+        imprumutFirma: () => imprumutFirma(state, ctx, suma),
+        vindeAfacerea: () => vindeAfacerea(state, ctx),
         faPlanAfaceri: () => faPlanAfaceri(state, ctx),
         faStudiuPiata: () => faStudiuPiata(state, ctx, param.domeniu),
         aplicaGrant: () => aplicaGrant(state, ctx),
