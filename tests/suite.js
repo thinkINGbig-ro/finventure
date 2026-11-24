@@ -5,7 +5,7 @@ import { actiune, alege, avanseaza, continua, forteazaEveniment, jocNou } from '
 import { lantDecizii, gasesteProdus } from '../js/events.js';
 import { fluturas, baniDisponibili, contCurent, fondUrgenta, pret } from '../js/finance.js';
 import {
-  adaugaCheckpoint, areFlag, cheltuieliLunare, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
+  adaugaCheckpoint, areFlag, avereNeta, cheltuieliLunare, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
 } from '../js/state.js';
 import { PROFILURI, simuleazaViata, simuleazaVieti, strategieAleatoare } from '../js/simulare.js';
 import { calculeazaTipare } from '../js/tipare.js';
@@ -561,6 +561,33 @@ function teste(ctxBaza, incarcare) {
       ok(opriri.some((o) => o.eveniment === 'independenta-financiara'), 'evenimentul a apărut');
       egal(state.final?.motiv, 'independenta', 'final: independență');
       egal(alegeFinal(ctx.finaluri, rezumatViata(state, ctx)).id, 'libertate-40', 'la 19 ani: Libertate la 40');
+    },
+
+    'ipoteca: refuzată după spirala IFN; casa intră în avere; rata variabilă se recalculează anual'() {
+      const { state, ctx } = jocCuJob('casa');
+      state.luna = 12 * 8; // 26 de ani
+      state.ascunse.scorCredit = 70;
+      const cont = gasesteProdus(state, 'contCurent');
+      cont.sold = inBani(200000);
+      seteazaFlag(state, 'spirala_datorii');
+      let o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      ok(!alegerePeCale(o, 'credit').disponibil, 'refuzat cu spirala datoriilor în istoric');
+      ok(alegerePeCale(o, 'credit').motiv.includes('Banca te refuză'), 'motivul refuzului');
+      state.pendinte = null;
+      delete state.flaguri.spirala_datorii;
+      o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      const avereInainte = avereNeta(state);
+      alege(state, ctx, 'credit/variabila');
+      const credit = state.produse.find((p) => p.tip === 'credit' && p.variabila);
+      ok(credit && credit.luni === 360, 'credit pe 30 de ani, cu dobândă variabilă');
+      ok(gasesteProdus(state, 'proprietate')?.valoare === inBani(o.variabile.pret), 'casa e un activ cu valoarea prețului');
+      ok(Math.abs(avereNeta(state) - avereInainte) < inBani(1000), 'cumpărarea nu schimbă averea netă (casă − credit = avans)');
+      egal(state.situatie.locuinta, 'proprietate', 'locuiești în casa ta');
+      const daeInainte = credit.dae;
+      state.luna = 12 * 9; // începutul anului următor
+      state.an = null;
+      consuma(state, ctx, avanseaza(state, ctx), primaDisponibila);
+      ok(credit.dae !== daeInainte, `dobânda variabilă s-a recalculat (${daeInainte.toFixed(4)} → ${credit.dae.toFixed(4)})`);
     },
 
     'simulare pe profiluri: prudentul o duce mai bine decât riscantul'() {

@@ -47,6 +47,7 @@ const STARE = {
   },
   venitPasiv: (s, _sel, ctx) => venitPasivLunar(s, ctx),
   cheltuieli: (s, _sel, ctx) => cheltuieliLunare(s, ctx),
+  dobandaIpoteca: (s) => gasesteProduse(s, 'credit:banca').filter((c) => c.luni >= 240).reduce((t, c) => t + Math.max(0, c.rata * c.luniRamase - c.rest), 0),
   datorieFacturi: (s) => gasesteProduse(s, 'factura').reduce((t, f) => t + f.restanta, 0),
   soldCard: (s) => gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0,
   minimCard: (s, _sel, ctx) => plataMinimaCard(gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0, ctx),
@@ -64,6 +65,10 @@ export function rezolvaVariabile(ev, state, ctx, suprascrieri = {}) {
     if (nume in suprascrieri) continue;
     if (typeof def === 'number') {
       vars[nume] = rotunjeste10(def * state.indicePreturi);
+    } else if (def.startsWith('pret:')) {
+      // „pret:cale” sau „pret:cale*0.15”: valoare din config.json, la prețurile de azi din joc (cu inflația)
+      const [cale, factor] = def.slice(5).split('*');
+      vars[nume] = rotunjeste10(dupaCale(ctx.config, cale) * (factor ? Number(factor) : 1) * state.indicePreturi);
     } else if (def.startsWith('stare:')) {
       const [, sursa, sel, mult] = def.match(RE_STARE);
       vars[nume] = Math.round(inLei(STARE[sursa](state, sel, ctx)) * (mult ? Number(mult) : 1));
@@ -441,6 +446,7 @@ function rezolvaSpec(spec, val) {
   for (const [k, v] of Object.entries(spec)) r[k] = typeof v === 'string' ? val(v) : v;
   if (r.suma != null) r.suma = inBani(r.suma);
   if (r.limita != null) r.limita = inBani(r.limita);
+  if (r.valoare != null) r.valoare = inBani(r.valoare);
   return r;
 }
 

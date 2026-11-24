@@ -70,7 +70,13 @@
     "chirieSingur": {
       "chirie": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "garsonieră" },
       "utilitati": { "valoare": 600, "deVerificat": true, "sursa": "" }
-    }
+    },
+    "proprietate": {
+      "chirie": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "locuința ta: fără chirie" },
+      "utilitati": { "valoare": 800, "deVerificat": true, "sursa": "", "nota": "utilități, întreținere, impozit pe clădire, asigurare obligatorie (PAD)" }
+    },
+    "pretApartament": { "valoare": 450000, "deVerificat": true, "sursa": "", "nota": "apartament cu 2 camere, oraș mare, la prețurile de start" },
+    "crestereRealaPretAnuala": { "valoare": 0.01, "deVerificat": true, "sursa": "", "nota": "cât cresc prețurile locuințelor peste inflație, pe an" }
   },
 
   "facturi": {
@@ -142,6 +148,15 @@
 
   "bnpl": {
     "dae": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "cumpără acum, plătește mai târziu: 0% dacă plătești la timp" }
+  },
+
+  "ipotecar": {
+    "daeFixa": { "valoare": 0.075, "deVerificat": true, "sursa": "", "nota": "DAE la credit ipotecar cu dobândă fixă" },
+    "marjaVariabila": { "valoare": 0.025, "deVerificat": true, "sursa": "", "nota": "marja băncii peste indicele de referință (IRCC)" },
+    "irccPesteInflatie": { "valoare": 0.005, "deVerificat": true, "sursa": "", "nota": "simplificare: IRCC urmează inflația anului" },
+    "irccMin": { "valoare": 0.01, "deVerificat": true, "sursa": "" },
+    "irccMax": { "valoare": 0.12, "deVerificat": true, "sursa": "" },
+    "crestereRataPentruEveniment": { "valoare": 0.03, "deVerificat": false, "sursa": "parametru de joc", "nota": "de la ce creștere a ratei apare evenimentul" }
   },
 
   "creditAuto": {

@@ -83,7 +83,7 @@ export function plateste(state, suma, sursa = 'portofel') {
 
 // ---------- Produse ----------
 
-export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura'];
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate'];
 export const CATEGORII_FACTURI = ['chirie', 'utilitati', 'telefon'];
 
 // Facturile lunii, în ordinea în care se plătesc când banii nu ajung.
@@ -124,6 +124,8 @@ export function creeazaProdus(spec, state, ctx) {
         luniRestanta: 0, dobandaTotala: 0,
       };
     case 'credit': {
+      // Dobânda variabilă = marja băncii + indicele de referință din anul curent (state.piete.ircc).
+      if (spec.variabila) spec = { ...spec, dae: cfg(ctx, 'ipotecar.marjaVariabila') + ircc(state, ctx) };
       const rLunar = rataLunara(spec.dae);
       return {
         ...baza, furnizor: spec.furnizor ?? 'banca', stadiu: 'activ',
@@ -131,7 +133,7 @@ export function creeazaProdus(spec, state, ctx) {
         luni: spec.luni, luniRamase: spec.luni, luniFaraDobanda: spec.luniFaraDobanda ?? 0,
         rata: rataAnuitate(spec.suma, rLunar, spec.luni),
         restanta: 0, luniRestanta: 0, totalPlatit: 0, dobandaTotala: 0, penalitati: 0,
-        laRestanta: spec.laRestanta ?? null, flag: spec.flag ?? null,
+        laRestanta: spec.laRestanta ?? null, flag: spec.flag ?? null, variabila: !!spec.variabila,
       };
     }
     case 'investitie': {
@@ -151,12 +153,19 @@ export function creeazaProdus(spec, state, ctx) {
       return { ...baza, creditor: spec.creditor ?? 'recuperator', datorie: spec.suma, retinutTotal: 0 };
     case 'contractMunca':
       return { ...baza, jobId: spec.jobId, contract: spec.contract, brut: spec.brut, luniVechime: 0 };
+    case 'proprietate':
+      return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare };
     case 'factura':
       // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
       return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };
     default:
       throw new Error(`Tip de produs necunoscut: ${spec.tip}`);
   }
+}
+
+// Indicele de referință pentru creditele cu dobândă variabilă (simplificare: urmează inflația).
+export function ircc(state, ctx) {
+  return state.piete.ircc ?? cfg(ctx, 'inflatie.medieAnuala') + cfg(ctx, 'ipotecar.irccPesteInflatie');
 }
 
 export function rataAnuitate(principal, r, n) {
@@ -172,6 +181,8 @@ export function valoareProdus(p, state) {
       return Math.max(0, p.sold);
     case 'depozit':
       return p.sold;
+    case 'proprietate':
+      return p.valoare;
     case 'investitie':
       return p.clasa === 'titluriStat' ? p.principal : Math.round(p.unitati * state.piete[p.clasa]);
     default:

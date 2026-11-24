@@ -14,6 +14,7 @@ const VERIFICARI = {
   ifnMin: (v, r) => r.ifnLuate >= v,
   rateCumparaturiMin: (v, r) => r.rateCumparaturi >= v,
   socuriAbsorbiteMin: (v, r) => r.socuriAbsorbite >= v,
+  casaPlatita: (v, r) => r.casaPlatita === v,
 };
 export const CONDITII_FINAL = Object.keys(VERIFICARI);
 

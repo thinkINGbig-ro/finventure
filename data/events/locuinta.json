@@ -1,0 +1,143 @@
+{
+  "evenimente": [
+    {
+      "id": "cumpara-locuinta",
+      "titlu": "Apartamentul tău?",
+      "faza": [4, 5],
+      "conditii": {
+        "varstaMin": 26,
+        "jobProgram": ["full-time"],
+        "locuinta": ["chirieSingur", "chirieColegi", "acasa"],
+        "lipsaFlag": ["are_locuinta", "amanat_cumparare"]
+      },
+      "pondere": 4,
+      "cooldownLuni": 24,
+      "checkpoint": true,
+      "variabile": {
+        "pret": "pret:locuinte.pretApartament",
+        "avans": "pret:locuinte.pretApartament*0.15",
+        "imprumut": "pret:locuinte.pretApartament*0.85"
+      },
+      "text": "Un apartament cu două camere costă {pret} lei. Banca cere un avans de {avans} lei (15%); restul, {imprumut} lei, îl împrumuți pe 30 de ani.",
+      "alegeri": [
+        {
+          "id": "credit",
+          "eticheta": "Cumpăr cu credit ipotecar",
+          "cere": {
+            "jobProgram": ["full-time"],
+            "asigurat": true,
+            "ascunse": { "scorCredit": { "min": 50 } },
+            "lipsaFlag": ["istoric_restante", "executare_silita", "spirala_datorii", "datorie_recuperator"],
+            "motiv": "Banca te refuză: are nevoie de un venit cu contract și de un istoric de credit curat, fără restanțe, IFN-uri în lanț sau executări."
+          },
+          "subalegeri": [
+            {
+              "id": "fixa",
+              "eticheta": "Cu dobândă fixă",
+              "cere": { "baniMin": "{avans}", "motiv": "N-ai {avans} lei pentru avans." },
+              "produsNou": [
+                {
+                  "tip": "credit",
+                  "furnizor": "banca",
+                  "suma": "{imprumut}",
+                  "dae": "config:ipotecar.daeFixa",
+                  "luni": 360
+                },
+                { "tip": "proprietate", "valoare": "{pret}" }
+              ],
+              "efecte": { "numerar": "-{pret}", "fericire": 10 },
+              "situatie": { "locuinta": "proprietate" },
+              "flaguri": ["are_locuinta"],
+              "etichete": ["cumparaCasa"],
+              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila"],
+              "lectie": "Cu dobânda fixă, rata rămâne aceeași 30 de ani, orice ar face piața. Plătești puțin mai mult pentru liniște.",
+              "jurnal": "Ți-ai cumpărat un apartament, cu credit ipotecar la dobândă fixă.",
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }]
+            },
+            {
+              "id": "variabila",
+              "eticheta": "Cu dobândă variabilă (rata e mai mică acum)",
+              "cere": { "baniMin": "{avans}", "motiv": "N-ai {avans} lei pentru avans." },
+              "produsNou": [
+                { "tip": "credit", "furnizor": "banca", "suma": "{imprumut}", "variabila": true, "luni": 360 },
+                { "tip": "proprietate", "valoare": "{pret}" }
+              ],
+              "efecte": { "numerar": "-{pret}", "fericire": 10 },
+              "situatie": { "locuinta": "proprietate" },
+              "flaguri": ["are_locuinta"],
+              "etichete": ["cumparaCasa", "dobandaVariabila"],
+              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila"],
+              "lectie": "Cu dobânda variabilă, rata urmează indicele de referință (IRCC): azi e mai mică, dar poate crește în anii cu inflație mare.",
+              "jurnal": "Ți-ai cumpărat un apartament, cu credit ipotecar la dobândă variabilă.",
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }]
+            }
+          ]
+        },
+        {
+          "id": "chirie",
+          "eticheta": "Rămân în chirie și investesc diferența",
+          "flaguri": ["amanat_cumparare:36"],
+          "etichete": ["amanaCumpararea"],
+          "concepte": ["chirie-vs-cumparare"],
+          "lectie": "Chiria nu e „bani aruncați”: plătești flexibilitate. Contează ce faci cu diferența dintre chirie și rata plus costurile unei case."
+        },
+        {
+          "id": "astept",
+          "eticheta": "Mai strâng la avans",
+          "flaguri": ["amanat_cumparare:24"],
+          "etichete": ["amanaCumpararea"],
+          "concepte": ["credit-ipotecar"],
+          "lectie": "Un avans mai mare înseamnă un credit mai mic, o rată mai mică și mai puțină dobândă plătită în 30 de ani."
+        }
+      ]
+    },
+    {
+      "id": "rata-variabila-crescuta",
+      "titlu": "Rata a crescut",
+      "doarUrmare": true,
+      "conditii": { "areProdus": ["credit:banca"] },
+      "variabile": { "crestere": 0, "rataNoua": 0 },
+      "text": "Indicele de referință (IRCC) a crescut odată cu inflația. Rata la ipotecă e mai mare cu {crestere} lei pe lună: acum plătești {rataNoua} lei.",
+      "alegeri": [
+        {
+          "id": "tai",
+          "eticheta": "Tai din cheltuieli",
+          "cere": { "stilViata": ["confortabil", "lux"], "motiv": "Trăiești deja modest; n-ai de unde tăia." },
+          "stilViata": -1,
+          "etichete": ["stilJos"],
+          "concepte": ["dobanda-fixa-variabila"],
+          "lectie": "Dobânda variabilă poate crește oricând. Un buget cu loc de manevră te ajută să treci peste."
+        },
+        {
+          "id": "economii",
+          "eticheta": "Plătesc diferența din ce pun deoparte",
+          "efecte": { "fericire": -2 },
+          "concepte": ["dobanda-fixa-variabila"],
+          "lectie": "Fondul de urgență și economiile țin rata plătită la timp. O rată întârziată la ipotecă e cea mai scumpă greșeală."
+        }
+      ]
+    },
+    {
+      "id": "chirie-sau-casa",
+      "titlu": "Cât te costă de fapt casa",
+      "doarUrmare": true,
+      "variabile": { "dobandaTotala": "stare:dobandaIpoteca" },
+      "text": "Ai făcut calculul: pe tot creditul, vei plăti băncii în dobânzi aproximativ {dobandaTotala} lei, pe lângă prețul casei.",
+      "alegeri": [
+        {
+          "id": "ok",
+          "eticheta": "Merită: e casa mea",
+          "concepte": ["credit-ipotecar"],
+          "lectie": "Costul total al unei case cu credit e prețul plus dobânzile. Rambursările anticipate, când poți, scad mult dobânda totală."
+        },
+        {
+          "id": "ramburs",
+          "eticheta": "Pun deoparte ca să rambursez anticipat",
+          "efecte": { "viitor": 3 },
+          "concepte": ["credit-ipotecar"],
+          "lectie": "Fiecare leu rambursat anticipat la începutul creditului economisește mulți lei de dobândă."
+        }
+      ]
+    }
+  ]
+}

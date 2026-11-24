@@ -13,7 +13,7 @@ import { intreg, normal, sansa } from './rng.js';
 import {
   CLASE_PIATA, baniDisponibili, cardDisponibil, contCurent, creeazaProdus, datorieProdus, facturiLunare, fluturas,
   incaseaza, plateste, pret, proceseazaCard, proceseazaContEconomii, proceseazaCredit, proceseazaDepozit,
-  proceseazaTitluri, randamentLunar, rataLunara, valoareProdus,
+  proceseazaTitluri, randamentLunar, rataAnuitate, rataLunara, valoareProdus,
 } from './finance.js';
 import {
   activeLichidabile, actualizeazaDerivate, adaugaJurnal, areFlag, avereNeta, creeazaStare, datoriiTotale, expiraFlaguri, multiplicatorStil, schimbaStil, seteazaFlag,
@@ -164,6 +164,18 @@ function inceputAn(state, ctx) {
   const lunaCrash = start + intreg(state, 'piete', 0, 11);
 
   if (start > 0) {
+    const i = cfg(ctx, 'ipotecar');
+    state.piete.ircc = Math.min(i.irccMax.valoare, Math.max(i.irccMin.valoare, inflatie + i.irccPesteInflatie.valoare));
+    for (const p of gasesteProduse(state, 'proprietate')) p.valoare = Math.round(p.valoare * (1 + inflatie + cfg(ctx, 'locuinte.crestereRealaPretAnuala')));
+    for (const c of state.produse.filter((p) => p.tip === 'credit' && p.variabila && p.stadiu === 'activ' && p.luniRamase > 0)) {
+      const rataVeche = c.rata;
+      c.dae = cfg(ctx, 'ipotecar.marjaVariabila') + state.piete.ircc;
+      c.rLunar = rataLunara(c.dae);
+      c.rata = rataAnuitate(c.rest, c.rLunar, c.luniRamase);
+      if (c.rata - rataVeche > rataVeche * cfg(ctx, 'ipotecar.crestereRataPentruEveniment')) {
+        programeazaUrmare(state, ctx, { eveniment: 'rata-variabila-crescuta', dupaLuni: 1, variabile: { crestere: Math.round(inLei(c.rata - rataVeche)), rataNoua: Math.round(inLei(c.rata)) } }, c.cauza);
+      }
+    }
     state.indicePreturi *= 1 + inflatie;
     const crestere = inflatie * cfg(ctx, 'salarii.cresterePrinInflatie');
     for (const c of gasesteProduse(state, 'contractMunca')) c.brut = Math.round(c.brut * (1 + Math.max(0, crestere)));

@@ -195,6 +195,21 @@
       "id": "prabusirea-bursei",
       "titlu": "Prăbușirile bursei",
       "text": "Din când în când, bursele scad brusc cu 20–50%. Pierderea e reală abia când vinzi: dacă păstrezi investiția, ea poate reveni când piața își revine, cum s-a întâmplat după fiecare mare prăbușire de până acum. De aceea, în bursă se investesc doar bani de care nu ai nevoie mulți ani, iar fondul de urgență stă separat. Exemplu: 10.000 lei în ETF pot ajunge la 7.000 într-o lună proastă și înapoi la 10.000 peste un an sau doi."
+    },
+    {
+      "id": "credit-ipotecar",
+      "titlu": "Creditul ipotecar",
+      "text": "Creditul ipotecar e împrumutul pentru o locuință, cu locuința drept garanție, pe 20–30 de ani. Banca cere un avans (de obicei 15–25%), un venit cu contract și un istoric de credit curat. Pe 30 de ani, dobânzile pot ajunge cât jumătate din prețul casei sau chiar mai mult. Exemplu: la 380.000 lei împrumutați cu 7,5% pe 30 de ani, rata e cam 2.600 lei, iar dobânzile totale trec de 550.000 lei."
+    },
+    {
+      "id": "dobanda-fixa-variabila",
+      "titlu": "Dobânda fixă și dobânda variabilă",
+      "text": "La dobânda fixă, rata rămâne aceeași, orice ar face piața. La dobânda variabilă, rata urmează un indice de referință (în România, IRCC), care crește când crește inflația. Variabila pornește de obicei mai jos, dar e un risc: rata poate crește cu sute de lei pe lună. Exemplu: la un credit de 300.000 lei, o creștere a dobânzii de 2 puncte înseamnă cam 400 lei în plus la rată."
+    },
+    {
+      "id": "chirie-vs-cumparare",
+      "titlu": "Chirie sau cumpărare?",
+      "text": "Casa proprie nu e automat mai bună decât chiria. Proprietarul plătește dobânzi, impozit, întreținere și reparații, și e legat de un oraș. Chiriașul plătește chiria, dar poate investi avansul și diferența. Contează cât timp stai în același loc și ce faci cu banii rămași. Exemplu: un avans de 70.000 lei investit 30 de ani la 7% pe an poate ajunge la peste 500.000 lei."
     }
   ]
 }

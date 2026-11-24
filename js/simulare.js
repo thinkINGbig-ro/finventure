@@ -8,7 +8,7 @@ import { baniDisponibili, contCurent, fluturas, fondUrgenta, pret } from './fina
 import { hashSeed } from './rng.js';
 import { areFlag, avereNeta, cheltuieliLunare, multiplicatorStil } from './state.js';
 import { areJobFullTime, contractCurent } from './cariera.js';
-import { inLei, varstaLa } from './util.js';
+import { cfg, inLei, varstaLa } from './util.js';
 import { rezumatViata } from './bilant.js';
 import { alegeFinal } from './finaluri.js';
 
@@ -40,7 +40,9 @@ function trasaturi(def) {
   const t = {};
   const pune = (k, v = 1) => { t[k] = (t[k] ?? 0) + v; };
   for (const x of toate) {
-    for (const p of [x.produsNou ?? []].flat()) if (p.tip === 'credit') pune(p.furnizor === 'ifn' ? 'ifn' : 'credit');
+    // Ipoteca (credit + proprietate) nu e un credit de consum: o vede trăsătura „cumparaCasa”.
+    const cumparaCasa = [x.produsNou ?? []].flat().some((p) => p.tip === 'proprietate');
+    for (const p of [x.produsNou ?? []].flat()) if (p.tip === 'credit' && !cumparaCasa) pune(p.furnizor === 'ifn' ? 'ifn' : 'credit');
     if (x.job?.contract) pune(x.job.contract);
     if (x.job === null) pune('demisie');
     if (x.acceptaOferta) pune('oferta');
@@ -172,9 +174,12 @@ function meniuPrudent(state, ctx) {
     if (pentruFond > 100) actiune(state, ctx, 'depune', { id: fond.id, suma: lei(pentruFond) });
   }
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
+  // Între 26 și 45 de ani, fără casă: pune deoparte pentru avans (15% + costuri) în loc să investească.
+  const avans = Math.round(cfg(ctx, 'locuinte.pretApartament') * 0.15 * 1.1 * state.indicePreturi * 100);
+  const stringeAvans = varstaLa(state.luna) >= 26 && varstaLa(state.luna) < 45 && !state.produse.some((p) => p.tip === 'proprietate') && baniDisponibili(state) < avans + lunar;
   if (fondComplet && netLunar) {
-    // 20%: investiții
-    const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - lunar);
+    // 20%: investiții (sau avansul pentru casă)
+    const deInvestit = stringeAvans ? 0 : Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - lunar);
     if (deInvestit > 50000) actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(deInvestit) });
     // 30%: dorințe — stil Confortabil dacă cheltuielile de bază rămân sub 80% din net
     if (state.stilViata === 'modest') {
@@ -183,7 +188,7 @@ function meniuPrudent(state, ctx) {
       if (laConfortabil <= 0.8 * netLunar) actiune(state, ctx, 'stilViata', { nivel: 'confortabil' });
     }
     // ce mai rămâne peste două luni de cheltuieli se duce pe dorințe, până la 30% din venitul anual
-    const peDorinte = Math.min(Math.round(0.3 * 12 * netLunar) - 0, baniDisponibili(state) - 2 * lunar);
+    const peDorinte = stringeAvans ? 0 : Math.min(Math.round(0.3 * 12 * netLunar), baniDisponibili(state) - 2 * lunar);
     if (peDorinte > 50000) actiune(state, ctx, 'cumpara', { suma: lei(peDorinte), fericire: 3 });
   }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 3 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
@@ -280,12 +285,14 @@ export const PROFILURI = {
     alege: alegePrinScor((state, ctx) => {
       const varsta = varstaLa(state.luna);
       const lunar = cheltuieliLunare(state, ctx);
-      const fondComplet = fondUrgenta(state) >= 6 * lunar;
+      // „aproape complet”: între două completări anuale, cheltuielile cresc cu inflația
+      const fondComplet = fondUrgenta(state) >= 5 * lunar;
       return {
         ...PONDERI_ATENT,
         negociaza: areJobFullTime(state, ctx) ? 4 : -1,
         stilSus: fondComplet ? 1 : -4, stilJos: fondComplet ? 0 : 3, rate: -3, investitieRiscanta: -1,
         muta: varsta >= 23 ? 4 : -2, amanaMutarea: varsta >= 25 ? -4 : 2, chirieScumpa: 0, chirieIeftina: 1,
+        cumparaCasa: fondComplet ? 3 : -3, dobandaVariabila: -2, amanaCumpararea: fondComplet ? -1 : 2,
       };
     }),
     meniu: meniuPrudent,
@@ -297,6 +304,7 @@ export const PROFILURI = {
       ...PONDERI_ATENT,
       negociaza: areJobFullTime(state, ctx) ? 4 : -1,
       stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
+      cumparaCasa: -1, dobandaVariabila: -2, amanaCumpararea: 2,
     })),
     meniu: meniuFrugal,
   },
@@ -307,6 +315,7 @@ export const PROFILURI = {
       ifn: 8, credit: 3, negru: 6, cim: -2, cardMinim: 6, cardIntegral: -4, ramburseaza: -5, fond: -4, card: 4, studii: -3,
       minciuna: 5, marire: -1, cautaJob: 1, ignora: 4, fericire: 0.4, viitor: -0.3, energie: 0.1,
       inselatorie: 3, pariu: 6, stilSus: 6, stilJos: -4, rate: 5, investitieRiscanta: 6, chirieScumpa: 3, panica: 5,
+      cumparaCasa: 3, dobandaVariabila: 3,
     }),
     meniu: meniuRiscant,
   },

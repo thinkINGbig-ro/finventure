@@ -66,6 +66,14 @@
       "prioritate": 50
     },
     {
+      "id": "acasa-la-tine",
+      "titlu": "Acasă la tine",
+      "emoji": "🏡",
+      "descriere": "La pensie, ai o casă plătită integral. Nicio rată, nicio chirie: un venit mic ajunge mult mai departe.",
+      "conditii": { "motiv": ["pensie"], "casaPlatita": true },
+      "prioritate": 45
+    },
+    {
       "id": "la-limita",
       "titlu": "La limită",
       "emoji": "🪙",

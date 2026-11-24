@@ -159,10 +159,11 @@ const CAMPURI_PRODUS = {
   contEconomii: { suma: 'num', fondUrgenta: 'bool', dobandaAnuala: 'num' },
   depozit: { suma: 'num', luni: 'num', dobandaAnuala: 'num', reinnoire: 'bool' },
   cardCredit: { limita: 'num', plata: ['integral', 'minim'], cumparaturiPeCard: 'bool', dobandaAnuala: 'num' },
-  credit: { furnizor: 'str', suma: 'num', dae: 'num', luni: 'num', luniFaraDobanda: 'num', laRestanta: 'eveniment', flag: 'str' },
+  credit: { furnizor: 'str', suma: 'num', dae: 'num', luni: 'num', luniFaraDobanda: 'num', laRestanta: 'eveniment', flag: 'str', variabila: 'bool' },
+  proprietate: { valoare: 'num' },
   investitie: { clasa: CLASE_INVESTITII, suma: 'num', luni: 'num' },
 };
-const PRODUSE_OBLIGATORII = { credit: ['suma', 'dae', 'luni'], depozit: ['suma'], investitie: ['clasa', 'suma'] };
+const PRODUSE_OBLIGATORII = { credit: ['suma', 'luni'], depozit: ['suma'], investitie: ['clasa', 'suma'], proprietate: ['valoare'] };
 const RE_FLAG = /^[a-z0-9_]+(:\d+)?$/;
 const RE_FLAG_NUME = /^[a-z0-9_]+$/;
 const RE_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -194,7 +195,10 @@ function valideazaEveniment(ev, err, warn, cv, fisier) {
     const camp = `variabile.${nume}`;
     if (typeof def === 'number') continue;
     if (typeof def !== 'string') { err(camp, 'trebuie să fie număr sau text („config:…”, „stare:…”)'); continue; }
-    if (def.startsWith('stare:')) {
+    if (def.startsWith('pret:')) {
+      const [c, f] = def.slice(5).split('*');
+      if (typeof dupaCale(cv.config, c) !== 'number' || (f !== undefined && !(Number(f) > 0))) err(camp, `„${def}” nu e valid: „pret:cale_din_config” sau „pret:cale*factor”`);
+    } else if (def.startsWith('stare:')) {
       const m = def.match(RE_STARE);
       if (!m || !SURSE_STARE.includes(m[1])) err(camp, `„${def}” nu e validă; surse: ${SURSE_STARE.join(', ')}`);
     } else verificaReferinta(def, camp, err, cv, vars);
@@ -341,6 +345,7 @@ function valideazaProdusNou(p, cale, err, cv, vars, fisier, idEv) {
   if (!campuri) return err(`${cale}.tip`, `tip necunoscut „${p.tip}”; permise: ${Object.keys(CAMPURI_PRODUS).join(', ')}`);
   campuriNecunoscute(p, ['tip', ...Object.keys(campuri)], cale, err);
   for (const c of PRODUSE_OBLIGATORII[p.tip] ?? []) if (p[c] === undefined) err(`${cale}.${c}`, `lipsește (obligatoriu pentru ${p.tip})`);
+  if (p.tip === 'credit' && p.dae === undefined && !p.variabila) err(`${cale}.dae`, 'lipsește (obligatoriu, sau „variabila”: true)');
   for (const [k, v] of Object.entries(p)) {
     const tip = campuri[k];
     if (k === 'tip' || !tip) continue;
