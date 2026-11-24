@@ -1,5 +1,5 @@
 {
-  "generat": "2026-11-23T22:59:25.335Z",
+  "generat": "2026-11-24T05:20:05.142Z",
   "seed": "sim",
   "vietiPeProfil": 500,
   "evenimente": 41,
@@ -81,30 +81,59 @@
       ]
     },
     "prudent": {
-      "descriere": "fond de urgență, fără IFN, contract de muncă, economisește și investește",
+      "descriere": "bugetul 50/30/20: fond de 6 luni, ~20% investit, se mută de acasă, stil Confortabil când își permite",
       "n": 500,
       "procente": {
-        "pensie": 95.2,
-        "independenta": 4.8,
+        "pensie": 96,
+        "independenta": 4,
         "faliment": 0,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Libertate la 40": 61.2,
-        "Rentierul": 33.2,
-        "Minimalistul": 3.8,
-        "Liber să alegi": 1.8
+        "Rentierul": 48.2,
+        "Pensionar liniștit": 39,
+        "Libertate la 40": 7.4,
+        "Liber să alegi": 3.8,
+        "Milionar (în lei de azi)": 1.6
       },
-      "varstaMedie": 63.8,
+      "varstaMedie": 64.4,
       "varstaMedieGameOver": null,
-      "avereMedianaLei": 22077986,
-      "avereMedianaLeiDeAzi": 2227532,
+      "avereMedianaLei": 10220669,
+      "avereMedianaLeiDeAzi": 1095138,
+      "mediiAnualeProcent": {
+        "inflatie": 4.86,
+        "etf": 7.12,
+        "salariu": 5.55,
+        "salariuReal": 0.56
+      },
+      "cauzeGameOver": []
+    },
+    "frugal": {
+      "descriere": "modest toată viața, fond de 6 luni, investește aproape tot restul",
+      "n": 500,
+      "procente": {
+        "pensie": 91,
+        "independenta": 9,
+        "faliment": 0,
+        "burnout": 0,
+        "renuntare": 0
+      },
+      "finaluriColectie": {
+        "Libertate la 40": 61,
+        "Rentierul": 31.2,
+        "Liber să alegi": 4.8,
+        "Minimalistul": 3
+      },
+      "varstaMedie": 62.9,
+      "varstaMedieGameOver": null,
+      "avereMedianaLei": 21253981,
+      "avereMedianaLeiDeAzi": 2233444,
       "mediiAnualeProcent": {
         "inflatie": 4.85,
-        "etf": 7.08,
-        "salariu": 5.6,
-        "salariuReal": 0.6
+        "etf": 7.11,
+        "salariu": 5.64,
+        "salariuReal": 0.64
       },
       "cauzeGameOver": []
     },

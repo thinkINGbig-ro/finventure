@@ -4,9 +4,9 @@
 
 import { actiune, alege, avanseaza, continua, jocNou } from './engine.js';
 import { gasesteAlegere, gasesteProduse, lantDecizii } from './events.js';
-import { baniDisponibili, contCurent, fondUrgenta } from './finance.js';
+import { baniDisponibili, contCurent, fluturas, fondUrgenta, pret } from './finance.js';
 import { hashSeed } from './rng.js';
-import { areFlag, avereNeta, cheltuieliLunare } from './state.js';
+import { areFlag, avereNeta, cheltuieliLunare, multiplicatorStil } from './state.js';
 import { areJobFullTime, contractCurent } from './cariera.js';
 import { inLei, varstaLa } from './util.js';
 import { rezumatViata } from './bilant.js';
@@ -61,6 +61,8 @@ function trasaturi(def) {
     if (typeof x.stilViata === 'number') pune(x.stilViata > 0 ? 'stilSus' : 'stilJos');
     if (x.situatie?.locuinta === 'chirieSingur') pune('chirieScumpa');
     if (x.situatie?.locuinta === 'chirieColegi') pune('chirieIeftina');
+    if (x.situatie?.locuinta?.startsWith('chirie')) pune('muta');
+    if ((x.flaguri ?? []).some((f) => f.startsWith('amanat_mutarea')) || (x.recurente ?? []).some((r) => r.locuinta === 'acasa')) pune('amanaMutarea');
     if ((x.urmari ?? []).some((u) => u.eveniment === 'cv-start')) pune('cautaJob');
     for (const k of ['viitor', 'skill', 'retea', 'fericire', 'energie', 'reputatie']) {
       const v = x.efecte?.[k];
@@ -119,8 +121,8 @@ function inchideRestanteDinEconomii(state, ctx) {
   }
 }
 
-// Prudent: cont, fond de urgență de 6 luni, restul investit în ETF, cere măriri, caută job full-time.
-function meniuPrudent(state, ctx) {
+// Frugal: modest toată viața, fond de 6 luni, aproape tot restul investit în ETF.
+function meniuFrugal(state, ctx) {
   asiguraCont(state, ctx);
   inchideRestanteDinEconomii(state, ctx);
   const lunar = cheltuieliLunare(state, ctx);
@@ -140,6 +142,51 @@ function meniuPrudent(state, ctx) {
     actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(Math.round(deInvestit * 0.7)) });
   }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
+  cereMarireAnual(state, ctx);
+  return cautaJobDacaTrebuie(state, ctx);
+}
+
+function asiguraFond(state, ctx) {
+  let fond = state.produse.find((p) => p.tip === 'contEconomii' && p.fondUrgenta);
+  if (!fond) {
+    const r = actiune(state, ctx, 'deschide', { tip: 'contEconomii' });
+    if (r.ok) actiune(state, ctx, 'seteaza', { id: r.produs.id, campuri: { fondUrgenta: true } });
+    fond = r.produs;
+  }
+  return fond;
+}
+
+// Prudent (realist): bugetul 50/30/20. Fond de 6 luni întâi, apoi ~20% din venitul net investit,
+// ~30% pentru dorințe (stil Confortabil când își permite, cumpărături), restul pentru necesar.
+function meniuPrudent(state, ctx) {
+  asiguraCont(state, ctx);
+  inchideRestanteDinEconomii(state, ctx);
+  const lunar = cheltuieliLunare(state, ctx);
+  const fond = asiguraFond(state, ctx);
+  const c = contractCurent(state);
+  const netLunar = c ? fluturas(c.brut, c.contract, ctx).net : 0;
+
+  const surplus = baniDisponibili(state) - lunar;
+  if (fond && surplus > 0) {
+    const pentruFond = Math.min(surplus, Math.max(0, 6 * lunar - fondUrgenta(state)));
+    if (pentruFond > 100) actiune(state, ctx, 'depune', { id: fond.id, suma: lei(pentruFond) });
+  }
+  const fondComplet = fondUrgenta(state) >= 6 * lunar;
+  if (fondComplet && netLunar) {
+    // 20%: investiții
+    const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - lunar);
+    if (deInvestit > 50000) actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(deInvestit) });
+    // 30%: dorințe — stil Confortabil dacă cheltuielile de bază rămân sub 80% din net
+    if (state.stilViata === 'modest') {
+      const mancare = pret(state, ctx, 'costTrai.mancareTransport');
+      const laConfortabil = lunar + Math.round(mancare * (multiplicatorStil(state, ctx, 'confortabil') - multiplicatorStil(state, ctx)));
+      if (laConfortabil <= 0.8 * netLunar) actiune(state, ctx, 'stilViata', { nivel: 'confortabil' });
+    }
+    // ce mai rămâne peste două luni de cheltuieli se duce pe dorințe, până la 30% din venitul anual
+    const peDorinte = Math.min(Math.round(0.3 * 12 * netLunar) - 0, baniDisponibili(state) - 2 * lunar);
+    if (peDorinte > 50000) actiune(state, ctx, 'cumpara', { suma: lei(peDorinte), fericire: 3 });
+  }
+  if (state.stilViata !== 'modest' && fondUrgenta(state) < 3 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
   cereMarireAnual(state, ctx);
   return cautaJobDacaTrebuie(state, ctx);
 }
@@ -217,18 +264,40 @@ function alegeAleator(oprire, state, ctx, rnd) {
   return sub[Math.floor(rnd() * sub.length)].cale;
 }
 
+// Ponderile comune ale jucătorilor atenți la bani (prudent și frugal).
+const PONDERI_ATENT = {
+  ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
+  fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
+  viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15, inselatorie: -15, pariu: -6,
+};
+
 export const PROFILURI = {
   aleator: { nume: 'aleator', descriere: 'alegeri și acțiuni din meniuri la întâmplare, bune și proaste', alege: alegeAleator, meniu: meniuAleator },
   prudent: {
     nume: 'prudent',
-    descriere: 'fond de urgență, fără IFN, contract de muncă, economisește și investește',
-    alege: alegePrinScor((state, ctx) => ({
-      ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, negociaza: areJobFullTime(state, ctx) ? 4 : -1, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
-      fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
-      viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15,
-      inselatorie: -15, pariu: -6, stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
-    })),
+    descriere: 'bugetul 50/30/20: fond de 6 luni, ~20% investit, se mută de acasă, stil Confortabil când își permite',
+    alege: alegePrinScor((state, ctx) => {
+      const varsta = varstaLa(state.luna);
+      const lunar = cheltuieliLunare(state, ctx);
+      const fondComplet = fondUrgenta(state) >= 6 * lunar;
+      return {
+        ...PONDERI_ATENT,
+        negociaza: areJobFullTime(state, ctx) ? 4 : -1,
+        stilSus: fondComplet ? 1 : -4, stilJos: fondComplet ? 0 : 3, rate: -3, investitieRiscanta: -1,
+        muta: varsta >= 23 ? 4 : -2, amanaMutarea: varsta >= 25 ? -4 : 2, chirieScumpa: 0, chirieIeftina: 1,
+      };
+    }),
     meniu: meniuPrudent,
+  },
+  frugal: {
+    nume: 'frugal',
+    descriere: 'modest toată viața, fond de 6 luni, investește aproape tot restul',
+    alege: alegePrinScor((state, ctx) => ({
+      ...PONDERI_ATENT,
+      negociaza: areJobFullTime(state, ctx) ? 4 : -1,
+      stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
+    })),
+    meniu: meniuFrugal,
   },
   riscant: {
     nume: 'riscant',
