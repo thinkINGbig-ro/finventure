@@ -11,6 +11,7 @@ import { PROFILURI, simuleazaViata, simuleazaVieti, strategieAleatoare } from '.
 import { calculeazaTipare } from '../js/tipare.js';
 import { estimeazaPensie, rezumatViata, venitPasivLunar } from '../js/bilant.js';
 import { alegeFinal } from '../js/finaluri.js';
+import { analizeazaContinut } from '../js/analiza.js';
 import { genereazaOferte, promovareDisponibila, schimbaJob } from '../js/cariera.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
 import { inBani, varstaLa } from '../js/util.js';
@@ -135,6 +136,15 @@ function teste(ctxBaza, incarcare) {
       ok(text2.includes('Datorie IFN'), 'flag-ul invalid trebuie raportat');
       ok(text2.includes('nu pot avea la rândul lor sub-alegeri'), 'sub-alegeri pe două niveluri trebuie raportate');
       ok(text2.includes('„nu-exista” nu există'), 'urmarea către un eveniment inexistent trebuie raportată');
+    },
+
+    'analiza conținutului: fără evenimente inaccesibile, concepte fără sursă sau condiții imposibile'() {
+      const a = analizeazaContinut(ctxBaza);
+      egal(a.evenimenteNeatinse.length, 0, `evenimente inaccesibile: ${a.evenimenteNeatinse}`);
+      egal(a.concepteFaraSursa.length, 0, `concepte fără sursă: ${a.concepteFaraSursa}`);
+      egal(a.flaguriNesetate.length, 0, `flag-uri citite dar nesetate: ${a.flaguriNesetate.map((x) => x.flag)}`);
+      egal(a.probleme.length, 0, 'condiții imposibile');
+      return `${a.flaguriNecitite.length} flag-uri setate dar necitite (memorie pentru Faza F)`;
     },
 
     'brut → net la CIM'() {

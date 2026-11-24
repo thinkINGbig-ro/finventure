@@ -116,7 +116,7 @@
       "conditii": {
         "areProdus": ["contCurent", "contractMunca"],
         "lipsaProdus": ["cardCredit"],
-        "lipsaFlag": ["refuzat_card"]
+        "lipsaFlag": ["refuzat_card", "datorie_ifn", "datorie_recuperator"]
       },
       "pondere": 4,
       "cooldownLuni": 24,
@@ -164,7 +164,7 @@
           "eticheta": "Mașină nouă, cu credit auto pe 5 ani",
           "cere": {
             "ascunse": { "scorCredit": { "min": 45 } },
-            "lipsaFlag": ["istoric_restante", "executare_silita"],
+            "lipsaFlag": ["istoric_restante", "executare_silita", "datorie_recuperator"],
             "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit."
           },
           "produsNou": {

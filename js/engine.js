@@ -406,7 +406,7 @@ function proceseazaSalariu(state, ctx, contract) {
   contract.luniDeLaMarire = (contract.luniDeLaMarire ?? 0) + 1;
   if (contract.luniLucrate === bal(ctx, 'cariera.luniPentruExperienta')) seteazaFlag(state, 'experienta_munca');
 
-  if (!state.momente.primulSalariu) adaugaMoment(state, 'primulSalariu', { fluturas: f, job: job.titlu }, ['brut-net']);
+  if (!state.momente.primulSalariu) adaugaMoment(state, 'primulSalariu', { fluturas: f, job: job.titlu }, f.contract === 'negru' ? ['brut-net'] : ['brut-net', 'pilonii-pensiei']);
   if (retinut > 0 && !state.momente.primaPoprire) adaugaMoment(state, 'primaPoprire', { retinut, net: f.net }, ['poprire']);
 }
 

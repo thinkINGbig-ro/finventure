@@ -155,6 +155,14 @@ async function porneste() {
     arataLectie({ lectie: 'Browserul blochează salvarea: poți juca, dar progresul se pierde când închizi pagina.' }, ctx);
   }
 
+  // Modul debug: index.html?debug=1 (se încarcă doar atunci).
+  if (new URLSearchParams(location.search).get('debug') === '1') {
+    import('./ui/debug.js').then((m) => m.initDebug({
+      ctx, getState: () => state, randeaza,
+      ruleaza: (oprire) => { if (!ocupat) ruleaza(oprire); },
+    }));
+  }
+
   randeaza();
   ruleaza(oprireCurenta(state, ctx)); // reia o decizie rămasă deschisă (sau prima decizie, la joc nou)
 }

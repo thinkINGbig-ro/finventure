@@ -65,7 +65,8 @@
               "eticheta": "Împrumut de la un prieten",
               "cere": {
                 "ascunse": { "retea": { "min": 40 } },
-                "motiv": "Nimeni din jur nu-ți poate da {suma} lei acum."
+                "lipsaFlag": ["prieten_pierdut", "datorie_prieten"],
+                "motiv": "Nimeni din jur nu-ți mai poate da {suma} lei acum."
               },
               "flaguri": ["datorie_prieten", "urgenta_recenta:12"],
               "urmari": [{ "eveniment": "prieten-returnare", "dupaLuni": 6, "variabile": { "suma": "{suma}" } }],

@@ -1,5 +1,5 @@
 {
-  "generat": "2026-11-24T05:20:05.142Z",
+  "generat": "2026-11-24T05:24:01.890Z",
   "seed": "sim",
   "vietiPeProfil": 500,
   "evenimente": 41,
@@ -9,57 +9,57 @@
       "n": 500,
       "procente": {
         "pensie": 37.2,
-        "independenta": 6.6,
-        "faliment": 56,
+        "independenta": 6,
+        "faliment": 56.6,
         "burnout": 0.2,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Pensionar liniștit": 33.2,
-        "Faliment înainte de 25": 21.8,
-        "Faliment personal": 21.4,
-        "Regele IFN-urilor": 8.2,
-        "Victima reducerilor": 4.6,
-        "Liber să alegi": 4.4,
-        "Libertate la 40": 3.4,
-        "Rentierul": 1.4,
-        "Milionar (în lei de azi)": 1,
+        "Pensionar liniștit": 32.2,
+        "Faliment personal": 22,
+        "Faliment înainte de 25": 20.8,
+        "Regele IFN-urilor": 9.4,
+        "Victima reducerilor": 4.4,
+        "Libertate la 40": 3.8,
+        "Liber să alegi": 3.6,
+        "Rentierul": 2,
+        "Milionar (în lei de azi)": 1.2,
         "Minimalistul": 0.4,
         "Burnout": 0.2
       },
-      "varstaMedie": 44.8,
-      "varstaMedieGameOver": 31.3,
-      "avereMedianaLei": 318179,
-      "avereMedianaLeiDeAzi": 75662,
+      "varstaMedie": 45,
+      "varstaMedieGameOver": 31.8,
+      "avereMedianaLei": 431990,
+      "avereMedianaLeiDeAzi": 85094,
       "mediiAnualeProcent": {
         "inflatie": 4.77,
-        "etf": 7.06,
-        "salariu": 5.12,
-        "salariuReal": 0.09
+        "etf": 7.04,
+        "salariu": 5.04,
+        "salariuReal": 0.02
       },
       "cauzeGameOver": [
         {
           "cauza": "faliment: masina › noua",
-          "numar": 93
+          "numar": 88
         },
         {
           "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
-          "numar": 38
+          "numar": 52
         },
         {
           "cauza": "faliment: telefon-rate › rate",
-          "numar": 36
+          "numar": 31
         },
         {
           "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
-          "numar": 19
-        },
-        {
-          "cauza": "faliment: mutare › singur",
-          "numar": 13
+          "numar": 20
         },
         {
           "cauza": "faliment: mutare › colegi",
+          "numar": 12
+        },
+        {
+          "cauza": "faliment: mutare › singur",
           "numar": 10
         },
         {
@@ -141,56 +141,52 @@
       "descriere": "IFN, la negru, card pe minim, cheltuie tot",
       "n": 500,
       "procente": {
-        "pensie": 15.2,
+        "pensie": 14.2,
         "independenta": 0,
-        "faliment": 84.8,
+        "faliment": 85.8,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Regele IFN-urilor": 69.6,
-        "Pensionar liniștit": 15.2,
-        "Faliment înainte de 25": 7.8,
-        "Faliment personal": 4.6,
-        "Victima reducerilor": 2.8
+        "Regele IFN-urilor": 69.2,
+        "Pensionar liniștit": 14.2,
+        "Faliment înainte de 25": 8.8,
+        "Faliment personal": 4.4,
+        "Victima reducerilor": 3.4
       },
-      "varstaMedie": 40.5,
-      "varstaMedieGameOver": 36.1,
-      "avereMedianaLei": 102995,
-      "avereMedianaLeiDeAzi": 43016,
+      "varstaMedie": 40.1,
+      "varstaMedieGameOver": 36,
+      "avereMedianaLei": 106927,
+      "avereMedianaLeiDeAzi": 44375,
       "mediiAnualeProcent": {
-        "inflatie": 4.83,
-        "etf": 7.21,
-        "salariu": 4.54,
-        "salariuReal": -0.56
+        "inflatie": 4.84,
+        "etf": 7.13,
+        "salariu": 4.65,
+        "salariuReal": -0.49
       },
       "cauzeGameOver": [
         {
           "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
-          "numar": 353
+          "numar": 350
         },
         {
           "cauza": "faliment: telefon-rate › rate",
-          "numar": 48
+          "numar": 56
         },
         {
           "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
-          "numar": 9
+          "numar": 8
         },
         {
           "cauza": "faliment: facturi-somatie › ignor",
-          "numar": 4
+          "numar": 5
         },
         {
-          "cauza": "faliment: mutare › singur",
-          "numar": 3
-        },
-        {
-          "cauza": "faliment: masina › noua",
+          "cauza": "faliment: lipsa-spatiu › caut",
           "numar": 2
         },
         {
-          "cauza": "faliment: investitie-garantata › raportez",
+          "cauza": "faliment: masina › noua",
           "numar": 2
         },
         {
@@ -198,11 +194,15 @@
           "numar": 1
         },
         {
-          "cauza": "faliment: abonamente › las",
+          "cauza": "faliment: mutare › singur",
           "numar": 1
         },
         {
-          "cauza": "faliment: mutare › colegi",
+          "cauza": "faliment: investitie-garantata › raportez",
+          "numar": 1
+        },
+        {
+          "cauza": "faliment: abonamente › las",
           "numar": 1
         }
       ]

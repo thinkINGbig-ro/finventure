@@ -131,7 +131,7 @@
           "efecte": { "fericire": 3 },
           "flaguri": ["stil_recent:24"],
           "etichete": ["stilJos"],
-          "concepte": ["stil-de-viata"],
+          "concepte": ["stil-de-viata", "buget"],
           "lectie": "Ai lăsat economiile să crească, nu cheltuielile. Diferența, pusă deoparte lună de lună, se adună."
         }
       ]
@@ -150,7 +150,7 @@
           "eticheta": "Tai din cheltuieli",
           "stilViata": -1,
           "etichete": ["stilJos"],
-          "concepte": ["stil-de-viata"],
+          "concepte": ["stil-de-viata", "buget"],
           "lectie": "Primele luni sunt grele, apoi te obișnuiești. Adaptarea merge în ambele sensuri."
         },
         {

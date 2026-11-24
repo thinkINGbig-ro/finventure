@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finventure: verificare conținut</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap">
+  <style>
+    :root { --bg: #1E1638; --bg2: #2A2050; --main: #3B5BDB; --accent: #FF8A3D; --text: #F3EEFF; --text2: #C9BFE8; --gain: #34C77B; --loss: #FF5A6E; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Fredoka, system-ui, sans-serif; }
+    main { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+    h1 { margin: 0 0 4px; font-size: 26px; }
+    h1 span { color: var(--accent); }
+    .sub { color: var(--text2); margin: 0 0 24px; }
+    section { background: var(--bg2); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    h2 { margin: 0 0 10px; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+    .stare { font-size: 13px; padding: 2px 10px; border-radius: 99px; font-weight: 600; }
+    .ok { background: var(--gain); color: #08281A; }
+    .eroare { background: var(--loss); color: #2A0710; }
+    .atentie { background: var(--accent); color: var(--bg); }
+    ul { margin: 0; padding-left: 20px; }
+    li { margin-bottom: 4px; }
+    code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; background: rgba(0, 0, 0, .25); padding: 1px 5px; border-radius: 5px; }
+    .mic { color: var(--text2); font-size: 13px; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid rgba(243, 238, 255, .12); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1><span>Fin</span>venture: verificare conținut</h1>
+    <p class="sub">Încarcă toate JSON-urile din <code>data/</code> și verifică schema și legăturile dintre ele. Reîncarcă pagina după fiecare modificare.</p>
+    <div id="rezultate"><section>Verific…</section></div>
+  </main>
+  <script type="module">
+    import { cititorFetch, formateazaEroare, incarcaContinut } from '../js/content.js';
+    import { analizeazaContinut } from '../js/analiza.js';
+
+    const el = (tag, attrs = {}, ...copii) => {
+      const e = document.createElement(tag);
+      Object.entries(attrs).forEach(([k, v]) => (k === 'class' ? (e.className = v) : e.setAttribute(k, v)));
+      copii.flat().forEach((c) => c != null && e.append(c instanceof Node ? c : document.createTextNode(String(c))));
+      return e;
+    };
+    const sectiune = (titlu, elemente, { gol = 'Nimic de semnalat.', tip = 'eroare', explicatie } = {}) => el('section', {},
+      el('h2', {}, titlu, el('span', { class: `stare ${elemente.length ? tip : 'ok'}` }, elemente.length ? String(elemente.length) : 'OK')),
+      explicatie ? el('p', { class: 'mic' }, explicatie) : null,
+      elemente.length ? el('ul', {}, elemente.map((x) => el('li', {}, x))) : el('p', { class: 'mic' }, gol));
+
+    try {
+      const { ctx, erori, avertismente } = await incarcaContinut(cititorFetch('../'));
+      const a = analizeazaContinut(ctx);
+      const s = a.statistici;
+      document.getElementById('rezultate').replaceChildren(
+        el('section', {}, el('h2', {}, 'Ce conține jocul'), el('table', {}, el('tbody', {},
+          el('tr', {}, el('td', {}, 'Evenimente'), el('td', {}, `${s.evenimente} (dintre care ${s.urmari} doar ca urmări)`)),
+          el('tr', {}, el('td', {}, 'Evenimente pe faze (1–5)'), el('td', {}, s.peFaza.join(' / '))),
+          el('tr', {}, el('td', {}, 'Concepte în enciclopedie'), el('td', {}, s.concepte)),
+          el('tr', {}, el('td', {}, 'Finaluri colecționabile'), el('td', {}, s.finaluri)),
+          el('tr', {}, el('td', {}, 'Joburi'), el('td', {}, s.joburi))))),
+        sectiune('Erori de schemă', erori.map(formateazaEroare), { explicatie: 'Id-uri duplicate, câmpuri scrise greșit, referințe la evenimente, concepte, joburi sau valori din config care nu există. Evenimentele cu erori NU apar în joc.' }),
+        sectiune('Evenimente la care nu se poate ajunge', a.evenimenteNeatinse.map((id) => el('span', {}, el('code', {}, id), ' are „doarUrmare”, dar nicio alegere nu-l programează')), { explicatie: 'Evenimentele „doarUrmare” apar doar ca urmare a unei alegeri (urmari, laRestanta) sau din motor.' }),
+        sectiune('Condiții imposibile', a.probleme.map((p) => el('span', {}, el('code', {}, p.id), ': ', p.mesaj))),
+        sectiune('Concepte fără nicio sursă', a.concepteFaraSursa.map((id) => el('span', {}, el('code', {}, id), ' nu e deblocat de nicio alegere și nici de motor'))),
+        sectiune('Flag-uri citite, dar setate nicăieri', a.flaguriNesetate.map((f) => el('span', {}, el('code', {}, f.flag), ' (citit în: ', f.unde.join(', '), ')')), { explicatie: 'Condiția nu va fi niciodată adevărată (sau mereu, la „lipsaFlag”). De obicei, o greșeală de scriere în numele flag-ului.' }),
+        sectiune('Flag-uri setate, dar citite nicăieri', a.flaguriNecitite.map((f) => el('span', {}, el('code', {}, f.flag), ' (setat în: ', f.unde.join(', '), ')')), { tip: 'atentie', explicatie: 'Nu e neapărat o greșeală: poate fi „memorie” pentru conținut viitor. Dar dacă ai vrut să schimbe ceva, nicio condiție nu-l folosește încă.' }),
+        sectiune('Avertismente', avertismente.map(formateazaEroare), { tip: 'atentie', explicatie: 'De exemplu, lecții mai lungi de 2 propoziții.' }),
+      );
+    } catch (e) {
+      document.getElementById('rezultate').replaceChildren(el('section', {}, el('h2', {}, 'Nu am putut încărca datele'),
+        el('p', {}, location.protocol === 'file:' ? 'Deschide pagina printr-un server local (vezi README), nu direct din fișier.' : e.message)));
+    }
+  </script>
+</body>
+</html>
