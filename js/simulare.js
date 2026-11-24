@@ -153,6 +153,16 @@ function gestioneazaDatoriiAtent(state, ctx, rezerva) {
   }
 }
 
+// Cursurile unui jucător atent: cele gratuite oricând; cele plătite doar cu fondul de urgență complet.
+function cursuriAtent(state, ctx, ids, fondComplet) {
+  for (const id of ids) {
+    const c = ctx.educatie.cursuri.get(id);
+    if (!c || state.flaguri[c.flag]) continue;
+    if (pret(state, ctx, c.pret.replace(/^pret:/, '')) > 0 && !fondComplet) continue;
+    actiune(state, ctx, 'inscrieCurs', { curs: id });
+  }
+}
+
 // Frugal: modest toată viața, fond de 6 luni, aproape tot restul investit în ETF.
 function meniuFrugal(state, ctx) {
   asiguraCont(state, ctx);
@@ -176,6 +186,7 @@ function meniuFrugal(state, ctx) {
   }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
   cereMarireAnual(state, ctx);
+  cursuriAtent(state, ctx, ['educatie-financiara', 'engleza'], fondUrgenta(state) >= 6 * lunar);
   // Frugalul face doar ce e gratis: CV mai bun, odihnă, familie.
   faActivitati(state, ctx, [
     ...(!areFlag(state, 'cv_voluntariat') ? ['voluntariat'] : []),
@@ -212,6 +223,9 @@ function meniuPrudent(state, ctx) {
   }
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
   gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
+  // Prudentul își crește valoarea pe piață: limbă străină și, fără facultate, o calificare căutată.
+  cursuriAtent(state, ctx, ['educatie-financiara', 'engleza',
+    ...(['liceu', 'profesionala'].includes(state.situatie.nivelStudii) && !state.situatie.studii ? ['contabilitate'] : [])], fondComplet);
   if (fondComplet && netLunar) {
     // 20%: investiții (pentru casă, prudentul le vinde la nevoie: „Vând investițiile pentru avans”)
     const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
@@ -301,6 +315,16 @@ const ACTIUNI_ALEATOARE = [
   (state, ctx, rnd) => actiune(state, ctx, 'cumpara', { suma: lei(Math.round(baniDisponibili(state) * (0.1 + rnd() * 0.5))), fericire: 4 }),
   (state, ctx) => actiune(state, ctx, 'cereMarire'),
   (state, ctx) => actiune(state, ctx, 'cautaJob'),
+  // educația: un program lung (uneori cu credit), un curs sau renunțarea la studii
+  (state, ctx, rnd) => {
+    const ids = [...ctx.educatie.programe.keys()];
+    return actiune(state, ctx, 'inscrieProgram', { program: ids[Math.floor(rnd() * ids.length)], credit: rnd() < 0.5 });
+  },
+  (state, ctx, rnd) => {
+    const ids = [...ctx.educatie.cursuri.keys()];
+    return actiune(state, ctx, 'inscrieCurs', { curs: ids[Math.floor(rnd() * ids.length)] });
+  },
+  (state, ctx, rnd) => (state.situatie.studii && rnd() < 0.3 ? actiune(state, ctx, 'renuntaStudii') : null),
   // datoriile: rambursare parțială, eșalonare, consolidare, la întâmplare
   (state, ctx, rnd) => {
     const credite = gasesteProduse(state, 'credit');

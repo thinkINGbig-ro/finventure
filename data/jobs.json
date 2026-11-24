@@ -106,7 +106,7 @@
       "reputatieAnual": 2,
       "contracte": ["cim", "pfa"],
       "inOferte": true,
-      "cerinte": { "studiiMin": "profesionala" },
+      "cerinte": { "studiiMin": "profesionala", "flagInLocDeStudii": "calificare_electrician" },
       "crestere": "medie",
       "urmator": "tehnician-senior",
       "luniPanaLaPromovare": 36
@@ -121,7 +121,7 @@
       "skillAnual": 3,
       "reputatieAnual": 3,
       "contracte": ["cim", "pfa"],
-      "cerinte": { "studiiMin": "profesionala", "skillMin": 50 },
+      "cerinte": { "studiiMin": "profesionala", "skillMin": 50, "flagInLocDeStudii": "calificare_electrician" },
       "crestere": "medie"
     },
     {
@@ -164,7 +164,7 @@
       "reputatieAnual": 2,
       "contracte": ["cim"],
       "inOferte": true,
-      "cerinte": { "studiiMin": "licenta", "skillMin": 45 },
+      "cerinte": { "studiiMin": "licenta", "skillMin": 45, "flagInLocDeStudii": "certificat_contabilitate" },
       "crestere": "mare",
       "urmator": "contabil",
       "luniPanaLaPromovare": 30
@@ -208,7 +208,7 @@
       "reputatieAnual": 3,
       "contracte": ["cim"],
       "inOferte": true,
-      "cerinte": { "studiiMin": "licenta", "skillMin": 40 },
+      "cerinte": { "studiiMin": "licenta", "skillMin": 40, "flagInLocDeStudii": "certificat_marketing" },
       "crestere": "mare",
       "urmator": "specialist-marketing",
       "luniPanaLaPromovare": 30
@@ -223,7 +223,7 @@
       "skillAnual": 3,
       "reputatieAnual": 3,
       "contracte": ["cim", "pfa"],
-      "cerinte": { "studiiMin": "licenta", "skillMin": 55 },
+      "cerinte": { "studiiMin": "licenta", "skillMin": 55, "flagInLocDeStudii": "certificat_marketing" },
       "crestere": "mare",
       "urmator": "manager-marketing",
       "luniPanaLaPromovare": 48
@@ -252,7 +252,7 @@
       "reputatieAnual": 2,
       "contracte": ["cim", "pfa"],
       "inOferte": true,
-      "cerinte": { "studiiMin": "licenta", "skillMin": 55 },
+      "cerinte": { "studiiMin": "licenta", "skillMin": 55, "flagInLocDeStudii": "certificat_it" },
       "crestere": "mare",
       "urmator": "programator",
       "luniPanaLaPromovare": 24
@@ -267,7 +267,7 @@
       "skillAnual": 4,
       "reputatieAnual": 3,
       "contracte": ["cim", "pfa"],
-      "cerinte": { "studiiMin": "licenta", "skillMin": 65 },
+      "cerinte": { "studiiMin": "licenta", "skillMin": 65, "flagInLocDeStudii": "certificat_it" },
       "crestere": "mare",
       "urmator": "programator-senior",
       "luniPanaLaPromovare": 48
@@ -282,7 +282,7 @@
       "skillAnual": 2,
       "reputatieAnual": 3,
       "contracte": ["cim", "pfa"],
-      "cerinte": { "studiiMin": "licenta", "skillMin": 75 },
+      "cerinte": { "studiiMin": "licenta", "skillMin": 75, "flagInLocDeStudii": "certificat_it" },
       "crestere": "medie"
     }
   ]

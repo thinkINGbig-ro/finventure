@@ -2,7 +2,9 @@
 
 import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, oprireCurenta } from '../js/engine.js';
 import { textRezultat } from '../js/events.js';
-import { baniDisponibili, creeazaProdus, datorieProdus } from '../js/finance.js';
+import { baniDisponibili, creeazaProdus, datorieProdus, pret } from '../js/finance.js';
+import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
+import { indeplinesteCerinte } from '../js/cariera.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
@@ -14,6 +16,105 @@ export function testeLoturi(ctxBaza, a) {
     ...lot0(ctxBaza, a),
     ...lot1(ctxBaza, a),
     ...lot2(ctxBaza, a),
+    ...lot3(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 3: Educație ----------
+
+function lot3(ctxBaza, a) {
+  const { ok, egal } = a;
+  // Joc între ani, fără studii în curs, la vârsta cerută.
+  const jocLaVarsta = (seed, varsta, { faraJob = true } = {}) => {
+    const { ctx, state } = faraJob ? a.jocFaraVenit(seed) : a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.situatie.studii = null;
+    state.luna = (varsta - 18) * 12;
+    state.numerar = inBani(100_000);
+    return { ctx, state };
+  };
+  const treciLuni = (state, ctx, n) => {
+    for (let i = 0; i < n && !state.final; i += 12) a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+  };
+  return {
+    'lotul 3: facultate cu taxă la 30 de ani: taxa anuală, apoi licența'() {
+      const { ctx, state } = jocLaVarsta('fac30', 30);
+      const inainte = baniDisponibili(state);
+      const r = actiune(state, ctx, 'inscrieProgram', { program: 'facultateTaxa' });
+      ok(r.ok, r.mesaj);
+      ok(state.situatie.studii?.id === 'facultateTaxa', 'e la facultate');
+      treciLuni(state, ctx, 36);
+      egal(state.situatie.nivelStudii, 'licenta', 'are licența după 3 ani');
+      ok(inainte - baniDisponibili(state) > 0, 'a plătit taxe');
+      ok(state.bilant.costEducatieAzi > 0, 'costul educației e ținut minte pentru final');
+    },
+
+    'lotul 3: buget doar cu pregătire; bursa de merit vine lunar'() {
+      const { ctx, state } = jocLaVarsta('buget', 20);
+      state.ascunse.skill = 30;
+      const r = actiune(state, ctx, 'inscrieProgram', { program: 'facultateBuget' });
+      ok(!r.ok && /pregătire/.test(r.mesaj), `refuz cu motiv: ${r.mesaj}`);
+      state.ascunse.skill = 70;
+      ok(actiune(state, ctx, 'inscrieProgram', { program: 'facultateBuget' }).ok, 'cu pregătire intră');
+      ok(state.situatie.studii.bursa, 'are bursă de merit');
+      const numerar = baniDisponibili(state);
+      state.recurente = [];
+      const s = proceseazaStudiiLuna(state, ctx);
+      ok(s.venit > 0 && baniDisponibili(state) === numerar + s.venit, 'bursa intră în cont');
+    },
+
+    'lotul 3: taxa plătită cu credit de studii: credit nou, fără taxă anuală; masterul cere licență'() {
+      const { ctx, state } = jocLaVarsta('credit-studii', 19);
+      ok(!actiune(state, ctx, 'inscrieProgram', { program: 'master' }).ok, 'fără licență, fără master');
+      const r = actiune(state, ctx, 'inscrieProgram', { program: 'facultateTaxa', credit: true });
+      ok(r.ok, r.mesaj);
+      const c = state.produse.find((p) => p.tip === 'credit' && p.furnizor === 'studii');
+      ok(c && c.sumaInitiala === 3 * pret(state, ctx, 'studii.facultateTaxa.taxaAnuala'), 'creditul acoperă 3 ani de taxă');
+      state.situatie.studii.inceputLa = state.luna; // luna asta ar fi scadentă taxa
+      egal(proceseazaStudiiLuna(state, ctx).cheltuiala, 0, 'nu se mai plătește taxa anuală');
+      ok(actiune(state, ctx, 'renuntaStudii').ok && !state.situatie.studii, 'poți renunța');
+    },
+
+    'lotul 3: bootcamp-ul ține loc de diplomă la programator junior'() {
+      const { ctx, state } = jocLaVarsta('bootcamp', 22);
+      state.ascunse.skill = 50;
+      const job = ctx.joburi.get('programator-junior');
+      ok(!indeplinesteCerinte(job, state, ctx), 'fără licență și fără certificat: nu');
+      const timp = timpRamas(state, ctx);
+      const bani = baniDisponibili(state);
+      ok(actiune(state, ctx, 'inscrieCurs', { curs: 'bootcamp-it' }).ok, 'înscris la bootcamp');
+      egal(timpRamas(state, ctx), timp - 2, 'bootcamp-ul ia 2 acțiuni de timp');
+      egal(bani - baniDisponibili(state), pret(state, ctx, 'cursuri.bootcampIT'), 'a plătit cursul');
+      ok(!actiune(state, ctx, 'inscrieCurs', { curs: 'bootcamp-it' }).ok, 'nu te înscrii de două ori');
+      for (let i = 0; i < 6; i++) proceseazaCursuriLuna(state, ctx);
+      ok(areFlag(state, 'certificat_it'), 'are certificatul');
+      ok(state.ascunse.skill >= 60, 'pregătirea a crescut');
+      ok(indeplinesteCerinte(job, state, ctx), 'acum poate primi oferte de programator junior');
+    },
+
+    'lotul 3: cursul gratuit chiar e gratuit; bilanțul educației la final'() {
+      const { ctx, state } = jocLaVarsta('gratis', 25);
+      const bani = baniDisponibili(state);
+      ok(actiune(state, ctx, 'inscrieCurs', { curs: 'educatie-financiara' }).ok, 'înscris');
+      egal(baniDisponibili(state), bani, 'n-a plătit nimic');
+      egal(bilantEducatie(state, ctx), null, 'fără studii peste liceu și fără cheltuieli: nimic de arătat încă');
+      ok(actiune(state, ctx, 'inscrieCurs', { curs: 'engleza' }).ok, 'curs plătit');
+      const b = bilantEducatie(state, ctx);
+      ok(b && b.cost > 0, 'costul apare în bilanț');
+    },
+
+    'lotul 3: fiecare program și curs din conținut are o descriere completă'() {
+      const { ctx, state } = jocLaVarsta('descrieri', 25);
+      for (const p of ctx.educatie.programe.values()) {
+        const d = descrieProgram(state, ctx, p);
+        ok(d.luni > 0 && (d.disponibil || d.motiv), `${p.id}: durată și disponibilitate`);
+      }
+      for (const c of ctx.educatie.cursuri.values()) {
+        const d = descrieCurs(state, ctx, c);
+        ok(d.luni > 0 && (d.disponibil || d.motiv), `${c.id}: durată și disponibilitate`);
+      }
+      return `${ctx.educatie.programe.size} programe, ${ctx.educatie.cursuri.size} cursuri`;
+    },
   };
 }
 
@@ -285,6 +386,9 @@ function lot0(ctxBaza, a) {
         ramburseazaPartial: [{ id: id('contCurent'), suma: 100 }],
         esaloneaza: [{ id: id('contCurent'), luni: 12 }, {}],
         consolideaza: [{ ids: [], luni: 36 }, { ids: [id('contEconomii')], luni: 36 }],
+        inscrieProgram: [{ program: 'nu-exista' }, { program: 'master' }],
+        renuntaStudii: [{}],
+        inscrieCurs: [{ curs: 'educatie-financiara' }, { curs: 'educatie-financiara' }],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

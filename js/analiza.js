@@ -83,6 +83,15 @@ export function analizeazaContinut(ctx) {
       for (const u of p.urmari ?? []) referite.add(u.eveniment);
     }
   }
+  // Educația: condițiile citesc flag-uri, cursurile setează certificatul, iar joburile îl citesc.
+  for (const p of [...(ctx.educatie?.programe.values() ?? []), ...(ctx.educatie?.cursuri.values() ?? [])]) {
+    const c = new Set();
+    flaguriDinConditii(p.conditii, c);
+    c.forEach((f) => adauga(citite, f, `educație ${p.id} (condiții)`));
+    if (p.flag) adauga(setate, p.flag, `curs ${p.id}`);
+    for (const k of p.concepte ?? []) concepteFolosite.add(k);
+  }
+  for (const j of ctx.joburi.values()) if (j.cerinte?.flagInLocDeStudii) adauga(citite, j.cerinte.flagInLocDeStudii, `job ${j.id} (în loc de diplomă)`);
   for (const f of Object.keys(ctx.balans?.cariera?.cv?.bonusFlaguri ?? {})) adauga(citite, f, 'motor (scorul CV-ului)');
   MOTOR.flaguriSetate.forEach((f) => adauga(setate, f, 'motor'));
   MOTOR.flaguriCitite.forEach((f) => adauga(citite, f, 'motor'));

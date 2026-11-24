@@ -15,6 +15,7 @@ const FISIERE = {
   indexEvenimente: 'data/events/index.json',
   finaluri: 'data/endings.json',
   activitati: 'data/activitati.json',
+  educatie: 'data/educatie.json',
 };
 
 // citeste(cale) -> Promise<string>; cale relativă la rădăcina proiectului
@@ -44,6 +45,7 @@ export async function incarcaContinut(citeste) {
   const index = (await citesteJson(FISIERE.indexEvenimente)) ?? { fisiere: [] };
   const finaluriJson = (await citesteJson(FISIERE.finaluri)) ?? { finaluri: [] };
   const activitatiJson = (await citesteJson(FISIERE.activitati)) ?? { activitati: [] };
+  const educatieJson = (await citesteJson(FISIERE.educatie)) ?? { programe: [], cursuri: [] };
 
   const brute = [];
   for (const nume of index.fisiere ?? []) {
@@ -57,11 +59,13 @@ export async function incarcaContinut(citeste) {
     json.evenimente.forEach((ev, i) => brute.push({ ev, fisier, pozitie: i }));
   }
 
-  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson }, erori, avertismente);
+  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson }, erori, avertismente);
   return { ...rezultat, erori, avertismente };
 }
 
-export function construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] }, activitatiJson = { activitati: [] } }, erori = [], avertismente = []) {
+export function construiesteContinut({
+  config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] }, activitatiJson = { activitati: [] }, educatieJson = { programe: [], cursuri: [] },
+}, erori = [], avertismente = []) {
   valideazaConfig(config, FISIERE.config, erori);
 
   const joburi = new Map();
@@ -71,6 +75,9 @@ export function construiesteContinut({ config, balans, joburiJson, concepteJson,
     if (joburi.has(j.id)) err('id', 'id duplicat');
     if (typeof dupaCale(config, j.salariu ?? '') !== 'number') err('salariu', `„${j.salariu}” nu există în config.json`);
     if (!['part-time', 'full-time'].includes(j.program)) err('program', 'trebuie să fie „part-time” sau „full-time”');
+    campuriNecunoscute(j.cerinte ?? {}, ['studiiMin', 'skillMin', 'flagInLocDeStudii'], 'cerinte', err);
+    if (j.cerinte?.studiiMin && balans?.cariera?.nivelStudii?.[j.cerinte.studiiMin] === undefined) err('cerinte.studiiMin', `nivel necunoscut „${j.cerinte.studiiMin}”`);
+    if (j.cerinte?.flagInLocDeStudii !== undefined && !RE_FLAG_NUME.test(j.cerinte.flagInLocDeStudii)) err('cerinte.flagInLocDeStudii', 'nume de flag invalid');
     joburi.set(j.id, j);
   }
 
@@ -133,7 +140,49 @@ export function construiesteContinut({ config, balans, joburiJson, concepteJson,
     else activitati.set(id, a);
   }
 
-  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri, activitati } };
+  const educatie = construiesteEducatie(educatieJson, { ...ctxValidare, referinte: [] }, erori, avertismente);
+
+  return { ctx: { config, balans, joburi, concepte, evenimente, finaluri, activitati, educatie } };
+}
+
+// ---------- Educație (programe lungi + cursuri scurte) ----------
+
+const CAMPURI_PROGRAM = ['id', 'titlu', 'emoji', 'descriere', 'conditii', 'bursaMerit', 'creditStudii', 'lectie', 'concepte'];
+const CAMPURI_CURS = ['id', 'titlu', 'emoji', 'descriere', 'pret', 'luni', 'timp', 'energieLunara', 'skillLaFinal', 'flag', 'conditii', 'lectie', 'concepte'];
+
+function construiesteEducatie(json, cv, erori, avertismente) {
+  const fisier = FISIERE.educatie;
+  const programe = new Map();
+  const cursuri = new Map();
+  const comun = (x, campuri, err) => {
+    campuriNecunoscute(x, campuri, '', err);
+    if (typeof x.id !== 'string' || !/^[a-zA-Z0-9-]+$/.test(x.id)) err('id', 'id invalid');
+    for (const c of ['titlu', 'descriere', 'emoji']) if (typeof x[c] !== 'string' || !x[c].trim()) err(c, 'trebuie să fie text');
+    valideazaConditii(x.conditii, 'conditii', err, cv, new Set());
+    verificaText(x.lectie, 'lectie', err, new Set());
+    (x.concepte ?? []).forEach((k) => { if (!cv.concepte.has(k)) err('concepte', `conceptul „${k}” nu există`); });
+  };
+  for (const p of json.programe ?? []) {
+    const eroriP = [];
+    const err = (camp, mesaj) => eroriP.push({ fisier, id: p?.id, camp, mesaj });
+    comun(p, CAMPURI_PROGRAM, err);
+    if (typeof dupaCale(cv.config, `studii.${p.id}.durataLuni`) !== 'number') err('id', `lipsește config.studii.${p.id} (taxaAnuala, durataLuni)`);
+    if (!cv.balans?.studii?.[p.id]) err('id', `lipsește balans.studii.${p.id} (nivel, skillLaFinal)`);
+    if (programe.has(p.id)) err('id', 'id duplicat');
+    if (eroriP.length) erori.push(...eroriP); else programe.set(p.id, p);
+  }
+  for (const c of json.cursuri ?? []) {
+    const eroriC = [];
+    const err = (camp, mesaj) => eroriC.push({ fisier, id: c?.id, camp, mesaj });
+    comun(c, CAMPURI_CURS, err);
+    if (typeof c.pret !== 'string' || typeof dupaCale(cv.config, c.pret.replace(/^pret:/, '')) !== 'number') err('pret', '„pret:cale_din_config”, ex. „pret:cursuri.engleza”');
+    if (!(Number.isInteger(c.luni) && c.luni > 0)) err('luni', 'număr întreg de luni > 0');
+    for (const k of ['timp', 'energieLunara', 'skillLaFinal']) if (c[k] !== undefined && typeof c[k] !== 'number') err(k, 'trebuie să fie număr');
+    if (typeof c.flag !== 'string' || !RE_FLAG_NUME.test(c.flag)) err('flag', 'flag-ul certificatului (litere mici, cifre, _)');
+    if (cursuri.has(c.id)) err('id', 'id duplicat');
+    if (eroriC.length) erori.push(...eroriC); else cursuri.set(c.id, c);
+  }
+  return { programe, cursuri };
 }
 
 export function formateazaEroare(e) {

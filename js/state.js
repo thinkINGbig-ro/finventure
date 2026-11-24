@@ -5,7 +5,7 @@ import { creeazaFluxuri } from './rng.js';
 import { CLASE_PIATA, baniDisponibili, contCurent, datorieProdus, facturiLunare, pret, valoareProdus } from './finance.js';
 import { CHEI } from './storage.js';
 
-export const VERSIUNE_SALVARE = 2;
+export const VERSIUNE_SALVARE = 3;
 
 // Migrările salvărilor: fiecare pas aduce o salvare de la versiunea `de` la `de + 1`, completând
 // câmpurile noi cu valori neutre. Așa, un joc început pe GitHub Pages merge și după o actualizare.
@@ -13,6 +13,10 @@ const MIGRARI = {
   1: (s) => {
     s.timp = { an: Math.floor(s.luna / 12), folosit: 0, activitati: {} };
     s.rng.actiuni ??= creeazaFluxuri(`${s.seed}`).actiuni;
+  },
+  // Lotul 3: cursurile scurte în desfășurare
+  2: (s) => {
+    s.cursuri ??= [];
   },
 };
 
@@ -65,6 +69,7 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     contoare: { id: 0, decizii: 0, luniFaliment: 0 },
     // Bugetul de timp al anului: câte acțiuni mari (activități, cursuri, căutat job) ai folosit.
     timp: { an: 0, folosit: 0, activitati: {} },
+    cursuri: [], // cursurile scurte în desfășurare: { id, luniRamase, inceputLa }
     final: null,
   };
   state.pendinte = {

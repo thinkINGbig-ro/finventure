@@ -10,13 +10,13 @@ import { confirma } from './ecrane.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../activitati.js';
 import { datoriiTotal, listaDatorii, simuleazaConsolidare, simuleazaEsalonare, simuleazaRambursare } from '../datorii.js';
+import { descrieCurs, descrieProgram } from '../educatie.js';
 
 const TITLURI = {
   meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', datorii: 'Datoriile mele', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
 };
 const IN_CURAND = {
   investitii: 'Aici vei putea cumpăra ETF-uri, acțiuni, titluri de stat, aur sau crypto și vei vedea cum crește (sau scade) portofoliul.',
-  educatie: 'Aici vei putea urma cursuri, un master sau o calificare nouă.',
 };
 
 // optiuni: { state, ctx, conceptGlobale: string[], laSchimbare: () => void }
@@ -35,6 +35,7 @@ function continutPanou(tab, o, reranda) {
   if (tab === 'activitati') return panouActivitati(o, reranda);
   if (tab === 'banca') return panouBanca(o, reranda);
   if (tab === 'datorii') return panouDatorii(o, reranda);
+  if (tab === 'educatie') return panouEducatie(o, reranda);
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
   if (tab === 'cariera') return panouCariera(o, reranda);
   if (tab === 'cumparaturi') return panouCumparaturi(o, reranda);
@@ -63,6 +64,81 @@ function arataMesaj(text, ok, lectie) {
   m.className = `mesaj-actiune ${ok ? 'ok' : 'eroare'}`;
 }
 
+// ---------- Educație ----------
+
+const NUME_ANI = (luni) => (luni % 12 ? NUME_LUNI(luni) : luni === 12 ? '1 an' : `${luni / 12} ani`);
+
+function randTimp(state, ctx) {
+  const total = timpPeAn(state, ctx);
+  const ramas = timpRamas(state, ctx);
+  return h('div', { class: 'timp-an' },
+    h('span', {}, `Timp anul ăsta: ${ramas} din ${total} ${total === 1 ? 'acțiune mare' : 'acțiuni mari'}`),
+    h('span', { class: 'timp-puncte', 'aria-hidden': 'true' }, Array.from({ length: total }, (_, i) => h('span', { class: i < ramas ? 'punct plin' : 'punct' }))));
+}
+
+function panouEducatie(o, reranda) {
+  const { state, ctx } = o;
+  const executa = executor(o, reranda);
+  const sectiuni = [h('p', { class: 'mesaj-actiune', role: 'status' }), randTimp(state, ctx)];
+
+  const s = state.situatie.studii;
+  if (s) {
+    const p = ctx.educatie.programe.get(s.id);
+    const info = [`mai ai ${NUME_ANI(s.luniRamase)}`, s.taxaPlatita ? 'taxa e plătită cu credit de studii' : null, s.bursa ? 'ai bursă' : null].filter(Boolean).join(' · ');
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Acum studiezi'),
+      produs(`${p?.emoji ?? '🎓'} ${p?.titlu ?? 'Studii'}`, '', info,
+        h('div', { class: 'rand-butoane' }, h('button', {
+          type: 'button', class: 'btn btn-text', onclick: async () => {
+            const da = await confirma('Renunți la studii? Taxele plătite nu se mai întorc, iar diploma nu o mai primești.', { da: 'Renunț' });
+            const r = da ? actiune(state, ctx, 'renuntaStudii') : null;
+            o.laSchimbare();
+            deschidePanou('educatie', o);
+            if (r) arataMesaj(r.mesaj, r.ok, r.lectie);
+          },
+        }, 'Renunț la studii'))));
+  }
+  for (const activ of state.cursuri ?? []) {
+    const c = ctx.educatie.cursuri.get(activ.id);
+    if (c) sectiuni.push(produs(`${c.emoji} ${c.titlu}`, '', `În curs: mai ai ${NUME_LUNI(activ.luniRamase)}.`));
+  }
+
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Studii'),
+    h('p', { class: 'mic' }, 'Te poți înscrie la orice vârstă. Un program lung ia o acțiune din timpul anului, apoi te obosește puțin în fiecare lună.'));
+  for (const p of ctx.educatie.programe.values()) {
+    const d = descrieProgram(state, ctx, p);
+    const cost = d.taxaAnuala ? `${lei(d.taxaAnuala)} pe an (${lei(d.costTotal)} în total)` : 'fără taxă';
+    const info = [NUME_ANI(d.luni), cost, d.bursaLunara ? `bursă de ${lei(d.bursaLunara)} pe lună` : null].filter(Boolean).join(' · ');
+    sectiuni.push(produs(`${d.emoji} ${d.titlu}`, '', d.descriere,
+      h('div', { class: 'mic' }, info),
+      h('div', { class: 'rand-butoane' },
+        h('button', {
+          type: 'button', class: 'btn btn-secundar', 'aria-disabled': d.disponibil ? null : 'true',
+          onclick: () => (d.disponibil ? executa('inscrieProgram', { program: d.id }) : arataMesaj(d.motiv, false)),
+        }, d.taxaAnuala ? 'Mă înscriu și plătesc' : 'Mă înscriu'),
+        d.creditStudii ? h('button', {
+          type: 'button', class: 'btn btn-secundar', 'aria-disabled': d.disponibil ? null : 'true',
+          onclick: () => (d.disponibil ? executa('inscrieProgram', { program: d.id, credit: true }) : arataMesaj(d.motiv, false)),
+        }, 'Cu credit de studii') : null),
+      d.disponibil ? null : h('div', { class: 'mic motiv-indisponibil' }, d.motiv)));
+  }
+
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Cursuri și certificate'),
+    h('p', { class: 'mic' }, 'Merg în paralel cu jobul sau cu facultatea. Unele certificate țin loc de diplomă la angajare.'));
+  for (const c of ctx.educatie.cursuri.values()) {
+    const d = descrieCurs(state, ctx, c);
+    const info = [NUME_LUNI(d.luni), d.pret ? lei(d.pret) : 'gratuit', d.timp === 1 ? '1 acțiune' : `${d.timp} acțiuni`].join(' · ');
+    const stare = d.terminat ? h('div', { class: 'mic marcaj-crestere' }, '✓ Ai certificatul')
+      : d.luniRamase != null ? h('div', { class: 'mic' }, `În curs: mai ai ${NUME_LUNI(d.luniRamase)}.`)
+        : h('div', { class: 'rand-butoane' }, h('button', {
+          type: 'button', class: 'btn btn-secundar', 'aria-disabled': d.disponibil ? null : 'true',
+          onclick: () => (d.disponibil ? executa('inscrieCurs', { curs: d.id }) : arataMesaj(d.motiv, false)),
+        }, 'Mă înscriu'));
+    sectiuni.push(produs(`${d.emoji} ${d.titlu}`, '', d.descriere, h('div', { class: 'mic' }, info), stare,
+      !d.terminat && d.luniRamase == null && !d.disponibil ? h('div', { class: 'mic motiv-indisponibil' }, d.motiv) : null));
+  }
+  return sectiuni;
+}
+
 // ---------- Activități ----------
 
 const CATEGORII = { sanatate: 'Sănătate și energie', social: 'Prieteni, familie, oameni', timpLiber: 'Timp liber', dezvoltare: 'Te dezvolți' };
@@ -70,14 +146,10 @@ const CATEGORII = { sanatate: 'Sănătate și energie', social: 'Prieteni, famil
 function panouActivitati(o, reranda) {
   const { state, ctx } = o;
   const executa = executor(o, reranda);
-  const total = timpPeAn(state, ctx);
-  const ramas = timpRamas(state, ctx);
   const lista = descrieActivitati(state, ctx);
   const sectiuni = [
     h('p', { class: 'mesaj-actiune', role: 'status' }),
-    h('div', { class: 'timp-an' },
-      h('span', {}, `Timp anul ăsta: ${ramas} din ${total} ${total === 1 ? 'acțiune mare' : 'acțiuni mari'}`),
-      h('span', { class: 'timp-puncte', 'aria-hidden': 'true' }, Array.from({ length: total }, (_, i) => h('span', { class: i < ramas ? 'punct plin' : 'punct' })))),
+    randTimp(state, ctx),
     h('p', { class: 'mic' }, 'Jobul și studiile îți iau din timp. Operațiunile din Bancă nu consumă timp.'),
   ];
   for (const [cat, titlu] of Object.entries(CATEGORII)) {

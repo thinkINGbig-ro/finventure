@@ -1,0 +1,181 @@
+{
+  "_info": "Meniul Educație. „programe” = studii lungi (unul singur odată; taxele și durata sunt în config.json → studii.<id>, nivelul și skill-ul la final în balans.json → studii.<id>). „cursuri” = cursuri scurte (mai multe odată; prețul în config.json → cursuri). „conditii” = cine se poate înscrie (motivul apare pe buton). „flag” = certificatul primit la final; unele joburi îl acceptă în locul unei diplome (jobs.json → cerinte.flagInLocDeStudii).",
+  "programe": [
+    {
+      "id": "facultateBuget",
+      "titlu": "Facultate la buget",
+      "emoji": "🏛️",
+      "descriere": "Licență de 3 ani, fără taxă. Intri doar dacă ești pregătit la admitere. Cu note mari primești și bursă.",
+      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "ascunse": { "skill": { "min": 45 } }, "motiv": "Pentru buget îți trebuie o pregătire mai bună la admitere (sau ai deja o licență)." },
+      "bursaMerit": true,
+      "lectie": "Facultatea la buget e gratuită, dar nu e gratis: 3 ani în care câștigi mai puțin. Diploma se întoarce în salariu ani la rând.",
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "facultateTaxa",
+      "titlu": "Facultate cu taxă",
+      "emoji": "🎓",
+      "descriere": "Licență de 3 ani, cu o taxă anuală. Poți plăti taxa pe loc, în fiecare an, sau cu un credit de studii.",
+      "conditii": { "studii": ["liceu", "profesionala", "postliceala"], "motiv": "Ai deja o licență." },
+      "creditStudii": true,
+      "lectie": "Înainte de o taxă, uită-te la salariile din domeniu. O diplomă scumpă într-un domeniu prost plătit se întoarce greu.",
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "scoalaProfesionala",
+      "titlu": "Școală profesională",
+      "emoji": "🔧",
+      "descriere": "2 ani, gratuit, cu practică. Iese o meserie căutată.",
+      "conditii": { "studii": ["liceu"], "motiv": "Ai deja o calificare." },
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "postliceala",
+      "titlu": "Școală postliceală",
+      "emoji": "🏥",
+      "descriere": "2 ani, de exemplu asistent medical sau tehnician. Taxă anuală mică, meserie sigură.",
+      "conditii": { "studii": ["liceu", "profesionala"], "motiv": "Ai deja studii la nivelul ăsta sau mai sus." },
+      "creditStudii": true,
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "master",
+      "titlu": "Master",
+      "emoji": "📜",
+      "descriere": "2 ani după licență, cu taxă. Te ajută la joburile de nivel mai înalt și la CV.",
+      "conditii": { "studii": ["licenta"], "motiv": "Ai nevoie de o licență (și să nu ai deja un master)." },
+      "creditStudii": true,
+      "bursaMerit": true,
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "doctorat",
+      "titlu": "Doctorat",
+      "emoji": "🔬",
+      "descriere": "4 ani de cercetare, cu o bursă lunară. Bursa e mai mică decât un salariu, dar e un venit.",
+      "conditii": { "studii": ["master"], "ascunse": { "skill": { "min": 60 } }, "motiv": "Ai nevoie de un master și de o pregătire foarte bună." },
+      "lectie": "Bursa de doctorat e un venit sigur, dar mai mic decât un salariu. Calculează cât pierzi în 4 ani și ce câștigi după.",
+      "concepte": ["educatie-investitie"]
+    }
+  ],
+  "cursuri": [
+    {
+      "id": "bootcamp-it",
+      "titlu": "Bootcamp de programare",
+      "emoji": "💻",
+      "descriere": "6 luni intense. Fără diplomă de facultate, certificatul te poate duce la un job de programator junior.",
+      "pret": "pret:cursuri.bootcampIT",
+      "luni": 6,
+      "timp": 2,
+      "energieLunara": -3,
+      "skillLaFinal": 10,
+      "flag": "certificat_it",
+      "conditii": { "varstaMin": 18 },
+      "lectie": "Un curs scump se plătește singur doar dacă găsești jobul. Verifică întâi câți absolvenți se angajează.",
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "contabilitate",
+      "titlu": "Curs de contabilitate",
+      "emoji": "🧮",
+      "descriere": "4 luni, cu certificat recunoscut. Te poți angaja contabil junior și fără facultate.",
+      "pret": "pret:cursuri.contabilitate",
+      "luni": 4,
+      "timp": 1,
+      "energieLunara": -2,
+      "skillLaFinal": 6,
+      "flag": "certificat_contabilitate",
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "marketing-digital",
+      "titlu": "Curs de marketing digital",
+      "emoji": "📣",
+      "descriere": "3 luni, online. Certificatul îți deschide joburile de început din marketing.",
+      "pret": "pret:cursuri.marketingDigital",
+      "luni": 3,
+      "timp": 1,
+      "energieLunara": -1,
+      "skillLaFinal": 5,
+      "flag": "certificat_marketing",
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "electrician",
+      "titlu": "Calificare de electrician",
+      "emoji": "⚡",
+      "descriere": "6 luni, cu practică. Meserie căutată, bine plătită, inclusiv pe cont propriu.",
+      "pret": "pret:cursuri.electrician",
+      "luni": 6,
+      "timp": 2,
+      "energieLunara": -3,
+      "skillLaFinal": 8,
+      "flag": "calificare_electrician",
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "instalator",
+      "titlu": "Calificare de instalator",
+      "emoji": "🔩",
+      "descriere": "5 luni, cu practică. Instalatorii buni au de lucru tot anul.",
+      "pret": "pret:cursuri.instalator",
+      "luni": 5,
+      "timp": 2,
+      "energieLunara": -3,
+      "skillLaFinal": 7,
+      "flag": "calificare_instalator",
+      "concepte": ["educatie-investitie"]
+    },
+    {
+      "id": "engleza",
+      "titlu": "Curs de engleză (B2)",
+      "emoji": "🇬🇧",
+      "descriere": "6 luni, cu certificat. O limbă străină în CV aduce oferte mai bune.",
+      "pret": "pret:cursuri.engleza",
+      "luni": 6,
+      "timp": 1,
+      "energieLunara": -1,
+      "skillLaFinal": 4,
+      "flag": "cv_limbi",
+      "concepte": ["cv"]
+    },
+    {
+      "id": "permis",
+      "titlu": "Permis de conducere",
+      "emoji": "🚗",
+      "descriere": "3 luni de școală de șoferi și examenul. Unele joburi îl cer.",
+      "pret": "pret:cursuri.permis",
+      "luni": 3,
+      "timp": 1,
+      "energieLunara": -1,
+      "skillLaFinal": 1,
+      "flag": "permis_auto",
+      "conditii": { "varstaMin": 18 }
+    },
+    {
+      "id": "antreprenoriat",
+      "titlu": "Curs de antreprenoriat",
+      "emoji": "🚀",
+      "descriere": "2 luni: plan de afaceri, taxe, cash flow. Crește șansele unei afaceri proprii.",
+      "pret": "pret:cursuri.antreprenoriat",
+      "luni": 2,
+      "timp": 1,
+      "energieLunara": -1,
+      "skillLaFinal": 3,
+      "flag": "curs_antreprenoriat",
+      "concepte": ["pfa-srl"]
+    },
+    {
+      "id": "educatie-financiara",
+      "titlu": "Curs online de educație financiară",
+      "emoji": "💡",
+      "descriere": "Gratuit, o lună. Buget, dobândă compusă, cum citești un contract de credit.",
+      "pret": "pret:cursuri.educatieFinanciara",
+      "luni": 1,
+      "timp": 1,
+      "skillLaFinal": 2,
+      "flag": "curs_financiar",
+      "concepte": ["dobanda-compusa", "dae"]
+    }
+  ]
+}

@@ -106,7 +106,39 @@
     "scoalaProfesionala": {
       "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "" },
       "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    },
+    "postliceala": {
+      "taxaAnuala": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "școală postliceală particulară; la stat există și locuri gratuite" },
+      "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    },
+    "master": {
+      "taxaAnuala": { "valoare": 5000, "deVerificat": true, "sursa": "", "nota": "master cu taxă la o universitate de stat" },
+      "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    },
+    "doctorat": {
+      "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "doctorat cu frecvență, pe loc bugetat" },
+      "durataLuni": { "valoare": 48, "deVerificat": true, "sursa": "" },
+      "bursaLunara": { "valoare": 2600, "deVerificat": true, "sursa": "", "nota": "bursa doctorală, netă" }
+    },
+    "bursaMeritLunara": { "valoare": 700, "deVerificat": true, "sursa": "", "nota": "bursă de merit la buget (licență, master); diferă mult între universități" },
+    "creditStudii": {
+      "dae": { "valoare": 0.05, "deVerificat": true, "sursa": "", "nota": "credit pentru studii, cu dobândă mică; în realitate condițiile diferă de la bancă la bancă" },
+      "luni": { "valoare": 96, "deVerificat": true, "sursa": "" },
+      "luniFaraDobanda": { "valoare": 0, "deVerificat": true, "sursa": "" }
     }
+  },
+
+  "cursuri": {
+    "_info": "Prețurile cursurilor scurte, la prețurile de start.",
+    "bootcampIT": { "valoare": 9000, "deVerificat": true, "sursa": "", "nota": "bootcamp de programare, 6 luni" },
+    "contabilitate": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "curs de contabil autorizat de ANC" },
+    "electrician": { "valoare": 2200, "deVerificat": true, "sursa": "", "nota": "calificare de electrician (ANC)" },
+    "instalator": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "calificare de instalator (ANC)" },
+    "engleza": { "valoare": 1800, "deVerificat": true, "sursa": "", "nota": "curs de engleză, nivel B2, cu certificat" },
+    "permis": { "valoare": 3500, "deVerificat": true, "sursa": "", "nota": "școala de șoferi + taxele de examen, categoria B" },
+    "antreprenoriat": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "curs de competențe antreprenoriale" },
+    "marketingDigital": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "curs de marketing digital cu certificat" },
+    "educatieFinanciara": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "curs online gratuit" }
   },
 
   "inflatie": {

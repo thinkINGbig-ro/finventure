@@ -15,10 +15,12 @@ export function nivelStudii(state, ctx) {
   return bal(ctx, 'cariera.nivelStudii')[state.situatie.nivelStudii] ?? 0;
 }
 
-function indeplinesteCerinte(job, state, ctx, { skillInPlus = 0 } = {}) {
+export function indeplinesteCerinte(job, state, ctx, { skillInPlus = 0 } = {}) {
   const c = job.cerinte ?? {};
   const nivele = bal(ctx, 'cariera.nivelStudii');
-  if (c.studiiMin && nivelStudii(state, ctx) < nivele[c.studiiMin]) return false;
+  // Un certificat (ex. bootcamp de programare) poate ține loc de diplomă la unele joburi.
+  const certificat = c.flagInLocDeStudii && state.flaguri[c.flagInLocDeStudii];
+  if (c.studiiMin && !certificat && nivelStudii(state, ctx) < nivele[c.studiiMin]) return false;
   if (c.skillMin && state.ascunse.skill + skillInPlus < c.skillMin) return false;
   return true;
 }

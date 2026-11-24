@@ -45,6 +45,8 @@ js/events.js        condiții, variabile, alegeri, efecte, urmări
 js/finance.js       salariu brut/net, credite, carduri, depozite, investiții
 js/cariera.js       CV, oferte, negociere, mărire, promovare
 js/activitati.js    meniul „Activități” și bugetul de timp al anului
+js/datorii.js       „Datoriile mele”: rambursare, eșalonare, refinanțare
+js/educatie.js      meniul Educație: studii lungi, cursuri, educația ca investiție
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -54,7 +56,7 @@ js/ui/*.js          ecranele
 data/config.json    valori economice (toate marcate „deVerificat”)
 data/balans.json    parametri de joc (echilibrare)
 data/events/*.json  evenimentele, pe teme
-data/concepts.json, data/jobs.json, data/endings.json, data/activitati.json
+data/concepts.json, data/jobs.json, data/endings.json, data/activitati.json, data/educatie.json
 tests/              teste (Node și browser) și simularea
 docs/raport-simulare.json  raportul de echilibru (regenerabil)
 ```
@@ -115,6 +117,15 @@ Activitățile sunt lucruri pe care jucătorul le face din proprie inițiativă,
 ```
 
 Operațiunile bancare (depune, retrage, plătește) nu consumă timp. Căutatul unui job consumă `timp.costCautareJob`.
+
+## Cum adaugi un program de studii sau un curs (meniul Educație)
+
+În `data/educatie.json`:
+
+- **`programe`** (studii lungi, unul singur odată): `id` trebuie să existe în `config.json` → `studii.<id>` (`taxaAnuala`, `durataLuni`) și în `balans.json` → `studii.<id>` (`nivel`, `skillLaFinal`). Opțional: `conditii` (cine se poate înscrie, ex. `"studii": ["licenta"]`), `creditStudii: true` (taxa se poate plăti cu credit), `bursaMerit: true` (bursă dacă pregătirea trece de `balans.educatie.skillBursaMerit`).
+- **`cursuri`** (scurte, mai multe odată): `pret` (`"pret:cursuri.<cheie>"` din config), `luni`, `timp` (acțiuni din bugetul anului), `energieLunara`, `skillLaFinal`, `flag` (certificatul primit la final).
+
+Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cerinte": { "studiiMin": "licenta", "flagInLocDeStudii": "certificat_it" }`.
 
 ## Salvările și migrarea
 

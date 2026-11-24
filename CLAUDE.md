@@ -402,8 +402,8 @@ Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
 | 0 | Bug-uri: plata restanțelor din Bancă, mesaj la fiecare acțiune din meniu, ecranul „Ce s-a întâmplat” după o decizie urmată de alt card | ✅ pe `main` |
 | 1 | Meniul „Activități” (`data/activitati.json`, `js/activitati.js`): 16 activități cu buget anual de timp (`balans.timp`); Enciclopedia mutată în antet (📖); salvări versiunea 2 cu migrare | ✅ |
 | 2 | Datoriile mele (`js/datorii.js`, panou din Bancă): lista unificată cu costul total rămas, plata restanței, rambursare parțială (scade rata / durata, cu dobânda economisită și comision la dobânda fixă), eșalonare la recuperator (se anulează la 2 luni de întârziere), refinanțare / consolidare (istoric + grad de îndatorare); 4 concepte noi | ✅ |
-| 3 | Educație: studii la orice vârstă, master, doctorat, postliceală, cursuri, certificări, permis, credit de studii, bursă | în lucru |
-| 4a/4b | Investiții: meniu complet, DCA, portofoliu, rebalansare, grafic; imobiliare de închiriat | |
+| 3 | Educație (`data/educatie.json`, `js/educatie.js`): 6 programe lungi la orice vârstă (buget cu admitere, taxă, profesională, postliceală, master, doctorat cu bursă), credit de studii, bursă de merit, renunțare; 9 cursuri cu certificat (bootcamp IT, contabilitate, marketing, electrician, instalator, engleză, permis, antreprenoriat, educație financiară); certificatele țin loc de diplomă (`jobs.json` → `cerinte.flagInLocDeStudii`); la final, „Educația ta, ca investiție”; salvări versiunea 3 | ✅ |
+| 4a/4b | Investiții: meniu complet, DCA, portofoliu, rebalansare, grafic; imobiliare de închiriat | în lucru |
 | 5 | Joburi și muncă: joburi noi (inclusiv artist, cu venit variabil), ritm de muncă, ore suplimentare, al doilea job, demisie | |
 | 6a/6b | Afacere proprie: pornire (domeniu, formă juridică, capital, pregătire), funcționare (decizii, profit vs. cash flow, riscuri, vânzare/închidere/insolvență) | |
 | 7 | Cumpărături: catalog cu calitate, depreciere, revânzare, plata cash/card/rate/BNPL, animale de companie, tentații | |

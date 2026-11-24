@@ -27,6 +27,7 @@ import { esteAsigurat } from './events.js';
 import { areJobFullTime, cereMarire, contractCurent, sansaMarire } from './cariera.js';
 import { consumaTimp, faActivitate, motivTimp } from './activitati.js';
 import { achitaTot, consolideaza, esaloneaza, platesteRestanta, ramburseazaPartial, verificaEsalonare } from './datorii.js';
+import { inscrieCurs, inscrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna, renuntaStudii } from './educatie.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -278,15 +279,15 @@ export function proceseazaLuna(state, ctx) {
   // Recurențele legate de o locuință (ex. contribuția extra la părinți) se opresc când te muți.
   state.recurente = state.recurente.filter((r) => (r.luniRamase == null || r.luniRamase > 0) && (!r.locuinta || r.locuinta === state.situatie.locuinta));
 
-  // 3. Studii: taxa la începutul fiecărui an de studiu
+  // 3. Studii: bursa lunară și taxa la începutul fiecărui an de studiu (dacă nu e plătită cu credit);
+  // cursurile scurte merg în paralel.
   const studii = state.situatie.studii;
+  proceseazaCursuriLuna(state, ctx);
   if (studii) {
-    if ((state.luna - studii.inceputLa) % 12 === 0) {
-      const taxa = pret(state, ctx, `studii.${studii.id}.taxaAnuala`);
-      const platit = plateste(state, taxa);
-      ac.cheltuieliTrai += platit;
-      neplatit += taxa - platit;
-    }
+    const s = proceseazaStudiiLuna(state, ctx);
+    ac.venituri += s.venit;
+    ac.cheltuieliTrai += s.cheltuiala;
+    neplatit += s.neplatit;
     state.stat.energie -= lunar.studiiEnergie;
     studii.luniRamase -= 1;
     if (studii.luniRamase <= 0) finalizeazaStudii(state, ctx);
@@ -449,7 +450,11 @@ function finalizeazaStudii(state, ctx) {
   state.situatie.nivelStudii = info.nivel;
   state.ascunse.skill += info.skillLaFinal;
   seteazaFlag(state, `absolvent_${info.nivel}`);
-  adaugaJurnal(state, info.nivel === 'licenta' ? 'Ai terminat facultatea!' : 'Ai terminat școala și ai o calificare.');
+  const TEXT_ABSOLVIRE = {
+    licenta: 'Ai terminat facultatea!', master: 'Ai terminat masterul!', doctorat: 'Ai devenit doctor! Ai susținut teza.',
+    postliceala: 'Ai terminat școala postliceală și ai o meserie.',
+  };
+  adaugaJurnal(state, TEXT_ABSOLVIRE[info.nivel] ?? 'Ai terminat școala și ai o calificare.');
   // Căminul e doar pentru studenți: la absolvire, camera se eliberează.
   if (state.situatie.locuinta === 'camin') {
     state.situatie.locuinta = 'acasa';
@@ -686,7 +691,7 @@ export { sansaMarire };
 // Toate acțiunile din meniuri. Fiecare întoarce { ok, mesaj }: mesajul e mereu un text de arătat
 // jucătorului (confirmarea sau motivul refuzului), ca nicio apăsare să nu rămână fără răspuns.
 export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate',
-  'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza'];
+  'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza', 'inscrieProgram', 'renuntaStudii', 'inscrieCurs'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -796,6 +801,21 @@ function executaActiune(state, ctx, tip, param) {
     }
     case 'consolideaza': {
       rez = consolideaza(state, ctx, param.ids ?? [], param.luni);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'inscrieProgram': {
+      rez = inscrieProgram(state, ctx, param.program, { credit: !!param.credit });
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'renuntaStudii': {
+      rez = renuntaStudii(state, ctx);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'inscrieCurs': {
+      rez = inscrieCurs(state, ctx, param.curs);
       if (!rez.ok) return rez;
       break;
     }

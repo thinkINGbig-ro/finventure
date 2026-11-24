@@ -44,14 +44,24 @@
   "statistici": {
     "baniLuniPentru100": 3,
     "viitorLuniEconomiiPentru60": 12,
-    "viitorStudii": { "liceu": 5, "profesionala": 10, "licenta": 20 },
+    "viitorStudii": { "liceu": 5, "profesionala": 10, "postliceala": 12, "licenta": 20, "master": 24, "doctorat": 26 },
     "viitorPensieMax": 20
   },
 
   "studii": {
     "facultateBuget": { "nivel": "licenta", "skillLaFinal": 15 },
     "facultateTaxa": { "nivel": "licenta", "skillLaFinal": 15 },
-    "scoalaProfesionala": { "nivel": "profesionala", "skillLaFinal": 10 }
+    "scoalaProfesionala": { "nivel": "profesionala", "skillLaFinal": 10 },
+    "postliceala": { "nivel": "postliceala", "skillLaFinal": 10 },
+    "master": { "nivel": "master", "skillLaFinal": 10 },
+    "doctorat": { "nivel": "doctorat", "skillLaFinal": 12 }
+  },
+
+  "educatie": {
+    "_info": "Meniul Educație (condițiile de admitere stau în data/educatie.json). skillBursaMerit = pragul pentru bursa de merit. salariuReferintaLiceu = jobul de bază cu doar liceul, pentru comparația de la final (educația ca investiție).",
+    "skillBursaMerit": 60,
+    "timpProgramLung": 1,
+    "salariuReferintaLiceu": "salarii.curier"
   },
 
   "cardCredit": {
@@ -74,11 +84,11 @@
 
   "cariera": {
     "evenimentCV": "cv-start",
-    "nivelStudii": { "liceu": 0, "profesionala": 1, "licenta": 2 },
+    "nivelStudii": { "liceu": 0, "profesionala": 1, "postliceala": 1, "licenta": 2, "master": 3, "doctorat": 4 },
     "cv": {
       "_info": "Scorul CV-ului = skill + reputație/2 + bonusuri. Decide câte oferte primești și cât de bune sunt.",
       "bonusFlaguri": { "cv_experienta": 12, "cv_proiecte": 10, "cv_voluntariat": 6, "cv_limbi": 8, "cv_umflat": 14, "experienta_munca": 6 },
-      "bonusStudii": { "liceu": 0, "profesionala": 4, "licenta": 10 },
+      "bonusStudii": { "liceu": 0, "profesionala": 4, "postliceala": 6, "licenta": 10, "master": 14, "doctorat": 16 },
       "pragOferte": [25, 45, 65],
       "skillInPlusDacaUmflat": 10
     },
