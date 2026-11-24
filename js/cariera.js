@@ -8,6 +8,10 @@ import { creeazaProdus, pret } from './finance.js';
 const R = 'evenimente'; // fluxul RNG folosit (deciziile jucătorului, nu piețele)
 
 export const contractCurent = (state) => state.produse.find((p) => p.tip === 'contractMunca');
+const areFlagActiv = (state, nume) => {
+  const f = state.flaguri[nume];
+  return !!f && (f.expiraLa == null || state.luna < f.expiraLa);
+};
 export const jobCurent = (state, ctx) => ctx.joburi.get(contractCurent(state)?.jobId);
 export const areJobFullTime = (state, ctx) => jobCurent(state, ctx)?.program === 'full-time';
 
@@ -22,6 +26,7 @@ export function indeplinesteCerinte(job, state, ctx, { skillInPlus = 0 } = {}) {
   const certificat = c.flagInLocDeStudii && state.flaguri[c.flagInLocDeStudii];
   if (c.studiiMin && !certificat && nivelStudii(state, ctx) < nivele[c.studiiMin]) return false;
   if (c.flagNecesar && !state.flaguri[c.flagNecesar]) return false; // ex. permis, diploma de medicină
+  if ((c.faraCazier || job.faraCazier) && areFlagActiv(state, 'cazier')) return false; // polițist, avocat, profesor, medic, contabil
   if (c.skillMin && state.ascunse.skill + skillInPlus < c.skillMin) return false;
   return true;
 }
@@ -48,6 +53,8 @@ export function scorCV(state, ctx) {
     const f = state.flaguri[flag];
     if (f && (f.expiraLa == null || state.luna < f.expiraLa)) scor += bonus;
   }
+  // Cu cazier, angajatorii care verifică trecutul spun nu: mai puține oferte.
+  if (areFlagActiv(state, 'cazier')) scor -= bal(ctx, 'infractiuni.penalizareCV');
   return Math.round(scor);
 }
 

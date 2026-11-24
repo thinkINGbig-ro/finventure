@@ -53,6 +53,7 @@ js/imobiliare.js    apartamente de închiriat: cumpărare, chiriași, impozit, v
 js/munca.js         Carieră: ritm, ore suplimentare, promovare, curs de firmă, demisie, venit în plus, artiști
 js/afacere.js       afacerea proprie: pregătire, pornire, luna firmei, dividende, închidere, insolvență
 js/cumparaturi.js   catalogul de cumpărături: plată, depreciere, revânzare, costuri lunare
+js/infractiuni.js   fapte, dosar penal, pedepse, detenție, cazier
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -149,6 +150,10 @@ Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cer
 `data/afaceri.json`: `domenii` (texte + parametri de joc: `costVariabil`, `angajatiMinim`, `salariuAngajat`, `luniMaturitate`, `sezon` cu 12 factori de la septembrie, `experienta` = domeniile de job care contează) și `forme` (PFA / II / SRL). Banii fiecărui domeniu (`investitie`, `costuriFixe`, `venitPotential`) și taxele sunt în `config.json` → `afaceri`; pregătirea și calitatea în `balans.json` → `afaceri`. Joburile au `domeniu` (ex. `horeca`); după 24 de luni într-un job din domeniu se pune flag-ul `experienta_<domeniu>`. Afacerea e produsul `afacere`, cu contul ei: la PFA / II datoriile ei intră în datoriile tale, la SRL nu.
 
 Domeniile pot avea `incasareLuni` (clienții plătesc după 1–2 luni) și `stocLuni` (marfa se cumpără înainte): asta face diferența dintre profit și cash flow. Deciziile (preț, marketing, angajați, extindere) au parametrii în `balans.json` → `afaceri`. Evenimentele despre firmă (`data/events/afaceri.json`) folosesc efectul `"afacere": { "cont": "-{suma}" | ["{a}", "-{b}"], "reputatie": n, "pret": "mic" }`; motorul le programează cu probabilitățile din `balans.afaceri.riscuri`.
+
+## Infracțiunile și consecințele
+
+`data/events/infractiuni.json`, `js/infractiuni.js`. Doar decizii și urmări, fără descrierea faptei. O alegere cu `"infractiune": { "tip": "furt" | "mule" | "frauda" | "evaziune", "castig": "{suma}" }` dă câștigul (scris separat, în `efecte`) și trage la sorți dacă vine dosarul (`balans.json` → `infractiuni`: șansa de bază + creșterea la fiecare repetare). Evenimentul-urmare `dosar-penal` are alegerile `"pedeapsa": "recunoaste" | "avocat"`: amendă (ce nu plătești devine datorie la stat), închisoare (luni fără job, fără timp, fără evenimente obișnuite; în meniuri merg doar operațiunile cu bani), cazier pentru `config.infractiuni.aniReabilitare` ani (flagul `cazier`: băncile refuză creditele, scorul CV scade, joburile cu `"faraCazier": true` sunt închise). Un test verifică faptul că nicio faptă nu e rentabilă: câștigul e mai mic decât șansa de bază × amenda. Variabilele text ale evenimentelor se scriu `"text:…"`.
 
 ## Cumpărăturile (catalogul)
 

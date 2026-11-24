@@ -357,6 +357,21 @@
       "text": "Cumpărătura din impuls e cea pe care n-ai plănuit-o: reducerea „doar azi”, noul model, „ultimele bucăți”. Magazinele știu că, sub presiunea timpului, decidem cu emoția, nu cu bugetul. O regulă simplă: pentru tot ce n-ai plănuit și trece de o anumită sumă, aștepți 48 de ore; dacă mai vrei, cumperi. Exemplu: 300 lei pe lună în cumpărături din impuls fac 3.600 lei pe an, cam cât o vacanță la mare."
     },
     {
+      "id": "money-mule",
+      "titlu": "„Money mule”: contul tău, banii altora",
+      "text": "Un „money mule” e cineva care își împrumută contul bancar ca să treacă prin el bani furați (din înșelătorii, fraude, phishing), în schimbul unui comision. Rețelele caută tineri pe rețele sociale, cu mesaje de tipul „bani ușori, doar primești și trimiți mai departe”. Pentru lege, tu ești cel care a mutat banii: contul ți se închide, banii se confiscă și urmează un dosar penal pentru spălare de bani. Exemplu: pentru 1.000 de lei comision, poți rămâne fără cont bancar, cu cazier și cu o datorie de zeci de mii de lei față de cei păgubiți."
+    },
+    {
+      "id": "evaziune-fiscala",
+      "titlu": "Evaziunea fiscală",
+      "text": "Evaziunea fiscală înseamnă să ascunzi venituri ca să plătești taxe mai mici. Diferența dintre o greșeală și evaziune e intenția și mărimea sumei. Când e descoperită, se recalculează taxele, se adaugă dobânzi și penalități, iar peste un anumit prejudiciu vine dosarul penal și, uneori, închisoarea. Exemplu: 8.000 lei taxe ascunse pe an, descoperite după trei ani, pot ajunge la peste 70.000 lei de plată."
+    },
+    {
+      "id": "cazier",
+      "titlu": "Cazierul judiciar",
+      "text": "Cazierul judiciar arată condamnările unei persoane. Mulți angajatori îl cer: în poliție, educație, sănătate, justiție, contabilitate sau bănci, cu cazier nu ești angajat. Și băncile țin cont de el când dau credite. Cazierul se șterge prin reabilitare, după un număr de ani fără alte fapte, dar până atunci multe uși rămân închise. Exemplu: un furt de 150 de lei poate însemna ani în care nu poți deveni profesor sau polițist."
+    },
+    {
       "id": "educatie-investitie",
       "titlu": "Educația ca investiție",
       "text": "Un curs sau o facultate costă de două ori: taxa și anii în care câștigi mai puțin pentru că înveți. Se întoarce prin salarii mai mari, ani la rând, și prin joburi care altfel nu ți-ar fi deschise. Ca la orice investiție, contează ce alegi: o calificare căutată se plătește repede, o diplomă într-un domeniu fără joburi poate să nu se plătească niciodată. Exemplu: un curs de electrician de 2.200 lei care îți crește salariul cu 1.000 lei brut pe lună se întoarce în câteva luni."

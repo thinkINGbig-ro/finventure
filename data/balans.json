@@ -212,6 +212,20 @@
     "vanzare": { "multiplicatorProfitAnual": 2.5, "luniMinime": 12 }
   },
 
+  "infractiuni": {
+    "_info": "Șansa de a fi prins = sansaBaza + crestereLaRepetare × faptele anterioare de același fel (max. 0,95). Prinderea vine după luniPanaLaDosar (interval). scorCreditCazier = cât scade scorul de credit când primești cazier. penalizareCV = puncte scăzute din scorul CV-ului cât ai cazier.",
+    "furt": { "sansaBaza": 0.3, "crestereLaRepetare": 0.2 },
+    "mule": { "sansaBaza": 0.75, "crestereLaRepetare": 0.15 },
+    "frauda": { "sansaBaza": 0.45, "crestereLaRepetare": 0.2 },
+    "evaziune": { "sansaBaza": 0.45, "crestereLaRepetare": 0.15 },
+    "_regula": "Pentru fiecare faptă, la prima abatere: câștigul − sansaBaza × amenda trebuie să fie negativ (infracțiunea nu e niciodată rentabilă). Un test verifică.",
+    "luniPanaLaDosar": [2, 12],
+    "scorCreditCazier": 20,
+    "penalizareCV": 25,
+    "fericireLunaraInchisoare": -3,
+    "sansaAchitareCuAvocat": 0.25
+  },
+
   "imobiliare": {
     "_info": "Riscurile proprietarului, ca probabilități anuale (folosesc fluxul RNG „actiuni”). sansaGasesteChirias = pe lună, cât timp e gol.",
     "sansaChiriasPleacaAnual": 0.25,

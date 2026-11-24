@@ -13,6 +13,7 @@ import { actualizeazaDerivate } from './state.js';
 const anCurent = (state) => Math.floor(state.luna / 12);
 
 export function timpPeAn(state, ctx) {
+  if ((state.infractiuni?.inchisoare ?? 0) > 0) return 0; // în detenție nu alegi ce faci cu timpul
   const t = bal(ctx, 'timp');
   const program = jobCurent(state, ctx)?.program;
   let n = t.baza;
@@ -38,6 +39,7 @@ export function timpRamas(state, ctx) {
 export function motivTimp(state, ctx, n = 1) {
   const ramas = timpRamas(state, ctx);
   if (ramas >= n) return null;
+  if ((state.infractiuni?.inchisoare ?? 0) > 0) return `Ești în detenție încă ${state.infractiuni.inchisoare} luni.`;
   if (ramas === 0) return 'Ți-ai folosit tot timpul anul ăsta. Avansează un an.';
   return `Îți trebuie ${n} acțiuni mari; mai ai ${ramas} anul ăsta.`;
 }

@@ -102,7 +102,7 @@ export function simuleazaPornire(state, ctx, idDomeniu, forma, finantare = {}) {
   };
   if (afacereActiva(state)) return { ok: false, ...rez, mesaj: 'Ai deja o afacere.' };
   if (credit && (!areFlag(state, 'plan_afaceri') || p.total < 50)) return { ok: false, ...rez, mesaj: 'Banca dă credit pentru firmă doar cu un plan de afaceri și o pregătire de cel puțin 50 de puncte.' };
-  if (credit && (areFlag(state, 'istoric_restante') || areFlag(state, 'executare_silita'))) return { ok: false, ...rez, mesaj: 'Banca refuză: istoricul tău de credit nu e curat.' };
+  if (credit && (areFlag(state, 'istoric_restante') || areFlag(state, 'executare_silita') || areFlag(state, 'cazier'))) return { ok: false, ...rez, mesaj: 'Banca refuză: istoricul tău (de credit sau cazierul) nu e curat.' };
   if (baniDisponibili(state) < dinEconomii) return { ok: false, ...rez, mesaj: `Îți trebuie ${leiText(dinEconomii)} din banii tăi (investiția neacoperită plus ${luniRezerva} luni de costuri fixe ca rezervă).` };
   const faraTimp = motivTimp(state, ctx, bal(ctx, 'afaceri.timpPornire'));
   if (faraTimp) return { ok: false, ...rez, mesaj: faraTimp };
@@ -297,7 +297,7 @@ export function imprumutFirma(state, ctx, suma) {
   const a = afacereActiva(state);
   if (!a) return { ok: false, mesaj: 'N-ai o afacere.' };
   if (!(suma > 0)) return { ok: false, mesaj: 'Scrie suma.' };
-  if (areFlag(state, 'istoric_restante') || areFlag(state, 'executare_silita')) return { ok: false, mesaj: 'Banca refuză: istoricul tău de credit nu e curat.' };
+  if (areFlag(state, 'istoric_restante') || areFlag(state, 'executare_silita') || areFlag(state, 'cazier')) return { ok: false, mesaj: 'Banca refuză: istoricul tău (de credit sau cazierul) nu e curat.' };
   if (a.credit || state.produse.some((p) => p.tip === 'credit' && p.furnizor === 'firma')) return { ok: false, mesaj: 'Firma are deja un credit.' };
   const ultimul = a.istoric.slice(-6);
   if (ultimul.length < 6 || ultimul.reduce((s, x) => s + x.profit, 0) <= 0) return { ok: false, mesaj: 'Banca vrea să vadă cel puțin 6 luni pe profit.' };

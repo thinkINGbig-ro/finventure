@@ -1,0 +1,168 @@
+{
+  "_info": "Infracțiunile: doar decizia și urmările ei, fără nicio descriere a felului în care se comite fapta. Câștigul vine pe loc, iar riscul de a fi prins (din balans.json → infractiuni) vine mai târziu, ca eveniment „Dosar penal”, și crește cu fiecare repetare.",
+  "evenimente": [
+    {
+      "id": "oferta-cont",
+      "titlu": "Bani ușori pe Instagram",
+      "faza": [1, 2, 3],
+      "conditii": { "varstaMax": 30, "areProdus": ["contCurent"] },
+      "pondere": 2,
+      "maxAparitii": 2,
+      "variabile": { "plata": 1000 },
+      "text": "Un cont necunoscut îți scrie: „Câștigi {plata} lei rapid. Primești niște bani în contul tău și îi trimiți mai departe. Atât. E legal, toți prietenii mei o fac.”",
+      "alegeri": [
+        {
+          "id": "accept",
+          "eticheta": "Accept, sunt bani ușori",
+          "efecte": { "numerar": "{plata}" },
+          "infractiune": { "tip": "mule", "castig": "{plata}" },
+          "etichete": ["infractiune", "inselatorie"],
+          "concepte": ["money-mule"],
+          "lectie": "Banii care trec prin contul tău sunt de obicei furați de la alți oameni. Pentru bancă și pentru poliție, tu ești cel care i-a mutat.",
+          "jurnal": "Ai acceptat să primești și să trimiți mai departe bani prin contul tău."
+        },
+        {
+          "id": "refuz",
+          "eticheta": "Refuz și blochez contul",
+          "concepte": ["money-mule"],
+          "lectie": "Nimeni nu plătește 1.000 de lei pentru un transfer. Dacă pare prea ușor, e o capcană.",
+          "jurnal": "Ai refuzat să-ți împrumuți contul unui necunoscut."
+        },
+        {
+          "id": "raportez",
+          "eticheta": "Raportez mesajul băncii și poliției",
+          "efecte": { "reputatie": 2 },
+          "concepte": ["money-mule"],
+          "lectie": "Raportarea ajută la oprirea rețelelor care caută „money mules” printre tineri.",
+          "jurnal": "Ai raportat o încercare de a-ți folosi contul pentru bani furați."
+        }
+      ]
+    },
+    {
+      "id": "furt-marunt",
+      "titlu": "Sfârșit de lună",
+      "faza": [1, 2, 3, 4, 5],
+      "conditii": { "stat": { "bani": { "max": 10 } } },
+      "pondere": 1,
+      "cooldownLuni": 12,
+      "variabile": { "valoare": 150, "ajutor": 300 },
+      "text": "E sfârșit de lună și nu-ți mai ajung banii nici de mâncare. Cineva îți spune că la magazinul din colț „nimeni nu observă dacă iei ceva”.",
+      "alegeri": [
+        {
+          "id": "ma-descurc",
+          "eticheta": "Mă descurc cu ce am până la salariu",
+          "efecte": { "fericire": -3, "energie": -2 },
+          "concepte": ["buget"],
+          "lectie": "O lună grea trece. Un buget și un mic fond de urgență fac următoarea mai ușoară.",
+          "jurnal": "Ai strâns cureaua până la sfârșitul lunii."
+        },
+        {
+          "id": "ajutor",
+          "eticheta": "Cer ajutor familiei",
+          "cere": { "ascunse": { "retea": { "min": 40 } } },
+          "efecte": { "numerar": "{ajutor}", "retea": -3, "fericire": -1 },
+          "lectie": "Să ceri ajutor nu e o rușine. E exact ce face o rețea de siguranță.",
+          "jurnal": "Familia te-a ajutat la sfârșit de lună."
+        },
+        {
+          "id": "iau",
+          "eticheta": "Iau ceva fără să plătesc",
+          "efecte": { "numerar": "{valoare}", "fericire": -2 },
+          "infractiune": { "tip": "furt", "castig": "{valoare}" },
+          "etichete": ["infractiune"],
+          "concepte": ["cazier"],
+          "lectie": "Câțiva lei azi față de o amendă de mii de lei și un cazier care îți închide uși ani la rând.",
+          "jurnal": "Ai luat ceva dintr-un magazin fără să plătești."
+        }
+      ]
+    },
+    {
+      "id": "decont-fals",
+      "titlu": "Decontul",
+      "faza": [3, 4, 5],
+      "conditii": { "job": ["orice"], "jobProgram": ["full-time"] },
+      "pondere": 1,
+      "cooldownLuni": 24,
+      "variabile": { "suma": 2500 },
+      "text": "Un coleg îți propune să treceți în decont cheltuieli pe care nu le-ați făcut. „Firma nu verifică niciodată. Cam {suma} lei în plus pentru fiecare.”",
+      "alegeri": [
+        {
+          "id": "refuz",
+          "eticheta": "Refuz",
+          "lectie": "Banii firmei nu sunt banii tăi, chiar dacă „nu verifică nimeni”. Auditurile vin și după ani.",
+          "jurnal": "Ai refuzat un decont fals."
+        },
+        {
+          "id": "accept",
+          "eticheta": "Accept, toată lumea face așa",
+          "efecte": { "numerar": "{suma}" },
+          "infractiune": { "tip": "frauda", "castig": "{suma}" },
+          "etichete": ["infractiune"],
+          "concepte": ["cazier"],
+          "lectie": "Frauda la locul de muncă înseamnă concediere, returnarea banilor, amendă și cazier. „Toată lumea” nu va fi acolo la proces.",
+          "jurnal": "Ai trecut cheltuieli false în decont."
+        },
+        {
+          "id": "sef",
+          "eticheta": "Îi spun șefului",
+          "efecte": { "reputatie": 4, "retea": -3 },
+          "lectie": "Nu e o alegere ușoară, dar integritatea contează la promovare mai mult decât pare.",
+          "jurnal": "Ai raportat propunerea unui coleg de a face deconturi false."
+        }
+      ]
+    },
+    {
+      "id": "tentatie-evaziune",
+      "titlu": "Vânzări nedeclarate",
+      "faza": [3, 4, 5],
+      "conditii": { "areProdus": ["afacere"] },
+      "pondere": 2,
+      "cooldownLuni": 36,
+      "variabile": { "suma": 8000 },
+      "text": "Un cunoscut cu o afacere ca a ta îți spune că „toată lumea” nu declară o parte din vânzările plătite cash. Ai plăti cu vreo {suma} lei mai puține taxe pe an.",
+      "alegeri": [
+        {
+          "id": "declar",
+          "eticheta": "Declar tot",
+          "concepte": ["control-fiscal"],
+          "lectie": "Taxele plătite îți dau liniște la control și o firmă pe care o poți vinde sau crește.",
+          "jurnal": "Ai ales să declari toate vânzările."
+        },
+        {
+          "id": "ascund",
+          "eticheta": "Nu declar o parte",
+          "afacere": { "cont": "{suma}" },
+          "infractiune": { "tip": "evaziune", "castig": "{suma}" },
+          "etichete": ["infractiune", "ignoraTaxe"],
+          "concepte": ["evaziune-fiscala"],
+          "lectie": "Evaziunea se descoperă și după ani: taxele se plătesc înapoi de câteva ori, iar la sume mari vine dosarul penal.",
+          "jurnal": "Ai ascuns o parte din vânzările firmei."
+        }
+      ]
+    },
+    {
+      "id": "dosar-penal",
+      "titlu": "Dosar penal",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "variabile": { "fapta": "text:furt", "faptaText": "text:Poliția te-a identificat.", "castig": 0, "nr": 0, "avocat": "pret:infractiuni.costAvocatPenal" },
+      "text": "{faptaText} Poliția a deschis un dosar penal pe numele tău și te-a chemat la audieri.",
+      "alegeri": [
+        {
+          "id": "recunosc",
+          "eticheta": "Recunosc fapta",
+          "pedeapsa": "recunoaste",
+          "concepte": ["cazier"],
+          "lectie": "Recunoașterea scade pedeapsa, dar cazierul rămâne. Câștigul de atunci n-a acoperit nici pe departe ce urmează."
+        },
+        {
+          "id": "avocat",
+          "eticheta": "Îmi iau avocat ({avocat} lei)",
+          "pedeapsa": "avocat",
+          "concepte": ["cazier"],
+          "lectie": "Un avocat costă și nu garantează nimic. Uneori scapi, de cele mai multe ori plătești și avocatul, și pedeapsa."
+        }
+      ]
+    }
+  ]
+}

@@ -82,7 +82,7 @@ export function construiesteContinut({
     if (joburi.has(j.id)) err('id', 'id duplicat');
     if (typeof dupaCale(config, j.salariu ?? '') !== 'number') err('salariu', `„${j.salariu}” nu există în config.json`);
     if (!['part-time', 'full-time'].includes(j.program)) err('program', 'trebuie să fie „part-time” sau „full-time”');
-    campuriNecunoscute(j.cerinte ?? {}, ['studiiMin', 'skillMin', 'flagInLocDeStudii', 'flagNecesar'], 'cerinte', err);
+    campuriNecunoscute(j.cerinte ?? {}, ['studiiMin', 'skillMin', 'flagInLocDeStudii', 'flagNecesar', 'faraCazier'], 'cerinte', err);
     if (j.cerinte?.studiiMin && balans?.cariera?.nivelStudii?.[j.cerinte.studiiMin] === undefined) err('cerinte.studiiMin', `nivel necunoscut „${j.cerinte.studiiMin}”`);
     for (const k of ['flagInLocDeStudii', 'flagNecesar']) if (j.cerinte?.[k] !== undefined && !RE_FLAG_NUME.test(j.cerinte[k])) err(`cerinte.${k}`, 'nume de flag invalid');
     if (j.venitVariabil !== undefined) {
@@ -325,7 +325,8 @@ function valideazaConfig(nod, fisier, erori, cale = '') {
 const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldownLuni', 'maxAparitii', 'doarUrmare', 'checkpoint', 'text', 'variabile', 'oferte', 'alegeri'];
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou',
+  'infractiune', 'pedeapsa'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -385,6 +386,7 @@ function valideazaVariabile(variabile, err, cv) {
     const camp = `variabile.${nume}`;
     if (typeof def === 'number') continue;
     if (typeof def !== 'string') { err(camp, 'trebuie să fie număr sau text („config:…”, „stare:…”)'); continue; }
+    if (def.startsWith('text:')) continue; // un text (de obicei suprascris de urmarea care deschide evenimentul)
     if (def.startsWith('pret:')) {
       const [c, f] = def.slice(5).split('*');
       if (typeof dupaCale(cv.config, c) !== 'number' || (f !== undefined && !(Number(f) > 0))) err(camp, `„${def}” nu e valid: „pret:cale_din_config” sau „pret:cale*factor”`);
@@ -505,6 +507,12 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
   }
   if (r.transferaInCont !== undefined && r.transferaInCont !== 'tot') num(r.transferaInCont, 'transferaInCont');
   if (r.retrageEconomii !== undefined) num(r.retrageEconomii, 'retrageEconomii');
+  if (r.infractiune !== undefined) {
+    campuriNecunoscute(r.infractiune, ['tip', 'castig'], `${cale}.infractiune`, err);
+    if (!['furt', 'mule', 'frauda', 'evaziune'].includes(r.infractiune.tip)) err(`${cale}.infractiune.tip`, 'furt, mule, frauda sau evaziune');
+    if (r.infractiune.castig !== undefined) num(r.infractiune.castig, 'infractiune.castig');
+  }
+  if (r.pedeapsa !== undefined && !['recunoaste', 'avocat'].includes(r.pedeapsa)) err(`${cale}.pedeapsa`, 'recunoaste sau avocat');
   if (r.bunNou !== undefined) {
     if (typeof r.bunNou !== 'string') err(`${cale}.bunNou`, 'id-ul unui produs din data/cumparaturi.json');
     else cv.referinte.push({ tip: 'bun', valoare: r.bunNou, unde: { fisier, id: idEv, camp: `${cale}.bunNou` } });

@@ -418,6 +418,19 @@
     "luniBnpl": { "valoare": 4, "deVerificat": true, "sursa": "", "nota": "patru rate lunare fără dobândă" }
   },
 
+  "infractiuni": {
+    "_info": "Pedepsele din joc sunt simplificate și orientative; în realitate depind de faptă, de valoare, de antecedente și de instanță. Sumele sunt în lei, la prețurile de start.",
+    "amendaFurt": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "amendă penală pentru un furt mărunt, la prima abatere" },
+    "amendaFrauda": { "valoare": 15000, "deVerificat": true, "sursa": "" },
+    "multiplicatorEvaziune": { "valoare": 3, "deVerificat": true, "sursa": "", "nota": "taxele ascunse se plătesc înapoi, plus dobânzi, penalități și amendă (aprox. de 3 ori suma)" },
+    "costAvocatPenal": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "luniInchisoareFurtRepetat": { "valoare": 6, "deVerificat": true, "sursa": "" },
+    "luniInchisoareMule": { "valoare": 18, "deVerificat": true, "sursa": "", "nota": "spălare de bani; la prima faptă, recunoscută, adesea cu suspendare" },
+    "luniInchisoareFrauda": { "valoare": 12, "deVerificat": true, "sursa": "" },
+    "luniInchisoareEvaziune": { "valoare": 24, "deVerificat": true, "sursa": "", "nota": "evaziune fiscală cu prejudiciu mare" },
+    "aniReabilitare": { "valoare": 5, "deVerificat": true, "sursa": "", "nota": "după câți ani se șterge cazierul (simplificat; depinde de pedeapsă)" }
+  },
+
   "imobiliare": {
     "_info": "Apartamente cumpărate ca să le dai în chirie. Prețurile de cumpărare sunt în locuinte.pretGarsoniera / pretApartament.",
     "chirieGarsoniera": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "chirie lunară de piață, oraș mare" },

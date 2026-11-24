@@ -41,6 +41,7 @@ import {
   retrageDinFirma, seteazaAfacere, vindeAfacerea,
 } from './afacere.js';
 import { cumparaBun, proceseazaBunuri, vindeBun } from './cumparaturi.js';
+import { inDetentie, proceseazaDetentie } from './infractiuni.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -254,6 +255,7 @@ export function proceseazaLuna(state, ctx) {
   const lunar = bal(ctx, 'lunar');
   let neplatit = 0;
   expiraFlaguri(state);
+  proceseazaDetentie(state, ctx);
 
   // 1. Piețele se mișcă mereu (și fără investiții), ca RNG-ul să nu depindă de alegeri.
   // Companiile individuale au fluxul lor („companii”), ca piața principală să nu se schimbe.
@@ -747,8 +749,14 @@ export function actiune(state, ctx, tip, param = {}) {
   return rez;
 }
 
+// Ce poți face și din detenție: doar operațiuni cu banii pe care îi ai.
+const ACTIUNI_IN_DETENTIE = ['depune', 'retrage', 'ramburseaza', 'platesteRestanta', 'seteaza', 'seteazaDCA', 'vinde', 'vindeBun', 'retrageDinFirma', 'depuneInFirma'];
+
 function executaActiune(state, ctx, tip, param) {
   if (state.pendinte?.tip === 'eveniment' || state.final) return { ok: false, mesaj: 'Termină întâi decizia curentă.' };
+  if (inDetentie(state) && !ACTIUNI_IN_DETENTIE.includes(tip)) {
+    return { ok: false, mesaj: `Ești în detenție încă ${state.infractiuni.inchisoare} luni. Poți doar să-ți gestionezi banii.` };
+  }
   const prod = param.id ? state.produse.find((p) => p.id === param.id) : null;
   if (param.id && !prod) return { ok: false, mesaj: 'Produsul nu mai există.' };
   const suma = param.suma != null ? inBani(param.suma) : null;

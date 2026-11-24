@@ -1,7 +1,7 @@
 // Testele extinderii, grupate pe loturi. Primesc ajutoarele din tests/suite.js.
 
 import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, oprireCurenta } from '../js/engine.js';
-import { textRezultat } from '../js/events.js';
+import { motivNeindeplinire as motivNeindeplinireTest, textRezultat } from '../js/events.js';
 import { baniDisponibili, creeazaProdus, datorieProdus, pret, valoareProdus } from '../js/finance.js';
 import { aplicaComisioaneAnuale, miscaCompanii, portofoliu, proceseazaDCA } from '../js/investitii.js';
 import { actualizeazaImobileAnual, proceseazaImobile, simuleazaCumparare, simuleazaVanzare } from '../js/imobiliare.js';
@@ -11,7 +11,7 @@ import { proceseazaSecundar, simuleazaOreSuplimentare, venitArtistLuna } from '.
 import { pregatire, proceseazaAfacere, simuleazaPornire, simuleazaVanzare as simuleazaVanzareFirma } from '../js/afacere.js';
 import { optiuniPlata, proceseazaBunuri } from '../js/cumparaturi.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
-import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
+import { descrieActivitati, motivTimp, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
@@ -28,7 +28,95 @@ export function testeLoturi(ctxBaza, a) {
     ...lot6a(ctxBaza, a),
     ...lot6b(ctxBaza, a),
     ...lot7(ctxBaza, a),
+    ...lot8(ctxBaza, a),
   };
+}
+
+// ---------- Lotul 8: infracțiuni și consecințe ----------
+
+function lot8(ctxBaza, a) {
+  const { ok, egal } = a;
+  const jocTanar = (seed) => {
+    const { ctx, state } = a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.numerar = inBani(30_000);
+    return { ctx, state };
+  };
+  return {
+    'lotul 8: nicio faptă nu e rentabilă: câștigul e mai mic decât amenda așteptată, chiar la prima abatere'() {
+      const c = (k) => ctxBaza.config.infractiuni[k].valoare;
+      const b = ctxBaza.balans.infractiuni;
+      const ev = (id) => ctxBaza.evenimente.get(id);
+      const castig = (id, cale) => ev(id).variabile[alegerePeCaleEv(ev(id), cale).infractiune.castig.slice(1, -1)];
+      const cazuri = {
+        furt: [castig('furt-marunt', 'iau'), c('amendaFurt')],
+        mule: [castig('oferta-cont', 'accept'), c('amendaFurt')],
+        frauda: [castig('decont-fals', 'accept'), c('amendaFrauda')],
+        evaziune: [castig('tentatie-evaziune', 'ascund'), castig('tentatie-evaziune', 'ascund') * c('multiplicatorEvaziune')],
+      };
+      for (const [tip, [g, amenda]] of Object.entries(cazuri)) {
+        const asteptat = g - b[tip].sansaBaza * amenda;
+        ok(asteptat < 0, `${tip}: câștig ${g} lei, pierdere așteptată ${b[tip].sansaBaza * amenda} lei → ${asteptat}`);
+      }
+    },
+
+    'lotul 8: money mule: bani pe loc, apoi dosar, cazier, credit refuzat, joburi închise'() {
+      let prins = null;
+      for (let i = 0; i < 20 && !prins; i++) {
+        const { ctx, state } = jocTanar(`mule-${i}`);
+        forteazaEveniment(state, ctx, 'oferta-cont');
+        const bani = baniDisponibili(state);
+        alege(state, ctx, 'accept');
+        ok(baniDisponibili(state) > bani, 'banii vin pe loc');
+        const u = state.urmari.find((x) => x.eveniment === 'dosar-penal');
+        if (u) prins = { ctx, state, u };
+      }
+      ok(prins, 'cu 75% șanse, cel puțin unul din 20 e prins');
+      const { ctx, state, u } = prins;
+      state.pendinte = null;
+      state.an = null;
+      state.urmari = [];
+      forteazaEveniment(state, ctx, 'dosar-penal', u.variabile);
+      alege(state, ctx, 'recunosc');
+      ok(areFlag(state, 'cazier'), 'are cazier');
+      ok(!indeplinesteCerinte(ctx.joburi.get('agent-politie'), state, ctx), 'nu mai poate fi polițist');
+      ok(/cazier/.test(motivNeindeplinireTest({ indatorare: { suma: 1000, luni: 12, dae: 0.1 } }, state, ctx)), 'banca refuză creditul');
+      ok(state.concepte.includes('money-mule') && state.concepte.includes('cazier'), 'conceptele');
+    },
+
+    'lotul 8: furtul repetat duce la închisoare: fără job, fără timp, meniurile blocate; apoi eliberarea'() {
+      const { ctx, state } = jocTanar('inchisoare');
+      state.infractiuni.furt = 3;
+      forteazaEveniment(state, ctx, 'dosar-penal', { fapta: 'furt', faptaText: 'Te-au prins din nou.', castig: 150, nr: 2 });
+      alege(state, ctx, 'recunosc');
+      ok(state.infractiuni.inchisoare > 0, `în detenție: ${state.infractiuni.inchisoare} luni`);
+      ok(!state.produse.some((p) => p.tip === 'contractMunca'), 'și-a pierdut jobul');
+      egal(timpPeAn(state, ctx), 0, 'niciun timp liber');
+      ok(/detenție/.test(motivTimp(state, ctx)), 'motivul din Activități spune de ce');
+      ok(!actiune(state, ctx, 'activitate', { activitate: 'alergare' }).ok, 'activitățile sunt blocate');
+      const luni = state.infractiuni.inchisoare;
+      state.pendinte = null;
+      for (let i = 0; i < 2 && !state.final; i++) a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+      ok(state.final || state.infractiuni.inchisoare === 0, `după ${luni} luni a ieșit`);
+      ok(state.final || state.jurnal.some((j) => /Ai ieșit din închisoare/.test(j.text)), 'jurnalul spune');
+    },
+
+    'lotul 8: cazierul se șterge după anii de reabilitare'() {
+      const { ctx, state } = jocTanar('reabilitare');
+      forteazaEveniment(state, ctx, 'dosar-penal', { fapta: 'furt', faptaText: 'Ai fost filmat.', castig: 150, nr: 0 });
+      alege(state, ctx, 'recunosc');
+      ok(areFlag(state, 'cazier'), 'cazier');
+      state.luna += ctx.config.infractiuni.aniReabilitare.valoare * 12 + 1;
+      ok(!areFlag(state, 'cazier'), 'după reabilitare, cazierul nu mai apare');
+    },
+  };
+}
+
+// Alegerea de pe o cale („id” sau „grup/sub”) direct din JSON-ul evenimentului.
+function alegerePeCaleEv(ev, cale) {
+  const [x, y] = cale.split('/');
+  const prim = ev.alegeri.find((al) => al.id === x);
+  return y ? prim.subalegeri.find((s) => s.id === y) : prim;
 }
 
 // ---------- Lotul 7: cumpărături ----------

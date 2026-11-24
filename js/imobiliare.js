@@ -43,6 +43,7 @@ export function simuleazaCumparare(state, ctx, marime, finantare) {
     if (areFlag(state, 'executare_silita') || areFlag(state, 'istoric_restante') || areFlag(state, 'datorie_recuperator')) {
       return { ok: false, ...rez, mesaj: 'Banca refuză: istoricul de la Biroul de Credit nu e curat.' };
     }
+    if (areFlag(state, 'cazier')) return { ok: false, ...rez, mesaj: 'Banca refuză: ai cazier.' };
     if (g.grad > cfg(ctx, 'indatorare.gradMaxim')) {
       return { ok: false, ...rez, mesaj: `Banca refuză: toate ratele ar lua ${Math.round(g.grad * 100)}% din salariul tău net (maximul e ${Math.round(cfg(ctx, 'indatorare.gradMaxim') * 100)}%). Chiria viitoare nu se pune la socoteală.` };
     }

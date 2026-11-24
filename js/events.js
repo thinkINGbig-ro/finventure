@@ -9,6 +9,7 @@ import {
 import { actualizeazaDerivate, adaugaJurnal, areFlag, cheltuieliLunare, schimbaStil, seteazaFlag } from './state.js';
 import { estimeazaPensie, inregistreazaDecizie, venitPasivLunar } from './bilant.js';
 import { adaugaBun } from './cumparaturi.js';
+import { aplicaPedeapsa, comiteFapta } from './infractiuni.js';
 import {
   areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
 } from './cariera.js';
@@ -90,6 +91,8 @@ export function rezolvaVariabile(ev, state, ctx, suprascrieri = {}) {
     if (nume in suprascrieri) continue;
     if (typeof def === 'number') {
       vars[nume] = rotunjeste10(def * state.indicePreturi);
+    } else if (def.startsWith('text:')) {
+      vars[nume] = def.slice(5);
     } else if (def.startsWith('pret:')) {
       // „pret:cale” sau „pret:cale*0.15”: valoare din config.json, la prețurile de azi din joc (cu inflația)
       const [cale, factor] = def.slice(5).split('*');
@@ -200,6 +203,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     inStudii: (da) => !!state.situatie.studii === da || (da ? 'Nu ești la studii.' : 'Încă ești la studii.'),
     // Gradul de îndatorare: (ratele existente + rata creditului nou) / venitul net din salariu.
     indatorare: (spec) => {
+      if (areFlag(state, 'cazier')) return 'Banca refuză: ai cazier.';
       const r = gradIndatorare(state, ctx, { suma: inBani(val(spec.suma)), luni: spec.luni, dae: spec.variabila ? null : val(spec.dae) });
       if (r.net === 0) return 'Creditorul te refuză: n-ai un venit din salariu pe care să-l poată verifica.';
       // Prima locuință: limită mai mare, dacă n-ai și n-ai avut altă locuință (BNR: 40% + 5 puncte).
@@ -234,6 +238,7 @@ export const conditiiIndeplinite = (cond, state, ctx, vars) => motivNeindeplinir
 
 export function eEligibil(ev, state, ctx) {
   if (ev.doarUrmare || !ev.faza.includes(state.faza)) return false;
+  if ((state.infractiuni?.inchisoare ?? 0) > 0) return false; // în detenție vin doar urmările deja programate
   const istoric = state.istoricEvenimente[ev.id] ?? [];
   if (ev.maxAparitii != null && istoric.length >= ev.maxAparitii) return false;
   const cooldown = ev.cooldownLuni ?? bal(ctx, 'evenimente.cooldownImplicitLuni');
@@ -332,7 +337,8 @@ export function areUrmareScadenta(state) {
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou',
+  'infractiune', 'pedeapsa'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -425,6 +431,9 @@ export function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
     }
   }
   if (p.bunNou) adaugaBun(state, ctx, p.bunNou); // un lucru din catalogul de cumpărături (plata e în „efecte” / „produsNou”)
+  // Infracțiuni: fapta (riscul vine mai târziu, ca dosar penal) și pedeapsa aleasă în dosar.
+  if (p.infractiune) comiteFapta(state, ctx, p.infractiune.tip, val(p.infractiune.castig ?? 0), idDecizie);
+  if (p.pedeapsa) aplicaPedeapsa(state, ctx, p.pedeapsa, vars);
   for (const [sel, campuri] of Object.entries(p.seteazaProdus ?? {})) {
     for (const prod of gasesteProduse(state, sel)) Object.assign(prod, campuri);
   }

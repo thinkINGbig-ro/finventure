@@ -257,6 +257,7 @@ export function simuleazaConsolidare(state, ctx, ids, luni) {
   const c = state.produse.find((p) => p.tip === 'contractMunca');
   if (!c || c.contract === 'negru') return { ok: false, mesaj: 'Banca refuză: are nevoie de un venit pe care să-l poată verifica.' };
   if (areFlag(state, 'executare_silita') || areFlag(state, 'datorie_recuperator')) return { ok: false, mesaj: 'Banca refuză: ai o executare sau o datorie la recuperatori în istoric.' };
+  if (areFlag(state, 'cazier')) return { ok: false, mesaj: 'Banca refuză: ai cazier.' };
   if (areFlag(state, 'istoric_restante')) return { ok: false, mesaj: 'Banca refuză: ai întârzieri recente la Biroul de Credit. Refinanțarea e pentru cine încă plătește la timp.' };
   if (state.ascunse.scorCredit < bal(ctx, 'datorii.scorCreditRefinantare')) return { ok: false, mesaj: 'Banca refuză: scorul tău de credit e prea mic.' };
 

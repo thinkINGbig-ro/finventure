@@ -31,6 +31,7 @@ export function optiuniPlata(state, ctx, b) {
     let motiv = null;
     if (!c || c.contract === 'negru') motiv = 'În rate cumperi doar cu un venit din salariu.';
     else if (areFlag(state, 'istoric_restante') || areFlag(state, 'executare_silita')) motiv = 'Ai restanțe la Biroul de Credit: magazinul te refuză.';
+    else if (areFlag(state, 'cazier')) motiv = 'Cu cazier, creditul la magazin nu ți se aprobă.';
     else if (gradIndatorare(state, ctx, { suma: p, luni, dae }).grad > cfg(ctx, 'indatorare.gradMaxim')) motiv = 'Ratele ar trece de 40% din venitul tău.';
     r.rate = { total: rata * luni, rata, luni, dae, motiv };
   }
