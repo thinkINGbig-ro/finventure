@@ -2,7 +2,7 @@
 
 Un joc web despre bani, decizii și viață, de la 18 la 65 de ani. Proiect pentru concursul național de educație financiară **Banometru**.
 
-Pornești la 18 ani, după bac. Fiecare apăsare pe **Avansează** trece un an. Între timp apar decizii: facultate sau job, cont la bancă, primul salariu, chirie, card de credit, IFN, investiții, înșelătorii. Fiecare are consecințe, unele imediat, altele peste ani. Jocul nu ține lecții: le descoperi din ce ți se întâmplă.
+Pornești la 18 ani, după bac. Fiecare apăsare pe **Avansează** trece un an. Între timp apar decizii: facultate sau job, cont la bancă, primul salariu, chirie sau casă cu credit ipotecar, mașină, card de credit, IFN, investiții și prăbușiri ale bursei, PFA sau SRL, pensie, înșelătorii. Fiecare are consecințe, unele imediat, altele peste ani. Jocul nu ține lecții: le descoperi din ce ți se întâmplă.
 
 ## Cum se joacă
 
@@ -27,6 +27,7 @@ Apoi deschide `http://localhost:8000`. Merge și `npx serve` sau extensia Live S
 | `/` | jocul |
 | `/?debug=1` | jocul cu modul debug (🐞): sari la o vârstă, setezi statistici și flag-uri, forțezi un eveniment, rulezi simularea |
 | `/tools/validate.html` | verificarea conținutului JSON |
+| `/tools/tree.html` | arborele deciziilor: evenimente, alegeri și consecințe, filtrabil pe fază (ex. `?radacina=urgenta-2000` pentru ramura IFN) |
 | `/tests/run.html` | testele motorului, în browser |
 
 ## Publicare pe GitHub Pages
@@ -103,18 +104,18 @@ Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezu
 
 | Profil | Cum joacă | Ajung la pensie sau la independență | Faliment | Averea mediană la final (lei de azi) | Finalul cel mai des |
 |---|---|---|---|---|---|
-| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, se mută de acasă, stil confortabil când își permite | **100%** | 0% | ~1,1 mil. lei | Rentierul (48%) |
-| **Frugal** | trai modest toată viața, investește aproape tot ce rămâne | **100%** | 0% | ~2,2 mil. lei | Libertate la 40 (61%) |
-| **Aleator** | alege la întâmplare, inclusiv în meniuri | 43% | 57% | ~85.000 lei | Pensionar liniștit (32%) |
-| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot | 14% | 86% | ~44.000 lei | Regele IFN-urilor (69%) |
+| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, se mută de acasă, strânge pentru o casă, stil confortabil când își permite | **100%** | 0% | ~940.000 lei | Pensionar liniștit (52%) |
+| **Frugal** | trai modest toată viața, investește aproape tot ce rămâne | **100%** | 0% | ~2,5 mil. lei | Libertate la 40 (52%) |
+| **Aleator** | alege la întâmplare, inclusiv în meniuri | 47% | 53% | ~144.000 lei | Pensionar liniștit (32%) |
+| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 19% | 81% | ~54.000 lei | Regele IFN-urilor (63%) |
 
-*Sursa: `docs/raport-simulare.json` (500 de vieți pe profil, 41 de evenimente). „Lei de azi” = sumele finale ajustate cu inflația simulată, ca să poată fi comparate cu prețurile de acum.*
+*Sursa: `docs/raport-simulare.json` (500 de vieți pe profil, 57 de evenimente). „Lei de azi” = sumele finale ajustate cu inflația simulată, ca să poată fi comparate cu prețurile de acum.*
 
 Ce arată:
 
 - **Diferența vine din decizii, nu din noroc.** Toate profilurile trăiesc aceleași tipuri de evenimente (boli, concedieri, crize pe bursă), dar prudentul le absoarbe din fondul de urgență, iar riscantul le acoperă cu credite scumpe.
-- **Lecțiile se văd în cauzele falimentului.** La riscant, falimentul pornește de cele mai multe ori de la un credit IFN luat pentru o urgență și continuă cu restanțe, recuperatori și poprire. La aleator, cauzele frecvente sunt mașina nouă luată cu credit și telefonul în rate.
-- **Lecțiile se văd și în salarii.** Pe durata unei vieți simulate, inflația medie e ~4,8% pe an și randamentul ETF ~7% pe an. Salariul crește peste inflație doar dacă ceri măriri, accepți promovări sau schimbi jobul: real, +0,6% pe an la prudent și frugal, ~0% la aleator, −0,5% la riscant. Valorile economice din `data/config.json` sunt marcate „de verificat” și vor fi confirmate de un specialist.
+- **Lecțiile se văd în cauzele falimentului.** La riscant, falimentul pornește de cele mai multe ori de la un credit IFN luat pentru o urgență și continuă cu restanțe, recuperatori și poprire. La aleator, cauzele frecvente sunt mașina nouă luată cu credit, telefonul în rate și IFN-ul pentru o problemă de sănătate.
+- **Lecțiile se văd și în salarii.** Pe durata unei vieți simulate, inflația medie e ~4,8% pe an și randamentul ETF ~7% pe an. Salariul crește peste inflație doar dacă ceri măriri, accepți promovări sau schimbi jobul: real, +0,6–0,8% pe an la prudent și frugal, ~0% la aleator, −0,5% la riscant. Valorile economice din `data/config.json` sunt marcate „de verificat” și vor fi confirmate de un specialist.
 - **N-am „ajustat” rezultatele.** Când un profil a ieșit nerealist (de exemplu, la început prudentul ajungea la averi de zeci de milioane), am căutat cauza în mecanici (măririle nu aveau plafon față de piață, crash-urile bursiere erau numărate de două ori) și am reparat-o, nu am schimbat procentele.
 
 ## Valorile economice

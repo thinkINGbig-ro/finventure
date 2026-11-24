@@ -287,7 +287,7 @@ tools/validate.html verificare conținut (vezi mai jos)
 tools/formateaza-json.js  formatează JSON-urile de conținut (node)
 tests/run.js + tests/run.html  testele motorului (Node / browser, același cod)
 tests/simulare.js   simulare de echilibru: node tests/simulare.js [--n 1000]
-tools/tree.html     vizualizare arbore de decizii
+tools/tree.html     vizualizare arbore de decizii (Mermaid de pe CDN, doar în unealtă)
 assets/
 README.md           cum se joacă, cum se adaugă un eveniment, cum se rulează local
 ```

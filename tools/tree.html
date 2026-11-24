@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finventure: arborele deciziilor</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap">
+  <style>
+    :root { --bg: #1E1638; --bg2: #2A2050; --main: #3B5BDB; --accent: #FF8A3D; --text: #F3EEFF; --text2: #C9BFE8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Fredoka, system-ui, sans-serif; }
+    header { padding: 20px 16px 8px; max-width: 1200px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-size: 26px; }
+    h1 span { color: var(--accent); }
+    .sub { color: var(--text2); margin: 0 0 14px; }
+    .filtre { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+    label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text2); }
+    select, input[type=checkbox] { font: inherit; }
+    select { min-height: 40px; border-radius: 10px; border: 2px solid rgba(243, 238, 255, .2); background: var(--bg2); color: var(--text); padding: 0 10px; }
+    .bifa { flex-direction: row; align-items: center; min-height: 40px; color: var(--text); font-size: 15px; }
+    .legenda { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 0; font-size: 13px; color: var(--text2); }
+    .legenda i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
+    #stat { font-size: 13px; color: var(--text2); margin-top: 8px; }
+    main { padding: 8px 16px 40px; overflow-x: auto; }
+    #graf { min-width: 600px; }
+    #graf svg { max-width: none !important; }
+    .eroare { color: #FF5A6E; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span>Fin</span>venture: arborele deciziilor</h1>
+    <p class="sub">Evenimentele, alegerile și consecințele lor întârziate, generate direct din <code>data/events/*.json</code>. Un eveniment „rădăcină” arată doar ramura care pornește din el.</p>
+    <div class="filtre">
+      <label>Faza
+        <select id="faza">
+          <option value="">toate</option>
+          <option value="1">1 · după liceu</option>
+          <option value="2">2 · studenție</option>
+          <option value="3">3 · primul job</option>
+          <option value="4">4 · construire</option>
+          <option value="5">5 · maturitate</option>
+        </select>
+      </label>
+      <label>Pornește de la
+        <select id="radacina"><option value="">toate evenimentele</option></select>
+      </label>
+      <label class="bifa"><input type="checkbox" id="alegeri" checked> Arată alegerile</label>
+      <label class="bifa"><input type="checkbox" id="motor" checked> Arată declanșările din motor</label>
+    </div>
+    <div class="legenda">
+      <span><i style="background:#3B5BDB"></i>eveniment aleator</span>
+      <span><i style="background:#7048E8"></i>urmare (apare doar după o alegere)</span>
+      <span><i style="background:#2A2050;border:2px solid #C9BFE8"></i>alegere</span>
+      <span><i style="background:#FF8A3D"></i>motorul jocului</span>
+    </div>
+    <div id="stat"></div>
+  </header>
+  <main><div id="graf">Încarc…</div></main>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+    import { cititorFetch, incarcaContinut } from '../js/content.js';
+
+    mermaid.initialize({
+      startOnLoad: false, securityLevel: 'strict', theme: 'base', maxTextSize: 200000, maxEdges: 2000,
+      flowchart: { htmlLabels: true, curve: 'basis', nodeSpacing: 24, rankSpacing: 44 },
+      themeVariables: {
+        fontFamily: 'Fredoka, system-ui, sans-serif', fontSize: '14px', background: '#1E1638',
+        primaryColor: '#3B5BDB', primaryTextColor: '#F3EEFF', primaryBorderColor: '#3B5BDB', lineColor: '#C9BFE8',
+        edgeLabelBackground: '#1E1638', textColor: '#F3EEFF',
+      },
+    });
+
+    // Ce declanșează motorul singur (fără o alegere): sursă -> eveniment.
+    const MOTOR = [
+      ['facturi neplătite', 'facturi-somatie'], ['chirie neplătită 3 luni', 'evacuare'], ['studii terminate', 'cv-start'],
+      ['crash pe bursă', 'prabusire-bursa'], ['IRCC crește', 'rata-variabila-crescuta'], ['investițiile acoperă cheltuielile', 'independenta-financiara'],
+    ];
+
+    const { ctx } = await incarcaContinut(cititorFetch('../'));
+    const ev = ctx.evenimente;
+    const sel = document.getElementById('radacina');
+    [...ev.values()].sort((a, b) => a.id.localeCompare(b.id)).forEach((e) => sel.append(new Option(`${e.id}${e.titlu ? ` · ${e.titlu}` : ''}`, e.id)));
+    sel.value = new URLSearchParams(location.search).get('radacina') ?? '';
+
+    const id = (s) => s.replace(/[^a-zA-Z0-9]/g, '_');
+    const text = (s) => `"${String(s).replace(/"/g, '#quot;').replace(/\{(\w+)\}/g, '…')}"`;
+    const descrieDupa = (u) => {
+      const d = Array.isArray(u.dupaLuni) ? `${u.dupaLuni[0]}–${u.dupaLuni[1]} luni` : u.dupaLuni === 0 ? 'imediat' : `${u.dupaLuni ?? 1} luni`;
+      return u.probabilitate != null && u.probabilitate < 1 ? `${d}, ${Math.round(u.probabilitate * 100)}%` : d;
+    };
+
+    // Toate alegerile finale ale unui eveniment, cu țintele lor (urmări și „la restanță”).
+    function legaturi(e) {
+      const out = [];
+      for (const a of e.alegeri) {
+        const finale = a.subalegeri ? a.subalegeri.map((s) => ({ cale: `${a.id}/${s.id}`, eticheta: `${a.eticheta} › ${s.eticheta}`, p: s })) : [{ cale: a.id, eticheta: a.eticheta, p: a }];
+        for (const f of finale) {
+          const tinte = [];
+          for (const x of [f.p, ...(f.p.rezultate ?? [])]) {
+            for (const u of x.urmari ?? []) tinte.push({ spre: u.eveniment, eticheta: descrieDupa(u) });
+            for (const pr of [x.produsNou ?? []].flat()) if (pr.laRestanta) tinte.push({ spre: pr.laRestanta, eticheta: 'dacă întârzii rata' });
+          }
+          out.push({ ...f, tinte });
+        }
+      }
+      return out;
+    }
+
+    function construieste() {
+      const faza = Number(document.getElementById('faza').value) || null;
+      const radacina = sel.value;
+      const cuAlegeri = document.getElementById('alegeri').checked;
+      const cuMotor = document.getElementById('motor').checked;
+
+      // Evenimentele de pornire, apoi tot ce se poate atinge din ele prin urmări.
+      let pornire = radacina ? [radacina] : [...ev.values()].filter((e) => !e.doarUrmare && (!faza || e.faza?.includes(faza))).map((e) => e.id);
+      if (!radacina && !faza) pornire.push(ctx.balans.start.evenimentStart);
+      if (!radacina && cuMotor) MOTOR.forEach(([, t]) => pornire.push(t));
+      const vizibile = new Set();
+      const coada = [...pornire];
+      while (coada.length) {
+        const x = coada.shift();
+        if (vizibile.has(x) || !ev.has(x)) continue;
+        vizibile.add(x);
+        for (const l of legaturi(ev.get(x))) l.tinte.forEach((t) => coada.push(t.spre));
+      }
+
+      const linii = ['flowchart LR'];
+      const clase = { eveniment: [], urmare: [], alegere: [], motor: [] };
+      for (const x of vizibile) {
+        const e = ev.get(x);
+        linii.push(`  ${id(x)}[${text(e.titlu ?? x)}]`);
+        clase[e.doarUrmare ? 'urmare' : 'eveniment'].push(id(x));
+        for (const l of legaturi(e)) {
+          if (cuAlegeri) {
+            const nod = `${id(x)}__${id(l.cale)}`;
+            linii.push(`  ${nod}(${text(l.eticheta)})`, `  ${id(x)} --- ${nod}`);
+            clase.alegere.push(nod);
+            l.tinte.filter((t) => vizibile.has(t.spre)).forEach((t) => linii.push(`  ${nod} -->|${text(t.eticheta)}| ${id(t.spre)}`));
+          } else {
+            l.tinte.filter((t) => vizibile.has(t.spre)).forEach((t) => linii.push(`  ${id(x)} -->|${text(l.cale)}| ${id(t.spre)}`));
+          }
+        }
+      }
+      if (cuMotor) {
+        MOTOR.filter(([, t]) => vizibile.has(t)).forEach(([sursa, t], i) => {
+          linii.push(`  motor_${i}{{${text(sursa)}}} -.-> ${id(t)}`);
+          clase.motor.push(`motor_${i}`);
+        });
+      }
+      linii.push('  classDef eveniment fill:#3B5BDB,stroke:#3B5BDB,color:#F3EEFF');
+      linii.push('  classDef urmare fill:#7048E8,stroke:#7048E8,color:#F3EEFF');
+      linii.push('  classDef alegere fill:#2A2050,stroke:#C9BFE8,color:#F3EEFF,font-size:12px');
+      linii.push('  classDef motor fill:#FF8A3D,stroke:#FF8A3D,color:#1E1638');
+      for (const [c, noduri] of Object.entries(clase)) if (noduri.length) linii.push(`  class ${noduri.join(',')} ${c}`);
+      return { cod: linii.join('\n'), nEv: vizibile.size, nAl: clase.alegere.length };
+    }
+
+    async function deseneaza() {
+      const { cod, nEv, nAl } = construieste();
+      document.getElementById('stat').textContent = `${nEv} evenimente${nAl ? `, ${nAl} alegeri` : ''} în diagramă · ${ev.size} evenimente în joc`;
+      try {
+        const { svg } = await mermaid.render(`g${Date.now()}`, cod);
+        document.getElementById('graf').innerHTML = svg;
+      } catch (e) {
+        document.getElementById('graf').innerHTML = `<p class="eroare">Nu am putut desena diagrama: ${e.message}</p>`;
+      }
+    }
+
+    ['faza', 'radacina', 'alegeri', 'motor'].forEach((x) => document.getElementById(x).addEventListener('change', deseneaza));
+    deseneaza();
+  </script>
+</body>
+</html>

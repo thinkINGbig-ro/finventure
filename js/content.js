@@ -461,7 +461,9 @@ function distanta(a, b) {
 // Cititor pentru browser: fetch relativ la o bază (ex. „./” din index.html, „../” din tests/).
 export function cititorFetch(baza = './') {
   return async (cale) => {
-    const r = await fetch(baza + cale);
+    // „no-cache” = folosește cache-ul doar după ce serverul confirmă că fișierul nu s-a schimbat:
+    // după o actualizare de conținut, toată lumea primește JSON-urile noi.
+    const r = await fetch(baza + cale, { cache: 'no-cache' });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return r.text();
   };
