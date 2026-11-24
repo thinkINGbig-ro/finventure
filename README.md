@@ -1,141 +1,58 @@
 # Finventure
 
-Un joc web despre bani, decizii și viață, de la 18 la 65 de ani. Proiect pentru concursul național de educație financiară **Banometru**.
+Un joc despre bani și decizii de viață, pentru liceeni: trăiești o viață întreagă, de la 18 la 65 de ani, și vezi pe pielea ta ce înseamnă un salariu, un credit sau o investiție.
 
-Pornești la 18 ani, după bac. Fiecare apăsare pe **Avansează** trece un an. Între timp apar decizii: facultate sau job, cont la bancă, primul salariu, chirie sau casă cu credit ipotecar, mașină, card de credit, IFN, investiții și prăbușiri ale bursei, PFA sau SRL, pensie, înșelătorii. Fiecare are consecințe, unele imediat, altele peste ani. Jocul nu ține lecții: le descoperi din ce ți se întâmplă.
+## [▶ Joacă acum](https://thinkingbig-ro.github.io/finventure/)
+
+**[thinkingbig-ro.github.io/finventure](https://thinkingbig-ro.github.io/finventure/)**: merge direct în browser, pe telefon sau pe calculator, fără cont și fără instalare.
 
 ## Cum se joacă
 
-- **Avansează** trece un an. Finanțele se simulează lună de lună în fundal; evenimentele opresc anul în luna lor.
-- Pe fiecare card alegi o variantă (butoane, tastele **1–4** sau swipe când sunt două). Variantele indisponibile rămân vizibile, cu motivul.
-- Meniurile de jos (**Bancă**, **Carieră**, **Cumpărături**, **Concepte**) îți permit să acționezi singur între ani: fond de urgență, depozite, card de credit, mărire, CV, stil de viață.
-- După decizii importante apare o lecție scurtă; conceptele noi se adună în **enciclopedie**.
-- Jocul se termină la pensie, la independența financiară sau la un game over (faliment, burnout). La final, ecranul **„Ce s-a întâmplat?”** arată lanțul de decizii și tiparul din spate, cu opțiunea **„Încearcă din nou de aici”**.
+Pornești la 18 ani, chiar după bac, cu prima decizie mare: facultate, job sau un an liber. Butonul **Avansează** trece un an din viața ta. Pe parcurs apar alegeri, unele mici, altele care îți schimbă viața: primul salariu, prima chirie, un card de credit, o urgență fără bani, o ofertă „prea bună ca să fie adevărată”. Fiecare alegere are consecințe, uneori abia peste câțiva ani. La final vezi ce te-a ajutat, ce te-a costat și, dacă ai dat de greu, unde a început totul.
 
-## Cum rulezi local
+## Ce înveți
 
-Jocul e HTML + CSS + JavaScript (ES modules), fără build și fără dependențe. Trebuie doar servit printr-un server local, pentru că browserele nu încarcă module din `file://`:
+- **Buget și salariu:** salariul brut și net, taxele de pe fluturaș, bugetul lunar, fondul de urgență, negocierea salariului.
+- **Bancă și card:** contul curent, comisioanele, depozitele, cardul de credit și capcana plății minime.
+- **Credite și IFN:** dobânda și costul total, ratele „fără dobândă”, creditele rapide, ce se întâmplă când nu plătești (de la somație la poprire).
+- **Investiții:** riscul și randamentul, dobânda compusă, ce faci când bursa se prăbușește.
+- **Locuință:** chirie sau cumpărare, avansul, creditul ipotecar, dobânda fixă sau variabilă.
+- **Taxe și pensie:** contractul de muncă, munca la negru, PFA, Declarația unică, pilonii pensiei.
+- **Înșelătorii:** mesaje false, joburi care îți cer bani, „investiții garantate”.
 
-```
-python -m http.server 8000
-```
+Fiecare concept nou pe care îl întâlnești intră în **Enciclopedia Finventure**, cu o explicație scurtă și un exemplu în lei. Sunt aproape 50 de concepte de colecționat, plus 14 finaluri diferite de descoperit.
 
-Apoi deschide `http://localhost:8000`. Merge și `npx serve` sau extensia Live Server.
+## Cum am verificat că jocul e corect
 
-| Adresă | Ce face |
-|---|---|
-| `/` | jocul |
-| `/?debug=1` | jocul cu modul debug (🐞): sari la o vârstă, setezi statistici și flag-uri, forțezi un eveniment, rulezi simularea |
-| `/tools/validate.html` | verificarea conținutului JSON |
-| `/tools/tree.html` | arborele deciziilor: evenimente, alegeri și consecințe, filtrabil pe fază (ex. `?radacina=urgenta-2000` pentru ramura IFN) |
-| `/tests/run.html` | testele motorului, în browser |
+Un joc care învață despre bani trebuie să fie corect: deciziile bune să ducă la rezultate bune, iar cele proaste la probleme, fără să fie aranjat. Așa că am lăsat calculatorul să joace câte 500 de vieți întregi în patru stiluri diferite, cu exact aceleași reguli ca un jucător real.
 
-## Publicare pe GitHub Pages
+| Stil de joc | Ajung liniștiți la pensie | Ajung la faliment sau la epuizare | Averea tipică la final, în bani de azi |
+|---|---|---|---|
+| **Prudent**: buget echilibrat, bani puși deoparte pentru urgențe, o parte investită | 100% | 0% | ~1,2 milioane lei |
+| **Econom**: trai simplu toată viața, investește aproape tot | 100% | 0% | ~1,8 milioane lei |
+| **La întâmplare**: alege orice, fără plan | 55% | 45% | ~224.000 lei |
+| **Riscant**: credite rapide, muncă la negru, cheltuie tot | 24% | 76% | ~61.000 lei |
 
-Repo → **Settings → Pages → Source: Deploy from a branch → `main` / `(root)`**. Fișierul `.nojekyll` face ca GitHub Pages să servească fișierele exact cum sunt.
+Toți au trecut prin aceleași tipuri de încercări: boli, concedieri, crize pe bursă. Diferența a venit din cum le-au întâmpinat. Cel prudent a plătit din banii puși deoparte; cel riscant a luat un credit scump, apoi încă unul, până când datoria l-a îngropat.
 
-## Structura
+**Chirie sau casă proprie?** E o întrebare pe care o au mulți tineri și părinții lor. Am jucat aceeași viață de două ori: o dată jucătorul își cumpără o locuință pe care și-o permite, o dată rămâne în chirie și își investește banii. Rezultatul: **la bani, iese practic egal**. Casa aduce siguranță și nicio chirie la bătrânețe; chiria plus economiile investite ajung în același loc. Dar chiria fără economii pierde. Lecția nu e „cumpără” sau „nu cumpăra”, ci: alege ce-ți permiți și pune deoparte diferența.
 
-```
-index.html, css/style.css
-js/engine.js        bucla anuală, simularea lunară, restanțe, executare, final
-js/events.js        condiții, variabile, alegeri, efecte, urmări
-js/finance.js       salariu brut/net, credite, carduri, depozite, investiții
-js/cariera.js       CV, oferte, negociere, mărire, promovare
-js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
-js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
-js/content.js       încărcarea JSON-urilor + validarea schemei
-js/analiza.js       analiza legăturilor (flag-uri, evenimente inaccesibile, concepte)
-js/simulare.js      profilurile de jucător și simularea
-js/ui/*.js          ecranele
-data/config.json    valori economice (toate marcate „deVerificat”)
-data/balans.json    parametri de joc (echilibrare)
-data/events/*.json  evenimentele, pe teme
-data/concepts.json, data/jobs.json, data/endings.json
-tests/              teste (Node și browser) și simularea
-docs/raport-simulare.json  raportul de echilibru (regenerabil)
-```
+## Cifrele sunt reale
 
-## Cum adaugi un eveniment
+Taxele de pe salariu, dobânzile, prețurile și regulile băncilor din joc pornesc de la valorile reale din România. De exemplu, la fel ca în regulamentul Băncii Naționale a României, nicio bancă (și niciun IFN) nu-ți poate da un credit dacă toate ratele tale ar trece de 40% din venitul net (45% pentru prima locuință). Regulile BNR sunt verificate pe textul regulamentului; celelalte valori le verificăm cu un specialist înainte de concurs.
 
-1. Alege fișierul potrivit din `data/events/` (sau creează unul nou și adaugă-l în `data/events/index.json`).
-2. Adaugă evenimentul în lista `evenimente`. Exemplu minim:
+## Ce nu face (încă) jocul
 
-```json
-{
-  "id": "abonament-sala",
-  "titlu": "Abonament la sală",
-  "faza": [2, 3],
-  "pondere": 3,
-  "variabile": { "pret": 150 },
-  "text": "Sala de lângă tine are ofertă: abonament {pret} lei pe lună.",
-  "alegeri": [
-    {
-      "id": "da",
-      "eticheta": "Îmi fac abonament",
-      "recurente": [{ "tip": "cheltuiala", "suma": "{pret}", "eticheta": "Sală" }],
-      "efecte": { "energie": 5, "fericire": 3 },
-      "concepte": ["abonamente"],
-      "lectie": "Un abonament folosit e o investiție în tine. Unul nefolosit e doar o cheltuială lunară."
-    },
-    { "id": "nu", "eticheta": "Mă antrenez în parc", "efecte": { "energie": 2 } }
-  ]
-}
-```
+- **Un singur venit.** În joc trăiești pe un singur salariu; în realitate, mulți cumpără o casă în doi, ceea ce schimbă cât îți dă banca.
+- **Fără programe de stat pentru locuințe**, cum e „Noua Casă”, cu avans mic.
+- **Fără credite în euro.** Toate creditele din joc sunt în lei.
 
-3. Deschide `tools/validate.html`. Orice greșeală apare cu fișierul, evenimentul și câmpul (de exemplu „câmp necunoscut «eticheat» (ai vrut «eticheta»?)”). Evenimentele cu erori nu intră în joc.
-4. Rulează simularea (mai jos) ca să vezi dacă evenimentul apare și cum schimbă echilibrul.
+## Despre proiect
 
-Toate câmpurile disponibile (condiții, efecte, credite, sub-alegeri, oferte de job, urmări) sunt descrise în `CLAUDE.md`, secțiunea 5. Cifrele nu se scriu în evenimente: sumele de bază vin din `data/config.json`, iar sumele din `variabile` cresc automat cu inflația.
+Finventure a fost realizat pentru concursul național de educație financiară **Banometru**.
 
-## Teste și simulare
+**Echipa:** [ECHIPA: nume, liceu, clasă]
 
-```
-node tests/run.js                 # testele motorului (aceleași ca în tests/run.html)
-node tests/simulare.js --n 500    # simularea pe profiluri
-node tests/simulare.js --n 500 --json docs/raport-simulare.json   # regenerează raportul
-```
+---
 
-Nu e nevoie de `npm install`: scripturile folosesc doar Node.
-
-## Cum am testat echilibrul jocului
-
-Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezultate bune, iar cele proaste la probleme, fără ca rezultatul să fie forțat. Ca să verificăm asta, am scris patru „jucători automați” (profiluri) și i-am pus să joace câte **500 de vieți fiecare**, de la 18 la 65 de ani, cu aceleași reguli și aceleași evenimente ca un jucător real. Profilurile folosesc și meniurile (bancă, investiții, carieră, stil de viață), nu doar cardurile de decizie.
-
-| Profil | Cum joacă | Ajung la pensie sau la independență | Faliment | Averea mediană la final (lei de azi) | Finalul cel mai des |
-|---|---|---|---|---|---|
-| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, chiria sub 35% din venit, stil mai bun doar dacă și-l permite, cumpără casă când banca îl aprobă | **100%** | 0% | ~1,2 mil. lei | Milionar în lei de azi (53%) |
-| **Frugal** | trai modest toată viața, rămâne în chirie, investește aproape tot ce rămâne | **100%** | 0% | ~1,8 mil. lei | Rentierul (52%) |
-| **Aleator** | alege la întâmplare, inclusiv în meniuri | 55% | 45% (40% faliment, 5% burnout) | ~224.000 lei | Pensionar liniștit (40%) |
-| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 24% | 76% | ~61.000 lei | Regele IFN-urilor (51%) |
-
-*Sursa: `docs/raport-simulare.json` (500 de vieți pe profil, 57 de evenimente). „Lei de azi” = sumele finale ajustate cu inflația simulată, ca să poată fi comparate cu prețurile de acum.*
-
-Ce arată:
-
-- **Diferența vine din decizii, nu din noroc.** Toate profilurile trăiesc aceleași tipuri de evenimente (boli, concedieri, crize pe bursă), dar prudentul le absoarbe din fondul de urgență, iar riscantul le acoperă cu credite scumpe.
-- **Lecțiile se văd în cauzele falimentului.** La riscant, falimentul pornește de cele mai multe ori de la un credit IFN luat pentru o urgență și continuă cu restanțe, recuperatori și poprire. La aleator, cauzele frecvente sunt IFN-ul pentru o problemă de sănătate, telefonul în rate și mutarea singur fără bani deoparte. Toate creditele (bănci, leasing și IFN) sunt limitate de gradul de îndatorare, ca în regulamentul BNR (40%, 45% pentru prima locuință), așa că un jucător nu poate lua un credit pe care nu și-l permite. Lecția IFN rămâne în DAE și în lanțul de restanțe.
-- **Lecțiile se văd și în salarii.** Pe durata unei vieți simulate, inflația medie e ~4,8% pe an și randamentul ETF ~7% pe an. Salariul crește peste inflație doar dacă ceri măriri, accepți promovări sau schimbi jobul: real, +0,6–0,8% pe an la prudent și frugal, ~0% la aleator, −0,5% la riscant. Valorile economice din `data/config.json` sunt marcate „de verificat” și vor fi confirmate de un specialist.
-- **N-am „ajustat” rezultatele.** Când un profil a ieșit nerealist (de exemplu, la început prudentul ajungea la averi de zeci de milioane), am căutat cauza în mecanici (măririle nu aveau plafon față de piață, crash-urile bursiere erau numărate de două ori) și am reparat-o, nu am schimbat procentele.
-
-### Chirie sau cumpărare?
-
-O întrebare pe care o au mulți adolescenți (și părinții lor). La evenimentul casei, jucătorul alege și **mărimea**: garsonieră (~250.000 lei la prețurile de start) sau apartament cu două camere (~450.000 lei). Lecția: cumpără ce-ți permiți, nu ce-ți dorești. Cu această alegere, **95% dintre jucătorii prudenți cumpără o locuință**, la o vârstă mediană de 32 de ani: 396 din 500 încep cu o garsonieră (147 dintre ei o vând după 40 de ani pentru un apartament), 79 cumpără direct un apartament. Avansul vine de obicei din vânzarea investițiilor.
-
-Ca să comparăm corect, am jucat **aceeași viață de două ori**, cu același seed (același job, aceleași șocuri, aceeași bursă): o dată profilul prudent cumpără casa, o dată rămâne în chirie și își păstrează investițiile.
-
-| Simulare | Vieți cu cumpărare | Averea mediană cu casa | Aceeași viață, în chirie | Casa a ieșit mai bine în |
-|---|---|---|---|---|
-| 500 de vieți | 475 | ~1,20 mil. lei de azi | ~1,23 mil. lei de azi | **51%** din vieți (diferența mediană: ~+5.000 lei) |
-
-Răspunsul, în modelul nostru: **la bani, e practic egal.** Casa îți aduce siguranță și nicio chirie la bătrânețe; chiria plus investițiile disciplinate ajung în același loc. Lecția nu e „cumpără” sau „nu cumpăra”, ci: alege o casă pe care ți-o permiți, iar dacă rămâi în chirie, investește diferența. Fără investiții, chiria pierde. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
-
-## Limitări cunoscute (direcții de extindere)
-
-- **Un singur venit.** Jocul nu are partener sau venit dublu; în realitate, multe locuințe se cumpără în doi, ceea ce schimbă gradul de îndatorare.
-- **Fără programe de stat pentru locuințe** (de exemplu „Noua Casă”, cu avans de 5%).
-- **Fără credite în valută.** Plafonul BNR pentru ele (20%) e deja în `data/config.json`, dar nefolosit.
-
-## Valorile economice
-
-Toate cifrele (taxe, salarii, chirii, dobânzi, DAE, randamente, inflație, limita de poprire, garantarea depozitelor) stau în `data/config.json`. Fiecare valoare are `"deVerificat": true` și un câmp `"sursa"`, de completat după verificarea cu un specialist. Parametrii de joc (praguri, ritmul de revenire a energiei etc.) stau separat, în `data/balans.json`.
+<sub>Pentru echipa de dezvoltare: [docs/DEZVOLTARE.md](docs/DEZVOLTARE.md)</sub>

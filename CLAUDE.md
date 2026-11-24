@@ -298,7 +298,8 @@ tests/run.js + tests/run.html  testele motorului (Node / browser, același cod)
 tests/simulare.js   simulare de echilibru: node tests/simulare.js [--n 1000]
 tools/tree.html     vizualizare arbore de decizii (Mermaid de pe CDN, doar în unealtă)
 assets/
-README.md           cum se joacă, cum se adaugă un eveniment, cum se rulează local
+README.md           prezentarea pentru public (jucători, profesori, părinți, juriu): fără detalii tehnice
+docs/DEZVOLTARE.md  documentația tehnică: rulare locală, GitHub Pages, structura, cum adaugi un eveniment, teste, simulare, unelte
 ```
 
 ## 12. Unelte pentru conținut și testare
@@ -358,6 +359,8 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 
 ### Comenzi
 
+Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `README.md` e doar pentru public.
+
 | Ce | Cum |
 |---|---|
 | Rulezi jocul local | `python -m http.server 8000` și deschizi `http://localhost:8000` |
@@ -385,7 +388,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 - `data/config.json` = valori economice (toate `deVerificat: true`); `data/balans.json` = parametri de joc.
 - Prețurile din evenimente care țin de economie vin din config, cu `"pret:cale*factor"` (ajustate cu inflația).
 - Fiecare eveniment trebuie să aibă cel puțin o alegere fără „cere” (o verifică analiza și testele).
-- Rulează `node tests/run.js` și simularea după orice modificare de conținut sau de motor; actualizează `docs/raport-simulare.json` și tabelul din README dacă se schimbă cifrele.
+- Rulează `node tests/run.js` și simularea după orice modificare de conținut sau de motor; actualizează `docs/raport-simulare.json` și tabelele din `docs/DEZVOLTARE.md` și `README.md` dacă se schimbă cifrele (în README, pe înțelesul publicului: fără termeni tehnici, comenzi sau căi de fișiere).
 - Fără atribuire către Claude în commit-uri (verificare: `git log --format=%B | grep -i -E "co-authored|generated with"` trebuie să nu găsească nimic).
 - Push doar cu acordul explicit al echipei.
 

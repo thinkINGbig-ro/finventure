@@ -69,7 +69,7 @@
       );
     } catch (e) {
       document.getElementById('rezultate').replaceChildren(el('section', {}, el('h2', {}, 'Nu am putut încărca datele'),
-        el('p', {}, location.protocol === 'file:' ? 'Deschide pagina printr-un server local (vezi README), nu direct din fișier.' : e.message)));
+        el('p', {}, location.protocol === 'file:' ? 'Deschide pagina printr-un server local (vezi docs/DEZVOLTARE.md), nu direct din fișier.' : e.message)));
     }
   </script>
 </body>
