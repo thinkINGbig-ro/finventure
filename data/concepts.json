@@ -210,6 +210,16 @@
       "id": "chirie-vs-cumparare",
       "titlu": "Chirie sau cumpărare?",
       "text": "Casa proprie nu e automat mai bună decât chiria. Proprietarul plătește dobânzi, impozit, întreținere și reparații, și e legat de un oraș. Chiriașul plătește chiria, dar poate investi avansul și diferența. Contează cât timp stai în același loc și ce faci cu banii rămași. Exemplu: un avans de 70.000 lei investit 30 de ani la 7% pe an poate ajunge la peste 500.000 lei."
+    },
+    {
+      "id": "leasing",
+      "titlu": "Leasingul auto",
+      "text": "În leasing financiar plătești un avans (de obicei 10–30%) și rate lunare, iar mașina devine a ta abia după ultima rată. Până atunci, e proprietatea firmei de leasing și ai obligația s-o asiguri CASCO. Costul total e mai mare decât prețul mașinii, din cauza dobânzii și a comisioanelor. Exemplu: 64.000 lei pe 5 ani cu 9% înseamnă o rată de aproape 1.300 lei și cam 15.000 lei dobândă."
+    },
+    {
+      "id": "rca-casco",
+      "titlu": "RCA și CASCO",
+      "text": "RCA e asigurarea obligatorie: plătește pagubele pe care le faci altora cu mașina. CASCO e opțională: îți plătește ție reparațiile, chiar dacă ești vinovat, de obicei cu o franciză (o sumă mică pe care o plătești tu). Asigurarea transformă un risc mare și rar într-un cost mic și sigur. Exemplu: 250 lei pe lună CASCO față de o reparație de 9.000 lei pe care o plătești singur."
     }
   ]
 }

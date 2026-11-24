@@ -274,7 +274,7 @@ const PONDERI_ATENT = {
   ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
   fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
   viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15, inselatorie: -15, pariu: -6,
-  panica: -8, pastreaza: 4,
+  panica: -8, pastreaza: 4, asigurare: 2, faraAsigurare: -2,
 };
 
 export const PROFILURI = {
@@ -315,7 +315,7 @@ export const PROFILURI = {
       ifn: 8, credit: 3, negru: 6, cim: -2, cardMinim: 6, cardIntegral: -4, ramburseaza: -5, fond: -4, card: 4, studii: -3,
       minciuna: 5, marire: -1, cautaJob: 1, ignora: 4, fericire: 0.4, viitor: -0.3, energie: 0.1,
       inselatorie: 3, pariu: 6, stilSus: 6, stilJos: -4, rate: 5, investitieRiscanta: 6, chirieScumpa: 3, panica: 5,
-      cumparaCasa: 3, dobandaVariabila: 3,
+      cumparaCasa: 3, dobandaVariabila: 3, asigurare: -2, faraAsigurare: 2,
     }),
     meniu: meniuRiscant,
   },

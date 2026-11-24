@@ -1,50 +1,54 @@
 {
-  "generat": "2026-11-24T05:56:05.505Z",
+  "generat": "2026-11-24T05:58:46.104Z",
   "seed": "sim",
   "vietiPeProfil": 500,
-  "evenimente": 45,
+  "evenimente": 47,
   "profiluri": {
     "aleator": {
       "descriere": "alegeri și acțiuni din meniuri la întâmplare, bune și proaste",
       "n": 500,
       "procente": {
-        "pensie": 40,
-        "independenta": 7,
-        "faliment": 53,
+        "pensie": 36.8,
+        "independenta": 6.4,
+        "faliment": 56.8,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Pensionar liniștit": 34.2,
+        "Pensionar liniștit": 33,
         "Faliment personal": 22.6,
-        "Faliment înainte de 25": 20.4,
-        "Regele IFN-urilor": 7.4,
+        "Faliment înainte de 25": 21.4,
+        "Regele IFN-urilor": 10.4,
         "Liber să alegi": 4.6,
-        "Libertate la 40": 3.4,
-        "Victima reducerilor": 2.6,
-        "Acasă la tine": 2.6,
-        "Milionar (în lei de azi)": 1.2,
-        "Rentierul": 0.8,
-        "Minimalistul": 0.2
+        "Victima reducerilor": 2.4,
+        "Libertate la 40": 2.4,
+        "Acasă la tine": 1.6,
+        "Rentierul": 1.2,
+        "Minimalistul": 0.2,
+        "Milionar (în lei de azi)": 0.2
       },
-      "varstaMedie": 46.2,
-      "varstaMedieGameOver": 31.9,
-      "avereMedianaLei": 725399,
-      "avereMedianaLeiDeAzi": 107901,
+      "varstaMedie": 45.4,
+      "varstaMedieGameOver": 32.5,
+      "avereMedianaLei": 501649,
+      "avereMedianaLeiDeAzi": 95510,
       "mediiAnualeProcent": {
         "inflatie": 4.8,
-        "etf": 7.07,
-        "salariu": 5.03,
-        "salariuReal": 0
+        "etf": 7.02,
+        "salariu": 5.12,
+        "salariuReal": 0.06
       },
       "cauzeGameOver": [
         {
-          "cauza": "faliment: masina › noua",
-          "numar": 80
+          "cauza": "faliment: masina › noua/credit",
+          "numar": 61
         },
         {
           "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
-          "numar": 40
+          "numar": 32
+        },
+        {
+          "cauza": "faliment: masina › noua/leasing",
+          "numar": 31
         },
         {
           "cauza": "faliment: telefon-rate › rate",
@@ -52,7 +56,11 @@
         },
         {
           "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
-          "numar": 21
+          "numar": 22
+        },
+        {
+          "cauza": "faliment: accident-masina › platesc/ifn",
+          "numar": 18
         },
         {
           "cauza": "faliment: mutare › colegi",
@@ -60,22 +68,14 @@
         },
         {
           "cauza": "faliment: dupa-liceu › facultate-buget",
-          "numar": 9
-        },
-        {
-          "cauza": "faliment: mutare › singur",
           "numar": 8
         },
         {
-          "cauza": "faliment: lipsa-spatiu › caut",
+          "cauza": "faliment: mutare › singur",
           "numar": 7
         },
         {
           "cauza": "faliment: facturi-somatie › ignor",
-          "numar": 7
-        },
-        {
-          "cauza": "faliment: facturi-somatie › partial",
           "numar": 7
         }
       ]
@@ -84,29 +84,29 @@
       "descriere": "bugetul 50/30/20: fond de 6 luni, ~20% investit, se mută de acasă, stil Confortabil când își permite",
       "n": 500,
       "procente": {
-        "pensie": 97,
-        "independenta": 3,
+        "pensie": 98,
+        "independenta": 2,
         "faliment": 0,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Pensionar liniștit": 62,
-        "Rentierul": 22.6,
-        "Milionar (în lei de azi)": 9.2,
-        "Liber să alegi": 3,
-        "Acasă la tine": 2,
+        "Pensionar liniștit": 64.2,
+        "Rentierul": 20.6,
+        "Milionar (în lei de azi)": 10.2,
+        "Liber să alegi": 2,
+        "Acasă la tine": 1.8,
         "Libertate la 40": 1.2
       },
-      "varstaMedie": 64.7,
+      "varstaMedie": 64.8,
       "varstaMedieGameOver": null,
-      "avereMedianaLei": 6666153,
-      "avereMedianaLeiDeAzi": 733364,
+      "avereMedianaLei": 6376692,
+      "avereMedianaLeiDeAzi": 712333,
       "mediiAnualeProcent": {
         "inflatie": 4.86,
-        "etf": 7.1,
-        "salariu": 5.53,
-        "salariuReal": 0.53
+        "etf": 7.06,
+        "salariu": 5.51,
+        "salariuReal": 0.52
       },
       "cauzeGameOver": []
     },
@@ -114,26 +114,26 @@
       "descriere": "modest toată viața, fond de 6 luni, investește aproape tot restul",
       "n": 500,
       "procente": {
-        "pensie": 92.8,
-        "independenta": 7.2,
+        "pensie": 93.4,
+        "independenta": 6.6,
         "faliment": 0,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Libertate la 40": 60.2,
-        "Rentierul": 34.4,
-        "Liber să alegi": 3.2,
-        "Minimalistul": 2.2
+        "Libertate la 40": 52.6,
+        "Rentierul": 42,
+        "Minimalistul": 3,
+        "Liber să alegi": 2.4
       },
       "varstaMedie": 63.3,
       "varstaMedieGameOver": null,
-      "avereMedianaLei": 21159846,
-      "avereMedianaLeiDeAzi": 2263323,
+      "avereMedianaLei": 19462465,
+      "avereMedianaLeiDeAzi": 2131354,
       "mediiAnualeProcent": {
         "inflatie": 4.86,
-        "etf": 7.08,
-        "salariu": 5.72,
+        "etf": 7.13,
+        "salariu": 5.73,
         "salariuReal": 0.71
       },
       "cauzeGameOver": []
@@ -149,10 +149,10 @@
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Regele IFN-urilor": 68,
+        "Regele IFN-urilor": 68.2,
         "Pensionar liniștit": 16.4,
         "Faliment înainte de 25": 9.2,
-        "Faliment personal": 3.8,
+        "Faliment personal": 3.6,
         "Victima reducerilor": 2.6
       },
       "varstaMedie": 41.3,
@@ -187,7 +187,7 @@
           "numar": 5
         },
         {
-          "cauza": "faliment: masina › noua",
+          "cauza": "faliment: masina › noua/credit",
           "numar": 4
         },
         {

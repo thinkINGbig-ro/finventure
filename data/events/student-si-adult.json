@@ -156,31 +156,63 @@
       "pondere": 4,
       "cooldownLuni": 24,
       "checkpoint": true,
-      "variabile": { "noua": 80000, "sh": 25000, "costuri": 600 },
-      "text": "Navetele cu autobuzul durează o oră. Te gândești la o mașină: una nouă, de {noua} lei, sau una la mâna a doua, de {sh} lei. În plus, RCA, revizii și benzină: cam {costuri} lei pe lună.",
+      "variabile": { "noua": 80000, "avansLeasing": 16000, "sumaLeasing": 64000, "sh": 25000, "costuri": 600 },
+      "text": "Navetele cu autobuzul durează o oră. Te gândești la o mașină: una nouă, de {noua} lei, sau una la mâna a doua, de {sh} lei. Pe lângă preț: RCA, revizii și benzină, cam {costuri} lei pe lună.",
       "alegeri": [
         {
           "id": "noua",
-          "eticheta": "Mașină nouă, cu credit auto pe 5 ani",
-          "cere": {
-            "ascunse": { "scorCredit": { "min": 45 } },
-            "lipsaFlag": ["istoric_restante", "executare_silita", "datorie_recuperator"],
-            "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit."
-          },
-          "produsNou": {
-            "tip": "credit",
-            "furnizor": "banca",
-            "suma": "{noua}",
-            "dae": "config:creditAuto.dae",
-            "luni": 60
-          },
-          "efecte": { "numerar": "-{noua}", "fericire": 10, "energie": 5 },
-          "recurente": [{ "tip": "cheltuiala", "suma": "{costuri}", "eticheta": "Mașina: RCA, revizii, benzină" }],
-          "flaguri": ["are_masina"],
-          "etichete": ["rate", "stilSus"],
-          "concepte": ["credit-auto", "dae"],
-          "lectie": "Rata nu e tot costul mașinii: asigurarea, reviziile și benzina se plătesc lunar, iar mașina pierde din valoare în fiecare an.",
-          "jurnal": "Ți-ai luat o mașină nouă, cu credit pe 5 ani."
+          "eticheta": "O mașină nouă",
+          "subalegeri": [
+            {
+              "id": "credit",
+              "eticheta": "Cu credit auto pe 5 ani",
+              "cere": {
+                "ascunse": { "scorCredit": { "min": 45 } },
+                "lipsaFlag": ["istoric_restante", "executare_silita", "datorie_recuperator"],
+                "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit."
+              },
+              "produsNou": {
+                "tip": "credit",
+                "furnizor": "banca",
+                "suma": "{noua}",
+                "dae": "config:creditAuto.dae",
+                "luni": 60
+              },
+              "efecte": { "numerar": "-{noua}", "fericire": 10, "energie": 5 },
+              "recurente": [{ "tip": "cheltuiala", "suma": "{costuri}", "eticheta": "Mașina: RCA, revizii, benzină" }],
+              "flaguri": ["are_masina"],
+              "etichete": ["rate", "stilSus"],
+              "concepte": ["credit-auto", "dae"],
+              "lectie": "Rata nu e tot costul mașinii: asigurarea, reviziile și benzina se plătesc lunar, iar mașina pierde din valoare în fiecare an.",
+              "jurnal": "Ți-ai luat o mașină nouă, cu credit pe 5 ani.",
+              "urmari": [{ "eveniment": "asigurare-masina", "dupaLuni": 0 }]
+            },
+            {
+              "id": "leasing",
+              "eticheta": "În leasing, cu avans de {avansLeasing} lei",
+              "cere": {
+                "ascunse": { "scorCredit": { "min": 45 } },
+                "lipsaFlag": ["istoric_restante", "executare_silita", "datorie_recuperator"],
+                "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit.",
+                "baniMin": "{avansLeasing}"
+              },
+              "produsNou": {
+                "tip": "credit",
+                "furnizor": "leasing",
+                "suma": "{sumaLeasing}",
+                "dae": "config:leasing.dae",
+                "luni": 60
+              },
+              "efecte": { "numerar": "-{noua}", "fericire": 10, "energie": 5 },
+              "recurente": [{ "tip": "cheltuiala", "suma": "{costuri}", "eticheta": "Mașina: RCA, revizii, benzină" }],
+              "flaguri": ["are_masina"],
+              "etichete": ["rate", "stilSus"],
+              "concepte": ["leasing", "credit-auto"],
+              "lectie": "În leasing, mașina e a firmei de leasing până la ultima rată. Avansul mai mare scade rata, dar costul total rămâne peste prețul mașinii.",
+              "jurnal": "Ți-ai luat o mașină nouă, în leasing.",
+              "urmari": [{ "eveniment": "asigurare-masina", "dupaLuni": 0 }]
+            }
+          ]
         },
         {
           "id": "sh",
@@ -191,7 +223,8 @@
           "flaguri": ["are_masina"],
           "concepte": ["credit-auto"],
           "lectie": "Fără rate e mai ieftin, dar pune deoparte și pentru reparații: o mașină mai veche are surprize.",
-          "jurnal": "Ți-ai luat o mașină la mâna a doua, cash."
+          "jurnal": "Ți-ai luat o mașină la mâna a doua, cash.",
+          "urmari": [{ "eveniment": "asigurare-masina", "dupaLuni": 0 }]
         },
         {
           "id": "transport",
@@ -264,6 +297,102 @@
           "concepte": ["independenta-financiara"],
           "lectie": "Ai libertatea să alegi. Asta e, de fapt, independența financiară: munca devine o opțiune.",
           "jurnal": "Ai atins independența financiară, dar ai ales să mai muncești."
+        }
+      ]
+    },
+    {
+      "id": "asigurare-masina",
+      "titlu": "Asigurarea mașinii",
+      "doarUrmare": true,
+      "conditii": { "flag": ["are_masina"] },
+      "variabile": { "casco": 250 },
+      "text": "RCA e obligatoriu și e deja în costurile lunare: plătește pagubele pe care le faci altora. CASCO e opțional, cam {casco} lei pe lună, și îți plătește ție reparațiile, chiar dacă accidentul e din vina ta.",
+      "alegeri": [
+        {
+          "id": "rca",
+          "eticheta": "Doar RCA",
+          "etichete": ["faraAsigurare"],
+          "concepte": ["rca-casco"],
+          "lectie": "Economisești lunar, dar dacă tu ești de vină, reparația mașinii tale o plătești singur."
+        },
+        {
+          "id": "casco",
+          "eticheta": "RCA și CASCO",
+          "recurente": [{ "tip": "cheltuiala", "suma": "{casco}", "eticheta": "CASCO" }],
+          "flaguri": ["casco"],
+          "etichete": ["asigurare"],
+          "concepte": ["rca-casco"],
+          "lectie": "O asigurare e un cost mic și sigur, ca să eviți unul mare și rar. Merită mai ales când n-ai bani deoparte pentru o reparație mare."
+        }
+      ]
+    },
+    {
+      "id": "accident-masina",
+      "titlu": "Accident",
+      "faza": [3, 4, 5],
+      "conditii": { "flag": ["are_masina"] },
+      "pondere": 2,
+      "cooldownLuni": 36,
+      "checkpoint": true,
+      "variabile": { "reparatie": 9000, "franciza": 500 },
+      "text": "Ai lovit o mașină într-o intersecție, din vina ta. RCA-ul plătește pagubele celuilalt, dar reparația mașinii tale costă {reparatie} lei.",
+      "alegeri": [
+        {
+          "id": "casco",
+          "eticheta": "Plătește CASCO-ul, eu doar franciza de {franciza} lei",
+          "cere": { "flag": ["casco"], "motiv": "N-ai CASCO: ai ales doar RCA." },
+          "efecte": { "numerar": "-{franciza}", "fericire": -2 },
+          "concepte": ["rca-casco"],
+          "lectie": "Pentru asta ai plătit CASCO luni de zile: un accident scump te-a costat doar franciza.",
+          "jurnal": "CASCO-ul ți-a plătit reparația mașinii."
+        },
+        {
+          "id": "platesc",
+          "eticheta": "Plătesc reparația",
+          "subalegeri": [
+            {
+              "id": "cont",
+              "eticheta": "Din contul curent",
+              "cere": { "baniMin": "{reparatie}" },
+              "efecte": { "numerar": "-{reparatie}", "fericire": -4 },
+              "jurnal": "Ai plătit singur reparația mașinii."
+            },
+            {
+              "id": "fond",
+              "eticheta": "Din fondul de urgență",
+              "cere": { "fondUrgentaMin": "{reparatie}" },
+              "sursaPlata": "fondUrgenta",
+              "efecte": { "numerar": "-{reparatie}", "fericire": -3 },
+              "concepte": ["fond-urgenta"],
+              "jurnal": "Ai plătit reparația din fondul de urgență."
+            },
+            {
+              "id": "ifn",
+              "eticheta": "Cu un credit rapid de la IFN",
+              "produsNou": {
+                "tip": "credit",
+                "furnizor": "ifn",
+                "suma": "{reparatie}",
+                "dae": "config:ifn.dae",
+                "luni": 12,
+                "laRestanta": "ifn-restanta",
+                "flag": "datorie_ifn"
+              },
+              "efecte": { "numerar": "-{reparatie}", "fericire": -4 },
+              "concepte": ["ifn"],
+              "lectie": "O reparație de câteva mii de lei a devenit o datorie scumpă pe un an. CASCO sau un fond ar fi costat mult mai puțin.",
+              "jurnal": "Ai plătit reparația mașinii cu un credit IFN."
+            }
+          ]
+        },
+        {
+          "id": "las",
+          "eticheta": "O las neparată și merg cu autobuzul",
+          "efecte": { "fericire": -6, "energie": -5 },
+          "stergeFlaguri": ["are_masina"],
+          "concepte": ["rca-casco"],
+          "lectie": "Mașina stă, dar ratele, RCA-ul și costurile ei curg mai departe. O mașină pe care nu ți-o permiți să o repari e o cheltuială fără folos.",
+          "jurnal": "Mașina a rămas neparată după accident."
         }
       ]
     }

@@ -159,6 +159,10 @@
     "crestereRataPentruEveniment": { "valoare": 0.03, "deVerificat": false, "sursa": "parametru de joc", "nota": "de la ce creștere a ratei apare evenimentul" }
   },
 
+  "leasing": {
+    "dae": { "valoare": 0.09, "deVerificat": true, "sursa": "", "nota": "leasing financiar auto; avans tipic 20%" }
+  },
+
   "creditAuto": {
     "dae": { "valoare": 0.10, "deVerificat": true, "sursa": "" }
   },
