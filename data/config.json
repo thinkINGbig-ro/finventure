@@ -325,6 +325,65 @@
     "probabilitateCrashAnual": { "valoare": 0.06, "deVerificat": true, "sursa": "" }
   },
 
+  "afaceri": {
+    "_info": "Afacerea proprie. Sumele sunt lunare (lei, la prețurile de start), pentru o afacere mică cu un singur sediu. Costurile fixe (chirie, utilități, contabil, asigurări, întreținere) plus echipa minimă sunt alese ca afacerea să intre pe profit pe la jumătatea venitului potențial: cu pregătire medie își scoate investiția în ~2–4 ani, cu pregătire slabă pierde bani.",
+    "contributieAngajator": { "valoare": 0.0225, "deVerificat": true, "sursa": "", "nota": "contribuția asiguratorie pentru muncă, plătită de angajator peste brut" },
+    "impozitMicro": { "valoare": 0.01, "deVerificat": true, "sursa": "", "nota": "impozitul pe venit al microîntreprinderii (SRL); procentul și plafoanele se schimbă des" },
+    "impozitDividende": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "impozit pe dividende" },
+    "cassDividende": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "CASS pe dividende, simplificat (în realitate, plafonat în funcție de salariul minim)" },
+    "taxeProfitPfa": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "PFA / II: impozit 10% + CASS + CAS peste plafon, simplificat ca procent din profit" },
+    "grant": { "valoare": 40000, "deVerificat": true, "sursa": "", "nota": "grant generic pentru tineri antreprenori (ex. programe naționale sau europene); valoarea și condițiile diferă" },
+    "capitalInvestitor": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "cât din investiția inițială pune un investitor (fracție)" },
+    "costStudiuPiata": { "valoare": 1500, "deVerificat": true, "sursa": "", "nota": "un studiu de piață simplu (chestionare, analiza concurenței)" },
+    "creditFirmaDae": { "valoare": 0.11, "deVerificat": true, "sursa": "", "nota": "credit de investiții pentru o firmă mică" },
+    "creditFirmaLuni": { "valoare": 60, "deVerificat": true, "sursa": "" },
+    "cafenea": {
+      "investitie": { "valoare": 80000, "deVerificat": true, "sursa": "", "nota": "amenajare, espressor, mobilier, avize" },
+      "costuriFixe": { "valoare": 6000, "deVerificat": true, "sursa": "", "nota": "chirie spațiu + utilități + contabil" },
+      "venitPotential": { "valoare": 30000, "deVerificat": true, "sursa": "", "nota": "vânzări lunare ale unei cafenele mici, bine pornite" }
+    },
+    "magazinOnline": {
+      "investitie": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "site, primul stoc, fotografii" },
+      "costuriFixe": { "valoare": 5400, "deVerificat": true, "sursa": "", "nota": "platformă, reclame de bază, depozit, curierat fix, contabil" },
+      "venitPotential": { "valoare": 22000, "deVerificat": true, "sursa": "" }
+    },
+    "it": {
+      "investitie": { "valoare": 15000, "deVerificat": true, "sursa": "", "nota": "echipamente, licențe" },
+      "costuriFixe": { "valoare": 4700, "deVerificat": true, "sursa": "", "nota": "birou sau coworking, licențe, contabil, asigurare" },
+      "venitPotential": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "proiecte pentru clienți" }
+    },
+    "constructii": {
+      "investitie": { "valoare": 60000, "deVerificat": true, "sursa": "", "nota": "dubă la mâna a doua, scule" },
+      "costuriFixe": { "valoare": 6400, "deVerificat": true, "sursa": "", "nota": "depozit, dubă (combustibil, asigurări), scule, contabil" },
+      "venitPotential": { "valoare": 40000, "deVerificat": true, "sursa": "", "nota": "lucrări de renovare" }
+    },
+    "agricultura": {
+      "investitie": { "valoare": 100000, "deVerificat": true, "sursa": "", "nota": "arendă, utilaje la mâna a doua, semințe" },
+      "costuriFixe": { "valoare": 4350, "deVerificat": true, "sursa": "", "nota": "arendă, întreținerea utilajelor, motorină, contabil" },
+      "venitPotential": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "medie lunară; în realitate banii vin la recoltă" }
+    },
+    "salon": {
+      "investitie": { "valoare": 40000, "deVerificat": true, "sursa": "" },
+      "costuriFixe": { "valoare": 3600, "deVerificat": true, "sursa": "", "nota": "chirie, utilități, produse de bază, contabil" },
+      "venitPotential": { "valoare": 18000, "deVerificat": true, "sursa": "" }
+    },
+    "atelier": {
+      "investitie": { "valoare": 35000, "deVerificat": true, "sursa": "", "nota": "reparații auto sau electronice" },
+      "costuriFixe": { "valoare": 2950, "deVerificat": true, "sursa": "", "nota": "chirie atelier, utilități, contabil" },
+      "venitPotential": { "valoare": 20000, "deVerificat": true, "sursa": "" }
+    },
+    "arta": {
+      "investitie": { "valoare": 10000, "deVerificat": true, "sursa": "", "nota": "materiale, site, primele expoziții" },
+      "costuriFixe": { "valoare": 4600, "deVerificat": true, "sursa": "", "nota": "chirie atelier, materiale de bază, site, expoziții, contabil" },
+      "venitPotential": { "valoare": 10000, "deVerificat": true, "sursa": "" }
+    },
+    "turism": {
+      "investitie": { "valoare": 150000, "deVerificat": true, "sursa": "", "nota": "amenajarea unei pensiuni mici, într-o casă închiriată pe termen lung" },
+      "costuriFixe": { "valoare": 4700, "deVerificat": true, "sursa": "", "nota": "chiria casei, utilități, întreținere, platforme de rezervări, contabil" },
+      "venitPotential": { "valoare": 35000, "deVerificat": true, "sursa": "", "nota": "medie lunară; vara e mult peste, iarna mult sub" }
+    }
+  },
+
   "imobiliare": {
     "_info": "Apartamente cumpărate ca să le dai în chirie. Prețurile de cumpărare sunt în locuinte.pretGarsoniera / pretApartament.",
     "chirieGarsoniera": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "chirie lunară de piață, oraș mare" },

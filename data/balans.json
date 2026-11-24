@@ -171,6 +171,7 @@
     "jobPartTime": -1,
     "studii": -1,
     "jobSecundar": -1,
+    "afacere": -1,
     "minim": 2,
     "costCautareJob": 1
   },
@@ -181,6 +182,21 @@
     "luniRefinantare": [24, 36, 60],
     "scorCreditRefinantare": 45,
     "luniRestanteAnuleazaEsalonarea": 2
+  },
+
+  "afaceri": {
+    "_info": "Afacerea proprie. pregatire = puncte (max ~100) pentru fiecare lucru făcut înainte de pornire; calitatea = calitateBaza + pregătire × calitatePerPunct (cât din venitul potențial atingi: 0,46 la 20 de puncte, 0,7 la 50, ~1 la 85); zgomotLunar = norocul lunii; cotaInvestitor = cât din firmă cedezi investitorului; luniInsolventa = câte luni la rând poate un SRL să nu-și plătească datoriile până intră în insolvență.",
+    "pregatire": { "baza": 20, "plan": 20, "studiuPiata": 15, "curs": 15, "experienta": 20, "skillMax": 10 },
+    "calitateBaza": 0.3,
+    "calitatePerPunct": 0.008,
+    "zgomotLunar": 0.2,
+    "factorAnCuCriza": 0.75,
+    "sansaGrantBaza": 0.15,
+    "cotaInvestitor": 0.3,
+    "timpPornire": 2,
+    "energieLunara": -3,
+    "luniExperienta": 24,
+    "luniInsolventa": 6
   },
 
   "imobiliare": {

@@ -8,6 +8,7 @@ import { actualizeazaImobileAnual, proceseazaImobile, simuleazaCumparare, simule
 import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
 import { indeplinesteCerinte, luniPanaLaPromovare, schimbaJob } from '../js/cariera.js';
 import { proceseazaSecundar, simuleazaOreSuplimentare, venitArtistLuna } from '../js/munca.js';
+import { pregatire, proceseazaAfacere, simuleazaPornire } from '../js/afacere.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
@@ -23,6 +24,102 @@ export function testeLoturi(ctxBaza, a) {
     ...lot4a(ctxBaza, a),
     ...lot4b(ctxBaza, a),
     ...lot5(ctxBaza, a),
+    ...lot6a(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 6a: afacerea proprie (pornire, luna firmei, răspundere, închidere) ----------
+
+function lot6a(ctxBaza, a) {
+  const { ok, egal } = a;
+  const flag = (state, f) => { state.flaguri[f] = { setatLa: 0, expiraLa: null }; };
+  const jocAntreprenor = (seed, bani = 300_000) => {
+    const { ctx, state } = a.jocFaraVenit(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.luna = 10 * 12;
+    state.numerar = inBani(bani);
+    state.recurente = [];
+    state.an = { start: state.luna, lunaCrash: null, ac: { venituri: 0, taxe: 0, cheltuieliTrai: 0 } };
+    return { ctx, state };
+  };
+  const luni = (state, ctx, n) => { for (let i = 0; i < n; i++) { proceseazaAfacere(state, ctx); state.luna += 1; } };
+  return {
+    'lotul 6a: pregătirea crește cu planul, studiul de piață, cursul și experiența'() {
+      const { ctx, state } = jocAntreprenor('pregatire');
+      const p0 = pregatire(state, ctx, 'cafenea').total;
+      ok(actiune(state, ctx, 'faPlanAfaceri').ok, 'plan');
+      ok(actiune(state, ctx, 'faStudiuPiata', { domeniu: 'cafenea' }).ok, 'studiu');
+      flag(state, 'curs_antreprenoriat');
+      flag(state, 'experienta_horeca');
+      const p = pregatire(state, ctx, 'cafenea');
+      ok(p.total >= p0 + 60, `pregătirea: ${p0} → ${p.total}`);
+      ok(pregatire(state, ctx, 'it').parti.experienta === 0, 'experiența din HoReCa nu contează la IT');
+    },
+
+    'lotul 6a: pregătirea decide rezultatul, nu zarul (aceleași luni, pregătire mică vs. mare)'() {
+      const profit = (pregatireTotal) => {
+        const { ctx, state } = jocAntreprenor('zar');
+        state.timp = { an: Math.floor(state.luna / 12), folosit: 0, activitati: {} };
+        ok(actiune(state, ctx, 'pornesteAfacere', { domeniu: 'cafenea', forma: 'srl' }).ok, 'pornită');
+        const af = state.produse.find((p) => p.tip === 'afacere');
+        af.pregatire = pregatireTotal;
+        luni(state, ctx, 36);
+        return af.istoric.reduce((s, x) => s + x.profit, 0);
+      };
+      const slab = profit(15);
+      const bun = profit(85);
+      ok(slab < 0 && bun > 0, `profit pe ultimele 24 de luni: slab ${slab / 100} lei, bun ${bun / 100} lei`);
+    },
+
+    'lotul 6a: la PFA pierderile se plătesc din banii tăi; la SRL nu, dar vine insolvența (creditul garantat rămâne al tău)'() {
+      // PFA cu pregătire foarte slabă: banii personali scad
+      const pfa = jocAntreprenor('pfa');
+      ok(actiune(pfa.state, pfa.ctx, 'pornesteAfacere', { domeniu: 'constructii', forma: 'pfa' }).ok, 'PFA pornit');
+      const af1 = pfa.state.produse.find((p) => p.tip === 'afacere');
+      af1.pregatire = 0;
+      const bani1 = baniDisponibili(pfa.state);
+      luni(pfa.state, pfa.ctx, 12);
+      ok(baniDisponibili(pfa.state) < bani1, 'la PFA, pierderile au ieșit din banii tăi');
+      // SRL cu credit garantat: banii personali nu se ating; după câteva luni de datorii, insolvență
+      const srl = jocAntreprenor('srl');
+      flag(srl.state, 'plan_afaceri');
+      flag(srl.state, 'curs_antreprenoriat');
+      srl.state.ascunse.skill = 90;
+      const r = actiune(srl.state, srl.ctx, 'pornesteAfacere', { domeniu: 'turism', forma: 'srl', credit: true });
+      ok(r.ok, r.mesaj);
+      const af2 = srl.state.produse.find((p) => p.tip === 'afacere');
+      ok(af2.garantiePersonala && af2.credit, 'creditul e al firmei, garantat de tine');
+      af2.pregatire = 0;
+      const bani2 = baniDisponibili(srl.state);
+      luni(srl.state, srl.ctx, 30);
+      ok(!srl.state.produse.includes(af2), 'firma a intrat în insolvență');
+      egal(baniDisponibili(srl.state), bani2, 'banii tăi personali n-au fost atinși');
+      ok(srl.state.produse.some((p) => p.tip === 'credit' && p.furnizor === 'garantieFirma'), 'doar creditul garantat a trecut pe numele tău');
+      ok(srl.state.jurnal.some((j) => /insolvență/.test(j.text)), 'jurnalul explică');
+    },
+
+    'lotul 6a: dividendele de la SRL se impozitează; la PFA banii vin direct; închiderea întoarce restul'() {
+      const { ctx, state } = jocAntreprenor('dividende');
+      ok(actiune(state, ctx, 'pornesteAfacere', { domeniu: 'arta', forma: 'srl' }).ok, 'SRL');
+      const af = state.produse.find((p) => p.tip === 'afacere');
+      af.cont = inBani(10_000);
+      const bani = baniDisponibili(state);
+      ok(actiune(state, ctx, 'retrageDinFirma', { suma: 1000 }).ok, 'dividende');
+      egal(baniDisponibili(state) - bani, inBani(800), '20% impozit + CASS pe dividende');
+      ok(state.concepte.includes('dividende'), 'concept');
+      const inainte = baniDisponibili(state);
+      ok(actiune(state, ctx, 'inchideAfacere').ok, 'închisă');
+      ok(baniDisponibili(state) > inainte && !state.produse.includes(af), 'restul banilor firmei s-a întors');
+    },
+
+    'lotul 6a: creditul pentru firmă cere plan și pregătire; fără bani nu pornești'() {
+      const { ctx, state } = jocAntreprenor('credit-firma');
+      const r = simuleazaPornire(state, ctx, 'cafenea', 'srl', { credit: true });
+      ok(!r.ok && /plan de afaceri/.test(r.mesaj), r.mesaj);
+      const sarac = jocAntreprenor('sarac', 5000);
+      const r2 = simuleazaPornire(sarac.state, sarac.ctx, 'turism', 'pfa', {});
+      ok(!r2.ok && /Îți trebuie/.test(r2.mesaj), r2.mesaj);
+    },
   };
 }
 
@@ -636,6 +733,12 @@ function jocCuRestante(a, seed) {
 function lot0(ctxBaza, a) {
   const { ok, egal } = a;
   return {
+    'ecranele se încarcă fără erori de sintaxă (testele motorului nu le ating altfel)'() {
+      const ecrane = ['meniuri', 'ecrane', 'final', 'grafic', 'eveniment', 'principal', 'strat', 'toast', 'dom', 'concepte', 'debug'];
+      return Promise.all(ecrane.map((f) => import(`../js/ui/${f}.js`).catch((e) => { throw new Error(`js/ui/${f}.js: ${e.message}`); })))
+        .then(() => `${ecrane.length} module de interfață`);
+    },
+
     'lotul 0: restanța la o factură se plătește din meniul Bancă, cu mesaj'() {
       const { ctx, state } = jocCuRestante(a, 'restante');
       const factura = state.produse.find((p) => p.tip === 'factura');
@@ -686,6 +789,13 @@ function lot0(ctxBaza, a) {
         incepeSecundar: [{ secundar: 'livrari-weekend' }, { secundar: 'nu-exista' }],
         opresteSecundar: [{}, {}],
         demisie: [{}, {}],
+        faPlanAfaceri: [{}, {}],
+        faStudiuPiata: [{ domeniu: 'cafenea' }, { domeniu: 'nu-exista' }],
+        aplicaGrant: [{}],
+        pornesteAfacere: [{ domeniu: 'arta', forma: 'pfa' }, { domeniu: 'arta', forma: 'xyz' }],
+        retrageDinFirma: [{ suma: 10 }, {}],
+        depuneInFirma: [{ suma: 10 }],
+        inchideAfacere: [{}, {}],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

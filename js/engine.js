@@ -35,6 +35,9 @@ import { actualizeazaImobileAnual, cumparaImobil, proceseazaImobile, vindeImobil
 import {
   cerePromovare, cursFirma, demisie, devinoArtist, incepeSecundar, opresteSecundar, oreSuplimentare, proceseazaSecundar, seteazaRitm, venitArtistLuna,
 } from './munca.js';
+import {
+  aplicaGrant, depuneInFirma, faPlanAfaceri, faStudiuPiata, inchideAfacere, pornesteAfacere, proceseazaAfacere, retrageDinFirma,
+} from './afacere.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -273,6 +276,7 @@ export function proceseazaLuna(state, ctx) {
   // 2. Venituri
   const contract = gasesteProduse(state, 'contractMunca')[0];
   if (contract) proceseazaSalariu(state, ctx, contract);
+  proceseazaAfacere(state, ctx); // afacerea are contul ei; tu scoți bani din ea când vrei
   const sec = proceseazaSecundar(state, ctx); // jobul secundar (side hustle)
   ac.venituri += sec.net;
   ac.taxe += sec.impozit;
@@ -462,6 +466,8 @@ function proceseazaSalariu(state, ctx, contract) {
   contract.luniLucrate = (contract.luniLucrate ?? 0) + 1;
   contract.luniDeLaMarire = (contract.luniDeLaMarire ?? 0) + 1;
   if (contract.luniLucrate === bal(ctx, 'cariera.luniPentruExperienta')) seteazaFlag(state, 'experienta_munca');
+  // Experiența într-un domeniu contează la pregătirea pentru o afacere în același domeniu.
+  if (job.domeniu && contract.luniLucrate === bal(ctx, 'afaceri.luniExperienta')) seteazaFlag(state, `experienta_${job.domeniu}`);
 
   if (!state.momente.primulSalariu) adaugaMoment(state, 'primulSalariu', { fluturas: f, job: job.titlu }, f.contract === 'negru' ? ['brut-net'] : ['brut-net', 'pilonii-pensiei']);
   if (retinut > 0 && !state.momente.primaPoprire) adaugaMoment(state, 'primaPoprire', { retinut, net: f.net }, ['poprire']);
@@ -718,7 +724,8 @@ export { sansaMarire };
 export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza', 'ramburseaza', 'cumpara', 'stilViata', 'cereMarire', 'cautaJob', 'activitate',
   'platesteRestanta', 'ramburseazaPartial', 'esaloneaza', 'consolideaza', 'inscrieProgram', 'renuntaStudii', 'inscrieCurs',
   'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza', 'cumparaImobil', 'vindeImobil',
-  'seteazaRitm', 'oreSuplimentare', 'cerePromovare', 'cursFirma', 'demisie', 'devinoArtist', 'incepeSecundar', 'opresteSecundar'];
+  'seteazaRitm', 'oreSuplimentare', 'cerePromovare', 'cursFirma', 'demisie', 'devinoArtist', 'incepeSecundar', 'opresteSecundar',
+  'faPlanAfaceri', 'faStudiuPiata', 'aplicaGrant', 'pornesteAfacere', 'retrageDinFirma', 'depuneInFirma', 'inchideAfacere'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -883,6 +890,26 @@ function executaActiune(state, ctx, tip, param) {
     }
     case 'vindeImobil': {
       rez = vindeImobil(state, ctx, prod);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'faPlanAfaceri':
+    case 'faStudiuPiata':
+    case 'aplicaGrant':
+    case 'pornesteAfacere':
+    case 'retrageDinFirma':
+    case 'depuneInFirma':
+    case 'inchideAfacere': {
+      const f = {
+        faPlanAfaceri: () => faPlanAfaceri(state, ctx),
+        faStudiuPiata: () => faStudiuPiata(state, ctx, param.domeniu),
+        aplicaGrant: () => aplicaGrant(state, ctx),
+        pornesteAfacere: () => pornesteAfacere(state, ctx, param.domeniu, param.forma, { credit: !!param.credit, investitor: !!param.investitor }),
+        retrageDinFirma: () => retrageDinFirma(state, ctx, suma),
+        depuneInFirma: () => depuneInFirma(state, ctx, suma),
+        inchideAfacere: () => inchideAfacere(state, ctx),
+      }[tip];
+      rez = f();
       if (!rez.ok) return rez;
       break;
     }

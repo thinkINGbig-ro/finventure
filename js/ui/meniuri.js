@@ -5,6 +5,8 @@ import { actiune, sansaMarire } from '../engine.js';
 import { RITMURI, contractCurent, jobCurent, luniPanaLaPromovare } from '../cariera.js';
 import { cardDisponibil, contCurent, fluturas, fondUrgenta, plataMinimaCard, pret } from '../finance.js';
 import { descrieSecundare, simuleazaOreSuplimentare } from '../munca.js';
+import { afacereActiva, simuleazaPornire } from '../afacere.js';
+import { areFlag } from '../state.js';
 import { bal, cfg, inBani, varstaLa } from '../util.js';
 import { ani, h, lei, procent } from './dom.js';
 import { confirma } from './ecrane.js';
@@ -18,7 +20,7 @@ import { graficLinii } from './grafic.js';
 import { descrieImobile, simuleazaCumparare } from '../imobiliare.js';
 
 const TITLURI = {
-  meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', datorii: 'Datoriile mele', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
+  meniu: 'Finventure', activitati: 'Activități', banca: 'Bancă', datorii: 'Datoriile mele', afacere: 'Afacerea ta', investitii: 'Investiții', cariera: 'Carieră', educatie: 'Educație', cumparaturi: 'Cumpărături', enciclopedie: 'Enciclopedia Finventure',
 };
 const IN_CURAND = {};
 
@@ -40,6 +42,7 @@ function continutPanou(tab, o, reranda) {
   if (tab === 'datorii') return panouDatorii(o, reranda);
   if (tab === 'educatie') return panouEducatie(o, reranda);
   if (tab === 'investitii') return panouInvestitii(o, reranda);
+  if (tab === 'afacere') return panouAfacere(o, reranda);
   if (tab === 'enciclopedie') return panouEnciclopedie(o);
   if (tab === 'cariera') return panouCariera(o, reranda);
   if (tab === 'cumparaturi') return panouCumparaturi(o, reranda);
@@ -561,6 +564,13 @@ function panouCariera(o, reranda) {
     sectiuni.push(h('p', {}, 'N-ai job acum.'));
   }
 
+  // Afacerea proprie
+  const af = afacereActiva(state);
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Afacerea ta'),
+    produs(af ? `${ctx.afaceri.domenii.get(af.domeniu)?.emoji ?? ''} ${ctx.afaceri.domenii.get(af.domeniu)?.titlu ?? 'Afacere'}` : '🚀 Pornește o afacere', af ? lei(af.cont) : '',
+      af ? `În contul firmei · activă de ${NUME_LUNI(af.luniActiva)}` : 'Cafenea, magazin online, IT, renovări, fermă și altele. Pregătirea face diferența.',
+      h('div', { class: 'rand-butoane' }, buton(af ? 'Vezi afacerea' : 'Mă pregătesc', () => deschidePanou('afacere', o), 'btn-principal'))));
+
   // Venit în plus (side hustle)
   sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Venit în plus'),
     h('p', { class: 'mic' }, 'O activitate pe lângă job: bani în plus, dar îți ia o acțiune din timpul fiecărui an și energie în fiecare lună.'));
@@ -588,6 +598,107 @@ function panouCariera(o, reranda) {
       laOprire?.(r.oprire);
     },
   }, 'Îmi fac CV-ul')));
+  return sectiuni;
+}
+
+// ---------- Afacerea proprie ----------
+
+const FORME = { pfa: 'PFA', ii: 'II', srl: 'SRL' };
+
+function textDatoriiFirma(af, ctx) {
+  if (af.forma !== 'srl') return ' (sunt ale tale: firma ești tu)';
+  return ` (de ${NUME_LUNI(af.luniFaraPlata)}; la ${bal(ctx, 'afaceri.luniInsolventa')} luni, firma intră în insolvență)`;
+}
+
+function panouAfacere(o, reranda) {
+  const { state, ctx } = o;
+  const executa = executor(o, reranda);
+  const sectiuni = [h('p', { class: 'mesaj-actiune', role: 'status' }),
+    h('button', { type: 'button', class: 'btn-inapoi', onclick: () => deschidePanou('cariera', o) }, '‹ Înapoi la Carieră'), randTimp(state, ctx)];
+  const buton = (text, fn, clasa = 'btn-secundar') => h('button', { type: 'button', class: `btn ${clasa}`, onclick: fn }, text);
+  const af = afacereActiva(state);
+
+  if (af) {
+    const d = ctx.afaceri.domenii.get(af.domeniu);
+    const ultima = af.istoric[af.istoric.length - 1];
+    sectiuni.push(produs(`${d.emoji} ${d.titlu} (${FORME[af.forma]})`, lei(af.cont),
+      `În contul firmei · activă de ${NUME_LUNI(af.luniActiva)} · pregătirea ta la pornire: ${af.pregatire}/100${af.cota < 1 ? ` · deții ${Math.round(af.cota * 100)}%` : ''}`,
+      ultima ? h('table', { class: 'tabel' }, h('tbody', {},
+        h('tr', {}, h('td', {}, 'Vânzări luna trecută'), h('td', {}, lei(ultima.venit))),
+        h('tr', { class: 'minus' }, h('td', {}, 'Costuri (chirie, echipă, marfă)'), h('td', {}, `− ${lei(ultima.costuri)}`)),
+        h('tr', { class: 'minus' }, h('td', {}, 'Taxe'), h('td', {}, `− ${lei(ultima.taxe)}`)),
+        h('tr', { class: 'total' }, h('td', {}, ultima.profit >= 0 ? 'Profit' : 'Pierdere'), h('td', {}, lei(Math.abs(ultima.profit)))))) : h('p', { class: 'mic' }, 'Primele rezultate apar după prima lună.'),
+      af.datorii ? h('div', { class: 'mic restanta' }, `⚠ Datorii neplătite la furnizori: ${lei(af.datorii)}`, textDatoriiFirma(af, ctx)) : null,
+      af.credit ? h('div', { class: 'mic' }, `Creditul firmei: mai sunt ${lei(af.credit.rest)}, rata ${lei(af.credit.rata)}${af.garantiePersonala ? ' (garantat de tine)' : ''}.`) : null));
+    if (af.istoric.length >= 3) {
+      sectiuni.push(graficLinii({
+        titlu: 'Profitul pe ultimele luni', x: af.istoric.map((_, i) => i - af.istoric.length + 1), unitateX: ' luni',
+        serii: [{ nume: 'Profit', valori: af.istoric.map((x) => x.profit / 100) }],
+        format: (v) => `${Math.round(v).toLocaleString('ro-RO')} lei`,
+      }));
+    }
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Banii între tine și firmă'),
+      h('p', { class: 'mic' }, af.forma === 'srl'
+        ? 'Banii firmei nu sunt ai tăi: îi scoți ca dividende, cu 10% impozit și CASS.'
+        : 'La PFA / II, profitul e al tău după taxe; dacă firma pierde, pierderea iese tot din banii tăi.'),
+      campSuma('Suma', [['Scot din firmă', (s) => executa('retrageDinFirma', { suma: s })], ['Pun în firmă', (s) => executa('depuneInFirma', { suma: s })]]),
+      h('div', { class: 'rand-butoane' }, h('button', {
+        type: 'button', class: 'btn btn-text', onclick: async () => {
+          const da = await confirma('Închizi afacerea? Echipamentele se vând ieftin, iar din bani se plătesc întâi datoriile firmei.', { da: 'Închid' });
+          const r = da ? actiune(state, ctx, 'inchideAfacere') : null;
+          o.laSchimbare();
+          deschidePanou('afacere', o);
+          if (r) arataMesaj(r.mesaj, r.ok, r.lectie);
+        },
+      }, 'Închid afacerea')));
+    return sectiuni;
+  }
+
+  // Pregătirea
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Pregătirea'),
+    h('p', { class: 'mic' }, 'Cu cât te pregătești mai bine, cu atât afacerea atinge mai mult din potențialul ei. Cu o pregătire slabă, majoritatea afacerilor pierd bani.'),
+    produs('📝 Plan de afaceri', areFlag(state, 'plan_afaceri') ? '✓' : '', 'Calculele de dinainte: costuri, prețuri, clienți. Îl cer băncile și granturile. O acțiune de timp.',
+      areFlag(state, 'plan_afaceri') ? null : h('div', { class: 'rand-butoane' }, buton('Îmi fac planul', () => executa('faPlanAfaceri')))),
+    produs('🎓 Curs de antreprenoriat', areFlag(state, 'curs_antreprenoriat') ? '✓' : '', 'Îl găsești în meniul Educație.'),
+    produs('🏆 Grant pentru tineri antreprenori', areFlag(state, 'grant_aprobat') ? 'aprobat' : areFlag(state, 'grant_incercat') ? 'respins' : '',
+      `Până la ${lei(pret(state, ctx, 'afaceri.grant'))}, nerambursabil. Șansele cresc cu pregătirea; ai o singură încercare. Cere un plan de afaceri.`,
+      areFlag(state, 'grant_incercat') ? null : h('div', { class: 'rand-butoane' }, buton('Aplic', () => executa('aplicaGrant')))));
+
+  // Domeniul, forma, finanțarea și previzualizarea
+  const domenii = [...ctx.afaceri.domenii.values()];
+  const selDomeniu = h('select', { 'aria-label': 'Domeniul afacerii' }, domenii.map((d) => h('option', { value: d.id }, `${d.emoji} ${d.titlu}`)));
+  const selForma = h('select', { 'aria-label': 'Forma juridică' }, [...ctx.afaceri.forme.values()].map((f) => h('option', { value: f.id, selected: f.id === 'srl' || null }, f.titlu)));
+  const bifaCredit = h('input', { type: 'checkbox' });
+  const bifaInvestitor = h('input', { type: 'checkbox' });
+  const previz = h('div', { class: 'previzualizare' });
+  const actualizeaza = () => {
+    const d = ctx.afaceri.domenii.get(selDomeniu.value);
+    const s = simuleazaPornire(state, ctx, selDomeniu.value, selForma.value, { credit: bifaCredit.checked, investitor: bifaInvestitor.checked });
+    const p = s.pregatire;
+    previz.replaceChildren(
+      h('p', { class: 'mic' }, d.descriere),
+      h('p', { class: 'mic' }, ctx.afaceri.forme.get(selForma.value).descriere),
+      h('table', { class: 'tabel' }, h('tbody', {},
+        h('tr', {}, h('td', {}, 'Investiția'), h('td', {}, lei(s.investitie))),
+        s.grant ? h('tr', {}, h('td', {}, 'Din grant'), h('td', {}, lei(s.grant))) : null,
+        s.investitor ? h('tr', {}, h('td', {}, `De la investitor (ia ${Math.round((1 - s.cota) * 100)}% din firmă)`), h('td', {}, lei(s.investitor))) : null,
+        s.credit ? h('tr', {}, h('td', {}, `Credit (rata ${lei(s.rataCredit)})`), h('td', {}, lei(s.credit))) : null,
+        h('tr', {}, h('td', {}, 'Rezervă: 3 luni de costuri fixe'), h('td', {}, lei(s.capitalLucru))),
+        h('tr', { class: 'total' }, h('td', {}, 'Din banii tăi'), h('td', {}, lei(s.dinEconomii))))),
+      h('p', { class: 'mic' }, `Pregătirea ta pentru domeniul ăsta: ${p.total}/100 (plan ${p.parti.plan}, studiu de piață ${p.parti.studiuPiata}, curs ${p.parti.curs}, experiență ${p.parti.experienta}, pregătire generală ${p.parti.skill}).`),
+      h('p', { class: 'mic' }, `Când clienții te cunosc (după ~${NUME_LUNI(d.luniMaturitate)}), o lună medie ar arăta cam așa: vânzări ${lei(s.estimare.venit)}, costuri ${lei(s.estimare.costuri)}, ${s.estimare.profit >= 0 ? `profit ${lei(s.estimare.profit)}` : `pierdere ${lei(-s.estimare.profit)}`} înainte de taxe.`),
+      s.ok ? '' : h('p', { class: 'mic restanta' }, s.mesaj));
+  };
+  [selDomeniu, selForma, bifaCredit, bifaInvestitor].forEach((x) => x.addEventListener('change', actualizeaza));
+  actualizeaza();
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Pornește'),
+    h('label', { class: 'comutator' }, 'Domeniul: ', selDomeniu),
+    h('div', { class: 'rand-butoane' }, buton('Fac un studiu de piață', () => executa('faStudiuPiata', { domeniu: selDomeniu.value }))),
+    h('label', { class: 'comutator' }, 'Forma juridică: ', selForma),
+    h('label', { class: 'comutator' }, bifaCredit, 'Iau un credit pentru firmă'),
+    h('label', { class: 'comutator' }, bifaInvestitor, 'Aduc un investitor'),
+    previz,
+    h('div', { class: 'rand-butoane' }, buton('Pornesc afacerea', () => executa('pornesteAfacere', { domeniu: selDomeniu.value, forma: selForma.value, credit: bifaCredit.checked, investitor: bifaInvestitor.checked }), 'btn-principal')));
   return sectiuni;
 }
 

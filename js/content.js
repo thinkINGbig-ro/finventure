@@ -17,6 +17,7 @@ const FISIERE = {
   activitati: 'data/activitati.json',
   educatie: 'data/educatie.json',
   investitii: 'data/investitii.json',
+  afaceri: 'data/afaceri.json',
 };
 
 // citeste(cale) -> Promise<string>; cale relativă la rădăcina proiectului
@@ -48,6 +49,7 @@ export async function incarcaContinut(citeste) {
   const activitatiJson = (await citesteJson(FISIERE.activitati)) ?? { activitati: [] };
   const educatieJson = (await citesteJson(FISIERE.educatie)) ?? { programe: [], cursuri: [] };
   const investitiiJson = (await citesteJson(FISIERE.investitii)) ?? { clase: [], companii: [], strategii: [] };
+  const afaceriJson = (await citesteJson(FISIERE.afaceri)) ?? { domenii: [], forme: [] };
 
   const brute = [];
   for (const nume of index.fisiere ?? []) {
@@ -61,13 +63,13 @@ export async function incarcaContinut(citeste) {
     json.evenimente.forEach((ev, i) => brute.push({ ev, fisier, pozitie: i }));
   }
 
-  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson, investitiiJson }, erori, avertismente);
+  const rezultat = construiesteContinut({ config, balans, joburiJson, concepteJson, brute, finaluriJson, activitatiJson, educatieJson, investitiiJson, afaceriJson }, erori, avertismente);
   return { ...rezultat, erori, avertismente };
 }
 
 export function construiesteContinut({
   config, balans, joburiJson, concepteJson, brute, finaluriJson = { finaluri: [] }, activitatiJson = { activitati: [] }, educatieJson = { programe: [], cursuri: [] },
-  investitiiJson = { clase: [], companii: [], strategii: [] },
+  investitiiJson = { clase: [], companii: [], strategii: [] }, afaceriJson = { domenii: [], forme: [] },
 }, erori = [], avertismente = []) {
   valideazaConfig(config, FISIERE.config, erori);
 
@@ -162,7 +164,32 @@ export function construiesteContinut({
 
   const investitii = construiesteInvestitii(investitiiJson, erori);
 
-  return { ctx: { config, balans, joburi, secundare, concepte, evenimente, finaluri, activitati, educatie, investitii } };
+  const afaceri = construiesteAfaceri(afaceriJson, config, erori);
+
+  return { ctx: { config, balans, joburi, secundare, concepte, evenimente, finaluri, activitati, educatie, investitii, afaceri } };
+}
+
+// ---------- Afaceri (domenii + forme juridice) ----------
+
+function construiesteAfaceri(json, config, erori) {
+  const fisier = FISIERE.afaceri;
+  const domenii = new Map();
+  const forme = new Map();
+  for (const d of json.domenii ?? []) {
+    const err = (camp, mesaj) => erori.push({ fisier, id: d?.id, camp, mesaj });
+    campuriNecunoscute(d, ['id', 'titlu', 'emoji', 'descriere', 'costVariabil', 'angajatiMinim', 'salariuAngajat', 'luniMaturitate', 'sezon', 'experienta'], '', err);
+    for (const k of ['investitie', 'costuriFixe', 'venitPotential']) if (typeof dupaCale(config, `afaceri.${d.id}.${k}`) !== 'number') err(k, `lipsește config.afaceri.${d.id}.${k}`);
+    if (typeof dupaCale(config, d.salariuAngajat ?? '') !== 'number') err('salariuAngajat', `„${d.salariuAngajat}” nu există în config.json`);
+    if (!(d.costVariabil >= 0 && d.costVariabil < 1)) err('costVariabil', 'fracție între 0 și 1');
+    if (!Number.isInteger(d.angajatiMinim) || d.angajatiMinim < 0) err('angajatiMinim', 'număr întreg ≥ 0');
+    if (!(Number.isInteger(d.luniMaturitate) && d.luniMaturitate > 0)) err('luniMaturitate', 'număr întreg > 0');
+    if (!Array.isArray(d.sezon) || d.sezon.length !== 12 || d.sezon.some((x) => typeof x !== 'number')) err('sezon', '12 numere, de la septembrie la august');
+    if (!Array.isArray(d.experienta)) err('experienta', 'listă de domenii de job (poate fi goală)');
+    domenii.set(d.id, d);
+  }
+  for (const f of json.forme ?? []) forme.set(f.id, f);
+  for (const id of ['pfa', 'ii', 'srl']) if (!forme.has(id)) erori.push({ fisier, camp: 'forme', mesaj: `lipsește forma juridică „${id}”` });
+  return { domenii, forme };
 }
 
 // ---------- Investiții (clase, companii inventate, strategii de rebalansare) ----------

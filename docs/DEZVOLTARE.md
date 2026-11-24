@@ -51,6 +51,7 @@ js/investitii.js    meniul Investiții: clase, companii, DCA, portofoliu, rebala
 js/ui/grafic.js     grafic cu linii în SVG (hover, tastatură, tabel)
 js/imobiliare.js    apartamente de închiriat: cumpărare, chiriași, impozit, vânzare
 js/munca.js         Carieră: ritm, ore suplimentare, promovare, curs de firmă, demisie, venit în plus, artiști
+js/afacere.js       afacerea proprie: pregătire, pornire, luna firmei, dividende, închidere, insolvență
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -141,6 +142,10 @@ Un certificat poate ține loc de diplomă la un job: în `data/jobs.json`, `"cer
 - `artist: true` + `venitVariabil` (`volatilitate`, `sansaComandaMare`, `multiplicatorComandaMare`, opțional `lunaVarf`: luni cu concerte, 0 = septembrie): venitul lunii depinde de faimă și noroc. Artiștii nu apar în oferte; jucătorul devine artist din Carieră, dacă are un hobby.
 - `secundare`: activitățile pe lângă job (venitul în `config.json` → `munca`, oboseala lunară, cerințe). Una singură odată; ia o acțiune din bugetul de timp al anului.
 - Ritmul de muncă (relaxat / normal / intens), orele suplimentare și cursul plătit de firmă au parametrii în `balans.json` → `cariera` (`ritm`, `oreSuplimentare`, `cursFirma`, `artist`).
+
+## Afacerea proprie
+
+`data/afaceri.json`: `domenii` (texte + parametri de joc: `costVariabil`, `angajatiMinim`, `salariuAngajat`, `luniMaturitate`, `sezon` cu 12 factori de la septembrie, `experienta` = domeniile de job care contează) și `forme` (PFA / II / SRL). Banii fiecărui domeniu (`investitie`, `costuriFixe`, `venitPotential`) și taxele sunt în `config.json` → `afaceri`; pregătirea și calitatea în `balans.json` → `afaceri`. Joburile au `domeniu` (ex. `horeca`); după 24 de luni într-un job din domeniu se pune flag-ul `experienta_<domeniu>`. Afacerea e produsul `afacere`, cu contul ei: la PFA / II datoriile ei intră în datoriile tale, la SRL nu.
 
 ## Imobiliarele de închiriat
 

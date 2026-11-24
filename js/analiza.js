@@ -19,7 +19,9 @@ export const MOTOR = {
     // din imobiliarele de închiriat (js/imobiliare.js)
     'randament-chirie', 'declaratia-unica',
     // din meniul Carieră (js/munca.js)
-    'ore-suplimentare', 'clauza-fidelitate', 'venit-variabil'],
+    'ore-suplimentare', 'clauza-fidelitate', 'venit-variabil',
+    // din afacerea proprie (js/afacere.js)
+    'plan-de-afaceri', 'raspundere-limitata', 'capital-de-lucru'],
 };
 
 const numeFlag = (f) => f.split(':')[0];

@@ -12,6 +12,7 @@ import { bal, cfg, inLei, varstaLa } from './util.js';
 import { timpRamas } from './activitati.js';
 import { consolidabile } from './datorii.js';
 import { simuleazaCumparare } from './imobiliare.js';
+import { afacereActiva, simuleazaPornire } from './afacere.js';
 import { rezumatViata } from './bilant.js';
 import { alegeFinal } from './finaluri.js';
 
@@ -181,6 +182,32 @@ function muncaAtent(state, ctx, fondComplet, { pastreazaSecundarul = false } = {
   if (!fondComplet && energie > 55) actiune(state, ctx, 'oreSuplimentare');
 }
 
+// Afacerea, ca un jucător atent: doar într-un domeniu în care are experiență, după plan, curs și
+// studiu de piață, ca SRL, cu rezerva de fond păstrată; scoate surplusul anual; închide dacă pierde un an.
+function afacereAtent(state, ctx, fondComplet, lunar) {
+  const af = afacereActiva(state);
+  if (af) {
+    const d = ctx.afaceri.domenii.get(af.domeniu);
+    const ultimul = af.istoric.slice(-12);
+    if (af.luniActiva > d.luniMaturitate + 6 && ultimul.reduce((s, x) => s + x.profit, 0) < 0) return actiune(state, ctx, 'inchideAfacere');
+    const rezerva = 6 * (pret(state, ctx, `afaceri.${d.id}.costuriFixe`));
+    if (af.cont > rezerva && !af.datorii) actiune(state, ctx, 'retrageDinFirma', { suma: lei(af.cont - rezerva) });
+    return null;
+  }
+  const varsta = varstaLa(state.luna);
+  if (!fondComplet || varsta < 28 || varsta > 45) return null;
+  const domeniu = [...ctx.afaceri.domenii.values()].find((d) => d.experienta.some((x) => areFlag(state, `experienta_${x}`)));
+  if (!domeniu) return null;
+  actiune(state, ctx, 'faPlanAfaceri');
+  actiune(state, ctx, 'inscrieCurs', { curs: 'antreprenoriat' });
+  actiune(state, ctx, 'faStudiuPiata', { domeniu: domeniu.id });
+  const sim = simuleazaPornire(state, ctx, domeniu.id, 'srl', {});
+  if (sim.ok && sim.pregatire.total >= 75 && baniDisponibili(state) - sim.dinEconomii >= 3 * lunar) {
+    return actiune(state, ctx, 'pornesteAfacere', { domeniu: domeniu.id, forma: 'srl' });
+  }
+  return null;
+}
+
 // Frugal: modest toată viața, fond de 6 luni, aproape tot restul investit în ETF.
 function meniuFrugal(state, ctx) {
   asiguraCont(state, ctx);
@@ -249,6 +276,7 @@ function meniuPrudent(state, ctx) {
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
   gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
   muncaAtent(state, ctx, fondComplet);
+  afacereAtent(state, ctx, fondComplet, lunar);
   // Prudentul își crește valoarea pe piață: limbă străină și, fără facultate, o calificare căutată.
   cursuriAtent(state, ctx, ['educatie-financiara', 'engleza',
     ...(['liceu', 'profesionala'].includes(state.situatie.nivelStudii) && !state.situatie.studii ? ['contabilitate'] : [])], fondComplet);
@@ -316,6 +344,11 @@ function meniuRiscant(state, ctx, rnd) {
     const tinta = ['co-zborapid', 'co-pixelnord', 'crypto'][Math.floor(rnd() * 3)];
     actiune(state, ctx, 'investeste', { clasa: tinta, suma: lei(Math.round(peBursa * 0.5)) });
   }
+  // „Îmi deschid ceva al meu”: o cafenea ca PFA, fără pregătire, de cum are banii; scoate tot ce intră.
+  const af = afacereActiva(state);
+  if (af) {
+    if (af.cont > 0) actiune(state, ctx, 'retrageDinFirma', { suma: lei(af.cont) });
+  } else actiune(state, ctx, 'pornesteAfacere', { domeniu: rnd() < 0.5 ? 'cafenea' : 'magazinOnline', forma: 'pfa' });
   // „Imobiliarele nu pierd niciodată”: un apartament cu credit, de îndată ce banca zice da.
   if (!state.produse.some((p) => p.tip === 'imobil')) actiune(state, ctx, 'cumparaImobil', { marime: 'apartament', finantare: 'credit' });
   // Riscantul întinde datoriile pe cât mai mulți ani, ca să scadă rata (și să poată cheltui mai mult).
@@ -378,6 +411,20 @@ const ACTIUNI_ALEATOARE = [
     const im = state.produse.find((p) => p.tip === 'imobil');
     if (im && rnd() < 0.3) return actiune(state, ctx, 'vindeImobil', { id: im.id });
     return actiune(state, ctx, 'cumparaImobil', { marime: rnd() < 0.5 ? 'garsoniera' : 'apartament', finantare: rnd() < 0.6 ? 'credit' : 'cash' });
+  },
+  // afacerea: pregătire, grant, pornire (domeniu, formă, finanțare la întâmplare), bani scoși, închidere
+  (state, ctx, rnd) => actiune(state, ctx, ['faPlanAfaceri', 'aplicaGrant'][Math.floor(rnd() * 2)]),
+  (state, ctx, rnd) => {
+    const ids = [...ctx.afaceri.domenii.keys()];
+    const domeniu = ids[Math.floor(rnd() * ids.length)];
+    if (rnd() < 0.4) return actiune(state, ctx, 'faStudiuPiata', { domeniu });
+    return actiune(state, ctx, 'pornesteAfacere', { domeniu, forma: ['pfa', 'ii', 'srl'][Math.floor(rnd() * 3)], credit: rnd() < 0.4, investitor: rnd() < 0.3 });
+  },
+  (state, ctx, rnd) => {
+    const af = afacereActiva(state);
+    if (!af) return null;
+    if (rnd() < 0.2) return actiune(state, ctx, 'inchideAfacere');
+    return actiune(state, ctx, 'retrageDinFirma', { suma: lei(Math.round(Math.max(0, af.cont) * rnd())) });
   },
   // munca: ritm, ore suplimentare, promovare, curs de firmă, venit în plus, artist, (rar) demisie
   (state, ctx, rnd) => actiune(state, ctx, 'seteazaRitm', { ritm: ['relaxat', 'normal', 'intens'][Math.floor(rnd() * 3)] }),

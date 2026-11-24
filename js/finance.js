@@ -84,7 +84,7 @@ export function plateste(state, suma, sursa = 'portofel') {
 // ---------- Produse ----------
 
 // „proprietate” = locuința ta; „imobil” = un apartament cumpărat ca să-l dai în chirie.
-export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil', 'activitateSecundara'];
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil', 'activitateSecundara', 'afacere'];
 export const CATEGORII_FACTURI = ['chirie', 'utilitati', 'telefon'];
 
 // Facturile lunii, în ordinea în care se plătesc când banii nu ajung.
@@ -171,6 +171,8 @@ export function creeazaProdus(spec, state, ctx) {
       return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime, chirias: false, luniGol: 0, creditId: spec.creditId ?? null, chirieIncasata: 0 };
     case 'activitateSecundara':
       return { ...baza, secundarId: spec.secundarId ?? null };
+    case 'afacere':
+      return { ...baza }; // câmpurile se completează la pornire (js/afacere.js)
     case 'factura':
       // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
       return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };
@@ -207,6 +209,8 @@ export function valoareProdus(p, state) {
     case 'proprietate':
     case 'imobil':
       return p.valoare;
+    case 'afacere':
+      return Math.round(Math.max(0, p.cont ?? 0) * (p.cota ?? 1)); // partea ta din banii firmei
     case 'investitie':
       return p.clasa === 'titluriStat' ? p.principal : Math.round(p.unitati * (state.piete[indiceClasa(p.clasa)] ?? 0));
     default:
@@ -224,6 +228,8 @@ export function datorieProdus(p) {
       return p.datorie;
     case 'factura':
       return p.restanta;
+    case 'afacere':
+      return p.forma === 'srl' ? 0 : p.datorii ?? 0; // la PFA / II, datoriile firmei sunt ale tale
     case 'contCurent':
       return Math.max(0, -p.sold);
     default:

@@ -20,6 +20,7 @@ export function timpPeAn(state, ctx) {
   else if (program === 'part-time') n += t.jobPartTime;
   if (state.situatie.studii) n += t.studii;
   if (state.produse.some((p) => p.tip === 'activitateSecundara')) n += t.jobSecundar;
+  if (state.produse.some((p) => p.tip === 'afacere')) n += t.afacere;
   return Math.max(t.minim, n);
 }
 
