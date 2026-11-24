@@ -155,7 +155,7 @@ export function creeazaProdus(spec, state, ctx) {
     case 'contractMunca':
       return { ...baza, jobId: spec.jobId, contract: spec.contract, brut: spec.brut, luniVechime: 0 };
     case 'proprietate':
-      return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare };
+      return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime ?? 'apartament' };
     case 'factura':
       // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
       return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };

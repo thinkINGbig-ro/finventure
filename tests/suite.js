@@ -3,7 +3,7 @@
 import { construiesteContinut, formateazaEroare, incarcaContinut } from '../js/content.js';
 import { actiune, alege, avanseaza, continua, forteazaEveniment, jocNou } from '../js/engine.js';
 import { lantDecizii, gasesteProdus } from '../js/events.js';
-import { fluturas, baniDisponibili, contCurent, fondUrgenta, pret } from '../js/finance.js';
+import { fluturas, baniDisponibili, contCurent, fondUrgenta, luniCreditDupaVarsta, pret, rataAnuitate, rataLunara } from '../js/finance.js';
 import {
   adaugaCheckpoint, areFlag, avereNeta, cheltuieliLunare, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc, seteazaFlag,
 } from '../js/state.js';
@@ -326,9 +326,9 @@ function teste(ctxBaza, incarcare) {
     'IFN ignorat: restanță → Biroul de Credit → cesiune → executare → poprire'() {
       const { state, ctx } = joc('ifn-rau');
       alege(state, ctx, 'sabatic');
-      // Venit exact cât costul de trai, ca rata IFN să rămână neplătită.
-      const trai = pret(state, ctx, 'costTrai.mancareTransport') + pret(state, ctx, 'locuinte.acasa.utilitati') + pret(state, ctx, 'costTrai.telefon');
-      state.recurente = [{ tip: 'venit', suma: trai, luniRamase: null }];
+      // Un venit mic, dar verificabil (IFN-ul verifică gradul de îndatorare), care nu ajunge și pentru rată.
+      state.recurente = [];
+      schimbaJob(state, ctx, { id: 'barista', contract: 'cim' });
       state.numerar = 0;
       forteazaEveniment(state, ctx, 'urgenta-2000');
       const { rezultat } = alege(state, ctx, 'ma-imprumut/ifn');
@@ -340,8 +340,8 @@ function teste(ctxBaza, incarcare) {
       ok(state.ascunse.scorCredit < scor, 'scorul de credit a scăzut');
       ok(areFlag(state, 'istoric_restante'), 'raportat la Biroul de Credit');
       ok(state.jurnal.some((j) => j.text.includes('firme de recuperare')), 'cesiune în jurnal');
-      const poprire = gasesteProdus(state, 'poprire');
-      ok(poprire, 'poprirea a fost creată');
+      const poprire = state.produse.find((p) => p.tip === 'poprire' && p.cauza === rezultat.decizie.id);
+      ok(poprire, 'poprirea pornită din IFN a fost creată');
       ok(areFlag(state, 'executare_silita'), 'flag executare silită');
 
       const dIgnor = state.decizii.find((d) => d.eveniment === 'ifn-restanta');
@@ -571,22 +571,22 @@ function teste(ctxBaza, incarcare) {
       cont.sold = inBani(200000);
       seteazaFlag(state, 'spirala_datorii');
       let o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
-      ok(!alegerePeCale(o, 'credit').disponibil, 'refuzat cu spirala datoriilor în istoric');
-      ok(alegerePeCale(o, 'credit').motiv.includes('Banca te refuză'), 'motivul refuzului');
+      ok(!alegerePeCale(o, 'apartament').disponibil, 'refuzat cu spirala datoriilor în istoric');
+      ok(alegerePeCale(o, 'apartament').motiv.includes('Banca te refuză'), 'motivul refuzului');
       state.pendinte = null;
       delete state.flaguri.spirala_datorii;
       o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
-      const refuz = alegerePeCale(o, 'credit/fixa');
+      const refuz = alegerePeCale(o, 'apartament/fixa');
       ok(!refuz.disponibil && refuz.motiv.includes('% din venitul tău net'), `cu salariul de curier, refuz pentru gradul de îndatorare: ${refuz.motiv}`);
       state.pendinte = null;
       gasesteProdus(state, 'contractMunca').brut = inBani(20000);
       o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
-      ok(alegerePeCale(o, 'credit/variabila').disponibil, 'cu un salariu mare, ipoteca e posibilă');
+      ok(alegerePeCale(o, 'apartament/variabila').disponibil, 'cu un salariu mare, ipoteca e posibilă');
       const avereInainte = avereNeta(state);
-      alege(state, ctx, 'credit/variabila');
+      alege(state, ctx, 'apartament/variabila');
       const credit = state.produse.find((p) => p.tip === 'credit' && p.variabila);
       ok(credit && credit.luni === 360, 'credit pe 30 de ani, cu dobândă variabilă');
-      ok(gasesteProdus(state, 'proprietate')?.valoare === inBani(o.variabile.pret), 'casa e un activ cu valoarea prețului');
+      ok(gasesteProdus(state, 'proprietate')?.valoare === inBani(o.variabile.pretA), 'casa e un activ cu valoarea prețului');
       ok(Math.abs(avereNeta(state) - avereInainte) < inBani(1000), 'cumpărarea nu schimbă averea netă (casă − credit = avans)');
       egal(state.situatie.locuinta, 'proprietate', 'locuiești în casa ta');
       const daeInainte = credit.dae;
@@ -594,6 +594,58 @@ function teste(ctxBaza, incarcare) {
       state.an = null;
       consuma(state, ctx, avanseaza(state, ctx), primaDisponibila);
       ok(credit.dae !== daeInainte, `dobânda variabilă s-a recalculat (${daeInainte.toFixed(4)} → ${credit.dae.toFixed(4)})`);
+    },
+
+    'prima locuință: plafon 45% (BNR); după ce ai avut o casă, 40%'() {
+      const { state, ctx } = jocCuJob('prima');
+      state.luna = 12 * 8;
+      state.ascunse.scorCredit = 70;
+      gasesteProdus(state, 'contCurent').sold = inBani(200000);
+      const c = gasesteProdus(state, 'contractMunca');
+      // salariul la care rata unei garsoniere (fixă) e ~43% din net: între 40% și 45%
+      const o0 = forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      state.pendinte = null;
+      const rata = rataAnuitate(inBani(o0.variabile.imprumutG), rataLunara(ctx.config.ipotecar.daeFixa.valoare), luniCreditDupaVarsta(state, ctx, 360));
+      for (let brut = inBani(3000); brut < inBani(30000); brut += 5000) {
+        c.brut = brut;
+        if (rata / fluturas(c.brut, 'cim', ctx).net <= 0.43) break;
+      }
+      const grad = rata / fluturas(c.brut, 'cim', ctx).net;
+      ok(grad > 0.40 && grad <= 0.45, `grad de test: ${(grad * 100).toFixed(1)}%`);
+      let o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      ok(alegerePeCale(o, 'garsoniera/fixa').disponibil, 'prima locuință: trece la 43%');
+      state.pendinte = null;
+      seteazaFlag(state, 'are_locuinta');
+      o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      ok(!alegerePeCale(o, 'garsoniera/fixa').disponibil, 'a doua locuință: refuzat peste 40%');
+    },
+
+    'garsoniera se poate vinde pentru un apartament, cu ipoteca veche închisă'() {
+      const { state, ctx } = jocCuJob('upgrade');
+      state.luna = 12 * 8;
+      state.ascunse.scorCredit = 70;
+      gasesteProdus(state, 'contCurent').sold = inBani(100000);
+      gasesteProdus(state, 'contractMunca').brut = inBani(25000);
+      forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      alege(state, ctx, 'garsoniera/fixa');
+      egal(state.situatie.locuinta, 'proprietateGarsoniera', 'locuiești în garsonieră');
+      state.luna = 12 * 25; // 43 de ani
+      const avereInainte = avereNeta(state);
+      const o = forteazaEveniment(state, ctx, 'garsoniera-mai-mare');
+      ok(alegerePeCale(o, 'vand').disponibil, `vânzarea e posibilă (${alegerePeCale(o, 'vand').motiv ?? ''})`);
+      alege(state, ctx, 'vand');
+      const case_ = state.produse.filter((p) => p.tip === 'proprietate');
+      egal(case_.length, 1, 'o singură locuință');
+      egal(case_[0].marime, 'apartament', 'acum e un apartament');
+      egal(state.produse.filter((p) => p.tip === 'credit' && p.furnizor === 'ipoteca').length, 1, 'o singură ipotecă (cea veche s-a închis)');
+      ok(Math.abs(avereNeta(state) - avereInainte) < inBani(2000), 'vânzarea și cumpărarea nu schimbă averea netă');
+    },
+
+    'IFN-ul verifică și el gradul de îndatorare (BNR)'() {
+      const { state, ctx } = jocFaraVenit('ifn-dti');
+      const o = forteazaEveniment(state, ctx, 'urgenta-2000');
+      const ifn = alegerePeCale(o, 'ma-imprumut/ifn');
+      ok(!ifn.disponibil && ifn.motiv.includes('venit'), `fără venit verificabil, IFN-ul refuză: ${ifn.motiv}`);
     },
 
     'simulare pe profiluri: prudentul o duce mai bine decât riscantul'() {

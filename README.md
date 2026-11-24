@@ -104,31 +104,37 @@ Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezu
 
 | Profil | Cum joacă | Ajung la pensie sau la independență | Faliment | Averea mediană la final (lei de azi) | Finalul cel mai des |
 |---|---|---|---|---|---|
-| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, chiria sub 35% din venit, stil mai bun doar dacă și-l permite, cumpără casă când banca îl aprobă | **100%** | 0% | ~1,2 mil. lei | Milionar în lei de azi (35%) |
-| **Frugal** | trai modest toată viața, investește aproape tot ce rămâne | **100%** | 0% | ~2,0 mil. lei | Rentierul (58%) |
-| **Aleator** | alege la întâmplare, inclusiv în meniuri | 55% | 45% | ~219.000 lei | Pensionar liniștit (44%) |
-| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 19% | 81% | ~56.000 lei | Regele IFN-urilor (64%) |
+| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, chiria sub 35% din venit, stil mai bun doar dacă și-l permite, cumpără casă când banca îl aprobă | **100%** | 0% | ~1,2 mil. lei | Milionar în lei de azi (53%) |
+| **Frugal** | trai modest toată viața, rămâne în chirie, investește aproape tot ce rămâne | **100%** | 0% | ~1,8 mil. lei | Rentierul (52%) |
+| **Aleator** | alege la întâmplare, inclusiv în meniuri | 58% | 42% | ~232.000 lei | Pensionar liniștit (42%) |
+| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 25% | 75% | ~63.000 lei | Regele IFN-urilor (51%) |
 
 *Sursa: `docs/raport-simulare.json` (500 de vieți pe profil, 57 de evenimente). „Lei de azi” = sumele finale ajustate cu inflația simulată, ca să poată fi comparate cu prețurile de acum.*
 
 Ce arată:
 
 - **Diferența vine din decizii, nu din noroc.** Toate profilurile trăiesc aceleași tipuri de evenimente (boli, concedieri, crize pe bursă), dar prudentul le absoarbe din fondul de urgență, iar riscantul le acoperă cu credite scumpe.
-- **Lecțiile se văd în cauzele falimentului.** La riscant, falimentul pornește de cele mai multe ori de la un credit IFN luat pentru o urgență și continuă cu restanțe, recuperatori și poprire. La aleator, cauzele frecvente sunt IFN-ul pentru o problemă de sănătate, telefonul în rate și mutarea singur fără bani deoparte. Creditele bancare sunt limitate de gradul de îndatorare (ca în realitate, plafonul BNR), așa că un jucător nu poate lua o mașină sau o casă pe care nu și-o permite; un IFN, însă, nu verifică nimic.
+- **Lecțiile se văd în cauzele falimentului.** La riscant, falimentul pornește de cele mai multe ori de la un credit IFN luat pentru o urgență și continuă cu restanțe, recuperatori și poprire. La aleator, cauzele frecvente sunt IFN-ul pentru o problemă de sănătate, telefonul în rate și mutarea singur fără bani deoparte. Toate creditele (bănci, leasing și IFN) sunt limitate de gradul de îndatorare, ca în regulamentul BNR (40%, 45% pentru prima locuință), așa că un jucător nu poate lua un credit pe care nu și-l permite. Lecția IFN rămâne în DAE și în lanțul de restanțe.
 - **Lecțiile se văd și în salarii.** Pe durata unei vieți simulate, inflația medie e ~4,8% pe an și randamentul ETF ~7% pe an. Salariul crește peste inflație doar dacă ceri măriri, accepți promovări sau schimbi jobul: real, +0,6–0,8% pe an la prudent și frugal, ~0% la aleator, −0,5% la riscant. Valorile economice din `data/config.json` sunt marcate „de verificat” și vor fi confirmate de un specialist.
 - **N-am „ajustat” rezultatele.** Când un profil a ieșit nerealist (de exemplu, la început prudentul ajungea la averi de zeci de milioane), am căutat cauza în mecanici (măririle nu aveau plafon față de piață, crash-urile bursiere erau numărate de două ori) și am reparat-o, nu am schimbat procentele.
 
 ### Chirie sau cumpărare?
 
-O întrebare pe care o au mulți adolescenți (și părinții lor). În simulare, **32% dintre jucătorii prudenți cumpără o locuință**, la o vârstă mediană de 38–39 de ani, de obicei vânzându-și investițiile pentru avans. Ce îi oprește pe ceilalți e gradul de îndatorare: cu un singur salariu, rata la un apartament cu două camere trece de 40% din venitul net.
+O întrebare pe care o au mulți adolescenți (și părinții lor). La evenimentul casei, jucătorul alege și **mărimea**: garsonieră (~250.000 lei la prețurile de start) sau apartament cu două camere (~450.000 lei). Lecția: cumpără ce-ți permiți, nu ce-ți dorești. Cu această alegere, **95% dintre jucătorii prudenți cumpără o locuință**, la o vârstă mediană de 32 de ani: 396 din 500 încep cu o garsonieră (147 dintre ei o vând după 40 de ani pentru un apartament), 79 cumpără direct un apartament. Avansul vine de obicei din vânzarea investițiilor.
 
-Ca să răspundem corect, nu am comparat pur și simplu jucătorii care au cumpărat cu cei care n-au cumpărat: cei care cumpără au, în medie, salarii cu ~22% mai mari, deci ar ieși oricum mai bogați (comparația naivă dă 1,3 mil. față de 1,1 mil. lei de azi în favoarea casei). Am jucat **aceeași viață de două ori**, cu același seed (același job, aceleași șocuri, aceeași bursă): o dată profilul prudent cumpără casa, o dată rămâne în chirie și își păstrează investițiile.
+Ca să comparăm corect, am jucat **aceeași viață de două ori**, cu același seed (același job, aceleași șocuri, aceeași bursă): o dată profilul prudent cumpără casa, o dată rămâne în chirie și își păstrează investițiile.
 
 | Simulare | Vieți cu cumpărare | Averea mediană cu casa | Aceeași viață, în chirie | Casa a ieșit mai bine în |
 |---|---|---|---|---|
-| 500 de vieți | 164 | ~1,28 mil. lei de azi | ~1,45 mil. lei de azi | **42%** din vieți (diferența mediană: −113.000 lei) |
+| 500 de vieți | 475 | ~1,20 mil. lei de azi | ~1,23 mil. lei de azi | **51%** din vieți (diferența mediană: ~+5.000 lei) |
 
-Răspunsul, în modelul nostru: **depinde, și diferența e mai mică decât cred mulți.** Casa îți aduce siguranță și nicio chirie la bătrânețe; chiria plus investițiile disciplinate au ieșit puțin mai bine în mai mult de jumătate din vieți, pentru că avansul vândut din investiții și dobânda la ipotecă (7,5%) costă mai mult decât randamentul pierdut. Lecția nu e „cumpără” sau „nu cumpăra”, ci: dacă rămâi în chirie, investește diferența, altfel casa câștigă sigur. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
+Răspunsul, în modelul nostru: **la bani, e practic egal.** Casa îți aduce siguranță și nicio chirie la bătrânețe; chiria plus investițiile disciplinate ajung în același loc. Lecția nu e „cumpără” sau „nu cumpăra”, ci: alege o casă pe care ți-o permiți, iar dacă rămâi în chirie, investește diferența. Fără investiții, chiria pierde. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
+
+## Limitări cunoscute (direcții de extindere)
+
+- **Un singur venit.** Jocul nu are partener sau venit dublu; în realitate, multe locuințe se cumpără în doi, ceea ce schimbă gradul de îndatorare.
+- **Fără programe de stat pentru locuințe** (de exemplu „Noua Casă”, cu avans de 5%).
+- **Fără credite în valută.** Plafonul BNR pentru ele (20%) e deja în `data/config.json`, dar nefolosit.
 
 ## Valorile economice
 

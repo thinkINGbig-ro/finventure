@@ -142,7 +142,7 @@ export function rezumatViata(state, ctx) {
     rateCumparaturi: bl.rateCumparaturi,
     socuriAbsorbite: bl.socuriAbsorbite,
     stilFinal: nivelStil(ctx, state.stilViata)?.nume,
-    casaPlatita: state.produse.some((p) => p.tip === 'proprietate') && !state.produse.some((p) => p.tip === 'credit' && p.luni >= 240),
+    casaPlatita: state.produse.some((p) => p.tip === 'proprietate') && !state.produse.some((p) => p.tip === 'credit' && p.furnizor === 'ipoteca'),
     disponibil: baniDisponibili(state),
   };
 }

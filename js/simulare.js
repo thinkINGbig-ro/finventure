@@ -296,7 +296,7 @@ export const PROFILURI = {
       return {
         ...PONDERI_ATENT,
         'locuinta:chirieSingur': accesibila('chirieSingur'), 'locuinta:chirieColegi': accesibila('chirieColegi'),
-        vandPentruAvans: fondComplet ? 4 : -4,
+        vandPentruAvans: fondComplet ? 4 : -4, casaMare: 1, upgradeCasa: fondComplet ? 2 : -3,
         negociaza: areJobFullTime(state, ctx) ? 4 : -1,
         // Un stil mai scump doar dacă, după urcare, cheltuielile rămân sub 80% din venitul net.
         stilSus: fondComplet && net && lunar + pret(state, ctx, 'costTrai.mancareTransport') * 0.8 <= 0.8 * net ? 1 : -6,
@@ -325,7 +325,7 @@ export const PROFILURI = {
       ifn: 8, credit: 3, negru: 6, cim: -2, cardMinim: 6, cardIntegral: -4, ramburseaza: -5, fond: -4, card: 4, studii: -3,
       minciuna: 5, marire: -1, cautaJob: 1, ignora: 4, fericire: 0.4, viitor: -0.3, energie: 0.1,
       inselatorie: 3, pariu: 6, stilSus: 6, stilJos: -4, rate: 5, investitieRiscanta: 6, chirieScumpa: 3, panica: 5,
-      cumparaCasa: 3, dobandaVariabila: 3, asigurare: -2, faraAsigurare: 2, ignoraTaxe: 4, afacere: 3, economisire: -2,
+      cumparaCasa: 3, casaMare: 3, upgradeCasa: 3, dobandaVariabila: 3, asigurare: -2, faraAsigurare: 2, ignoraTaxe: 4, afacere: 3, economisire: -2,
     }),
     meniu: meniuRiscant,
   },
@@ -381,7 +381,7 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
   const alegeriVazute = new Set();
   const finaluriColectie = {};
   // Chirie vs. cumpărare: averea finală (cu casa la valoarea de piață), pe cele două grupuri.
-  const locuinta = { cumparat: [], chirie: [], varstaCumparare: [], salariuCumparat: [], salariuChirie: [] };
+  const locuinta = { cumparat: [], chirie: [], varstaCumparare: [], salariuCumparat: [], salariuChirie: [], garsoniera: 0, apartament: 0, upgrade: 0 };
 
   for (let i = 0; i < n; i++) {
     const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn });
@@ -408,10 +408,12 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     averi.push(inLei(avereNeta(state)));
     averiAzi.push(inLei(avereNeta(state)) / state.indicePreturi);
     if (!['faliment', 'burnout', 'renuntare'].includes(motiv)) {
-      const cumparare = state.decizii.find((d) => d.eveniment === 'cumpara-locuinta' && d.alegere.startsWith('credit/'));
+      const cumparare = state.decizii.find((d) => d.eveniment === 'cumpara-locuinta' && /^(garsoniera|apartament)\/(fixa|variabila)$/.test(d.alegere));
       if (cumparare) {
         locuinta.cumparat.push(inLei(avereNeta(state)) / state.indicePreturi);
         locuinta.varstaCumparare.push(varstaLa(cumparare.luna));
+        locuinta[cumparare.alegere.split('/')[0]] += 1;
+        if (state.decizii.some((d) => d.eveniment === 'garsoniera-mai-mare' && d.alegere === 'vand')) locuinta.upgrade += 1;
       } else locuinta.chirie.push(inLei(avereNeta(state)) / state.indicePreturi);
       // salariul brut mediu din carieră (lei de azi): ca să se vadă dacă grupurile sunt comparabile
       const bl = state.bilant;
@@ -448,7 +450,7 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     cauzeGameOver: Object.entries(cauze).sort((a, b) => b[1] - a[1]),
     finaluriColectie: Object.entries(finaluriColectie).sort((a, b) => b[1] - a[1]),
     chirieVsCumparare: {
-      cumparat: { vieti: locuinta.cumparat.length, avereMedianaAzi: mediana(locuinta.cumparat), varstaMedianaCumparare: mediana(locuinta.varstaCumparare), salariuBrutMedianAzi: mediana(locuinta.salariuCumparat) },
+      cumparat: { vieti: locuinta.cumparat.length, garsoniera: locuinta.garsoniera, apartament: locuinta.apartament, garsoniereVandutePentruApartament: locuinta.upgrade, avereMedianaAzi: mediana(locuinta.cumparat), varstaMedianaCumparare: mediana(locuinta.varstaCumparare), salariuBrutMedianAzi: mediana(locuinta.salariuCumparat) },
       chirie: { vieti: locuinta.chirie.length, avereMedianaAzi: mediana(locuinta.chirie), salariuBrutMedianAzi: mediana(locuinta.salariuChirie) },
     },
     evenimenteNeaparute: Object.entries(aparitii).filter(([, k]) => k === 0).map(([id]) => id),
@@ -475,7 +477,7 @@ export function comparaChirieCumparare(ctx, { n = 500, seed = 'sim' } = {}) {
   for (let i = 0; i < n; i++) {
     const s = `${seed}-${i}`;
     const a = simuleazaViata(ctx, s, prudent).state;
-    if (!a.decizii.some((d) => d.eveniment === 'cumpara-locuinta' && d.alegere.startsWith('credit/'))) continue;
+    if (!a.decizii.some((d) => d.eveniment === 'cumpara-locuinta' && /^(garsoniera|apartament)\/(fixa|variabila)$/.test(d.alegere))) continue;
     const b = simuleazaViata(ctx, s, faraCasa).state;
     perechi.push({ cuCasa: azi(a), faraCasa: azi(b) });
   }
@@ -527,6 +529,7 @@ export function formateazaRaport(rapoarte) {
       `  finaluri colecționabile: ${r.finaluriColectie.map(([t, k]) => `${t} ${Math.round((k / r.n) * 100)}%`).join(', ')}`,
       ...(r.chirieVsCumparare.cumparat.vieti >= 10 && r.chirieVsCumparare.chirie.vieti >= 10 ? [
         `  chirie vs. cumpărare (fără falimente, averea cu casa inclusă, în lei de azi):`,
+        `    au cumpărat: ${r.chirieVsCumparare.cumparat.garsoniera} garsoniere (${r.chirieVsCumparare.cumparat.garsoniereVandutePentruApartament} vândute apoi pentru un apartament), ${r.chirieVsCumparare.cumparat.apartament} apartamente`,
         `    au cumpărat (${r.chirieVsCumparare.cumparat.vieti} vieți, vârsta mediană la cumpărare ${r.chirieVsCumparare.cumparat.varstaMedianaCumparare}, salariu brut mediu ${sumaMare(r.chirieVsCumparare.cumparat.salariuBrutMedianAzi)}): ${sumaMare(r.chirieVsCumparare.cumparat.avereMedianaAzi)}`,
         `    au rămas în chirie (${r.chirieVsCumparare.chirie.vieti} vieți, salariu brut mediu ${sumaMare(r.chirieVsCumparare.chirie.salariuBrutMedianAzi)}): ${sumaMare(r.chirieVsCumparare.chirie.avereMedianaAzi)}`,
       ] : []),

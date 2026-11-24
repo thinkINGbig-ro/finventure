@@ -2,27 +2,30 @@
   "evenimente": [
     {
       "id": "cumpara-locuinta",
-      "titlu": "Apartamentul tău?",
+      "titlu": "O casă a ta?",
       "faza": [4, 5],
       "conditii": {
         "varstaMin": 26,
         "jobProgram": ["full-time"],
         "locuinta": ["chirieSingur", "chirieColegi", "acasa"],
-        "lipsaFlag": ["are_locuinta", "amanat_cumparare"]
+        "lipsaFlag": ["amanat_cumparare"]
       },
       "pondere": 4,
       "cooldownLuni": 24,
       "checkpoint": true,
       "variabile": {
-        "pret": "pret:locuinte.pretApartament",
-        "avans": "pret:locuinte.pretApartament*0.15",
-        "imprumut": "pret:locuinte.pretApartament*0.85"
+        "pretG": "pret:locuinte.pretGarsoniera",
+        "avansG": "pret:locuinte.pretGarsoniera*0.15",
+        "imprumutG": "pret:locuinte.pretGarsoniera*0.85",
+        "pretA": "pret:locuinte.pretApartament",
+        "avansA": "pret:locuinte.pretApartament*0.15",
+        "imprumutA": "pret:locuinte.pretApartament*0.85"
       },
-      "text": "Un apartament cu două camere costă {pret} lei. Banca cere un avans de {avans} lei (15%); restul, {imprumut} lei, îl împrumuți pe 30 de ani.",
+      "text": "Te uiți la anunțuri. O garsonieră costă {pretG} lei, un apartament cu două camere {pretA} lei. Banca cere 15% avans; restul îl împrumuți pe până la 30 de ani.",
       "alegeri": [
         {
-          "id": "credit",
-          "eticheta": "Cumpăr cu credit ipotecar",
+          "id": "garsoniera",
+          "eticheta": "Garsonieră ({pretG} lei)",
           "cere": {
             "jobProgram": ["full-time"],
             "asigurat": true,
@@ -33,79 +36,178 @@
           "subalegeri": [
             {
               "id": "fixa",
-              "eticheta": "Cu dobândă fixă",
+              "eticheta": "Credit cu dobândă fixă",
               "cere": {
-                "baniMin": "{avans}",
-                "motiv": "N-ai {avans} lei pentru avans.",
-                "indatorare": { "suma": "{imprumut}", "luni": 360, "dae": "config:ipotecar.daeFixa" }
+                "baniMin": "{avansG}",
+                "indatorare": {
+                  "suma": "{imprumutG}",
+                  "luni": 360,
+                  "dae": "config:ipotecar.daeFixa",
+                  "primaLocuinta": true
+                },
+                "motiv": "N-ai {avansG} lei pentru avans în cont."
               },
               "produsNou": [
                 {
                   "tip": "credit",
-                  "furnizor": "banca",
-                  "suma": "{imprumut}",
+                  "furnizor": "ipoteca",
+                  "suma": "{imprumutG}",
                   "dae": "config:ipotecar.daeFixa",
                   "luni": 360
                 },
-                { "tip": "proprietate", "valoare": "{pret}" }
+                { "tip": "proprietate", "valoare": "{pretG}", "marime": "garsoniera" }
               ],
-              "efecte": { "numerar": "-{pret}", "fericire": 10 },
-              "situatie": { "locuinta": "proprietate" },
+              "efecte": { "numerar": "-{pretG}", "fericire": 8 },
+              "situatie": { "locuinta": "proprietateGarsoniera" },
               "flaguri": ["are_locuinta"],
-              "etichete": ["cumparaCasa"],
+              "etichete": ["cumparaCasa", "casaMica"],
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }],
               "concepte": ["credit-ipotecar", "dobanda-fixa-variabila", "grad-de-indatorare"],
-              "lectie": "Cu dobânda fixă, rata rămâne aceeași 30 de ani, orice ar face piața. Plătești puțin mai mult pentru liniște.",
-              "jurnal": "Ți-ai cumpărat un apartament, cu credit ipotecar la dobândă fixă.",
-              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }]
+              "lectie": "Cumpără ce-ți permiți, nu ce-ți dorești. O garsonieră plătită liniștit e mai bună decât un apartament care îți ia tot salariul.",
+              "jurnal": "Ți-ai cumpărat o garsonieră, cu credit ipotecar la dobândă fixă."
             },
             {
               "id": "variabila",
-              "eticheta": "Cu dobândă variabilă (rata e mai mică acum)",
+              "eticheta": "Credit cu dobândă variabilă",
               "cere": {
-                "baniMin": "{avans}",
-                "motiv": "N-ai {avans} lei pentru avans.",
-                "indatorare": { "suma": "{imprumut}", "luni": 360, "variabila": true }
+                "baniMin": "{avansG}",
+                "indatorare": { "suma": "{imprumutG}", "luni": 360, "variabila": true, "primaLocuinta": true },
+                "motiv": "N-ai {avansG} lei pentru avans în cont."
               },
               "produsNou": [
-                { "tip": "credit", "furnizor": "banca", "suma": "{imprumut}", "variabila": true, "luni": 360 },
-                { "tip": "proprietate", "valoare": "{pret}" }
+                {
+                  "tip": "credit",
+                  "furnizor": "ipoteca",
+                  "suma": "{imprumutG}",
+                  "variabila": true,
+                  "luni": 360
+                },
+                { "tip": "proprietate", "valoare": "{pretG}", "marime": "garsoniera" }
               ],
-              "efecte": { "numerar": "-{pret}", "fericire": 10 },
-              "situatie": { "locuinta": "proprietate" },
+              "efecte": { "numerar": "-{pretG}", "fericire": 8 },
+              "situatie": { "locuinta": "proprietateGarsoniera" },
               "flaguri": ["are_locuinta"],
-              "etichete": ["cumparaCasa", "dobandaVariabila"],
+              "etichete": ["cumparaCasa", "casaMica", "dobandaVariabila"],
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }],
               "concepte": ["credit-ipotecar", "dobanda-fixa-variabila", "grad-de-indatorare"],
-              "lectie": "Cu dobânda variabilă, rata urmează indicele de referință (IRCC): azi e mai mică, dar poate crește în anii cu inflație mare.",
-              "jurnal": "Ți-ai cumpărat un apartament, cu credit ipotecar la dobândă variabilă.",
-              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }]
+              "lectie": "Rata pornește mai jos, dar urmează indicele de referință (IRCC). Cumpără ce-ți permiți și dacă rata crește.",
+              "jurnal": "Ți-ai cumpărat o garsonieră, cu credit ipotecar la dobândă variabilă."
+            },
+            {
+              "id": "vand",
+              "eticheta": "Vând investițiile ca să am avansul",
+              "cere": {
+                "lipsaFlag": ["vandut_pentru_avans"],
+                "indatorare": {
+                  "suma": "{imprumutG}",
+                  "luni": 360,
+                  "dae": "config:ipotecar.daeFixa",
+                  "primaLocuinta": true
+                },
+                "avereLichidaMin": "{avansG}"
+              },
+              "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur", "depozit"],
+              "flaguri": ["vandut_pentru_avans:1"],
+              "etichete": ["vandPentruAvans", "casaMica"],
+              "urmari": [{ "eveniment": "cumpara-locuinta", "dupaLuni": 0 }],
+              "concepte": ["chirie-vs-cumparare", "risc-randament"],
+              "lectie": "Ai vândut investiții pentru un scop plănuit, nu de frică. Exact pentru asta se investește: banii lucrează până ai nevoie de ei.",
+              "jurnal": "Ai vândut investițiile ca să ai banii de avans."
             }
           ]
         },
         {
-          "id": "vand",
-          "eticheta": "Vând investițiile ca să am avansul",
+          "id": "apartament",
+          "eticheta": "Apartament cu 2 camere ({pretA} lei)",
           "cere": {
             "jobProgram": ["full-time"],
             "asigurat": true,
             "ascunse": { "scorCredit": { "min": 50 } },
-            "lipsaFlag": [
-              "istoric_restante",
-              "executare_silita",
-              "spirala_datorii",
-              "datorie_recuperator",
-              "vandut_pentru_avans"
-            ],
-            "indatorare": { "suma": "{imprumut}", "luni": 360, "dae": "config:ipotecar.daeFixa" },
-            "avereLichidaMin": "{avans}",
+            "lipsaFlag": ["istoric_restante", "executare_silita", "spirala_datorii", "datorie_recuperator"],
             "motiv": "Banca te refuză: are nevoie de un venit cu contract și de un istoric de credit curat, fără restanțe, IFN-uri în lanț sau executări."
           },
-          "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur", "depozit"],
-          "etichete": ["vandPentruAvans"],
-          "concepte": ["chirie-vs-cumparare", "risc-randament"],
-          "lectie": "Ai vândut investiții pentru un scop plănuit, nu de frică. Exact pentru asta se investește: banii lucrează până ai nevoie de ei.",
-          "jurnal": "Ai vândut investițiile ca să ai banii de avans.",
-          "urmari": [{ "eveniment": "cumpara-locuinta", "dupaLuni": 0 }],
-          "flaguri": ["vandut_pentru_avans:1"]
+          "subalegeri": [
+            {
+              "id": "fixa",
+              "eticheta": "Credit cu dobândă fixă",
+              "cere": {
+                "baniMin": "{avansA}",
+                "indatorare": {
+                  "suma": "{imprumutA}",
+                  "luni": 360,
+                  "dae": "config:ipotecar.daeFixa",
+                  "primaLocuinta": true
+                },
+                "motiv": "N-ai {avansA} lei pentru avans în cont."
+              },
+              "produsNou": [
+                {
+                  "tip": "credit",
+                  "furnizor": "ipoteca",
+                  "suma": "{imprumutA}",
+                  "dae": "config:ipotecar.daeFixa",
+                  "luni": 360
+                },
+                { "tip": "proprietate", "valoare": "{pretA}", "marime": "apartament" }
+              ],
+              "efecte": { "numerar": "-{pretA}", "fericire": 10 },
+              "situatie": { "locuinta": "proprietate" },
+              "flaguri": ["are_locuinta"],
+              "etichete": ["cumparaCasa", "casaMare"],
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }],
+              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila", "grad-de-indatorare"],
+              "lectie": "Cu dobânda fixă, rata rămâne aceeași până la final, orice ar face piața. Plătești puțin mai mult pentru liniște.",
+              "jurnal": "Ți-ai cumpărat un apartament cu două camere, cu credit ipotecar la dobândă fixă."
+            },
+            {
+              "id": "variabila",
+              "eticheta": "Credit cu dobândă variabilă",
+              "cere": {
+                "baniMin": "{avansA}",
+                "indatorare": { "suma": "{imprumutA}", "luni": 360, "variabila": true, "primaLocuinta": true },
+                "motiv": "N-ai {avansA} lei pentru avans în cont."
+              },
+              "produsNou": [
+                {
+                  "tip": "credit",
+                  "furnizor": "ipoteca",
+                  "suma": "{imprumutA}",
+                  "variabila": true,
+                  "luni": 360
+                },
+                { "tip": "proprietate", "valoare": "{pretA}", "marime": "apartament" }
+              ],
+              "efecte": { "numerar": "-{pretA}", "fericire": 10 },
+              "situatie": { "locuinta": "proprietate" },
+              "flaguri": ["are_locuinta"],
+              "etichete": ["cumparaCasa", "casaMare", "dobandaVariabila"],
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }],
+              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila", "grad-de-indatorare"],
+              "lectie": "Cu dobânda variabilă, rata urmează indicele de referință (IRCC): azi e mai mică, dar poate crește în anii cu inflație mare.",
+              "jurnal": "Ți-ai cumpărat un apartament cu două camere, cu credit ipotecar la dobândă variabilă."
+            },
+            {
+              "id": "vand",
+              "eticheta": "Vând investițiile ca să am avansul",
+              "cere": {
+                "lipsaFlag": ["vandut_pentru_avans"],
+                "indatorare": {
+                  "suma": "{imprumutA}",
+                  "luni": 360,
+                  "dae": "config:ipotecar.daeFixa",
+                  "primaLocuinta": true
+                },
+                "avereLichidaMin": "{avansA}"
+              },
+              "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur", "depozit"],
+              "flaguri": ["vandut_pentru_avans:1"],
+              "etichete": ["vandPentruAvans", "casaMare"],
+              "urmari": [{ "eveniment": "cumpara-locuinta", "dupaLuni": 0 }],
+              "concepte": ["chirie-vs-cumparare", "risc-randament"],
+              "lectie": "Ai vândut investiții pentru un scop plănuit, nu de frică. Exact pentru asta se investește: banii lucrează până ai nevoie de ei.",
+              "jurnal": "Ai vândut investițiile ca să ai banii de avans."
+            }
+          ]
         },
         {
           "id": "chirie",
@@ -121,7 +223,64 @@
           "flaguri": ["amanat_cumparare:24"],
           "etichete": ["amanaCumpararea"],
           "concepte": ["credit-ipotecar"],
-          "lectie": "Un avans mai mare înseamnă un credit mai mic, o rată mai mică și mai puțină dobândă plătită în 30 de ani."
+          "lectie": "Un avans mai mare înseamnă un credit mai mic, o rată mai mică și mai puțină dobândă plătită în total."
+        }
+      ]
+    },
+    {
+      "id": "garsoniera-mai-mare",
+      "titlu": "O casă mai mare?",
+      "faza": [5],
+      "conditii": {
+        "varstaMin": 40,
+        "locuinta": ["proprietateGarsoniera"],
+        "areProdus": ["proprietate"],
+        "lipsaFlag": ["upgrade_refuzat"]
+      },
+      "pondere": 3,
+      "maxAparitii": 2,
+      "checkpoint": true,
+      "variabile": {
+        "valoare": "stare:valoareCasa",
+        "pretA": "pret:locuinte.pretApartament",
+        "imprumut": "stare:imprumutPentruApartament"
+      },
+      "text": "Garsoniera ta valorează acum {valoare} lei. Un apartament cu două camere costă {pretA} lei. Dacă vinzi garsoniera și închizi vechea ipotecă, ai nevoie de un credit nou de {imprumut} lei.",
+      "alegeri": [
+        {
+          "id": "vand",
+          "eticheta": "Vând garsoniera și cumpăr apartamentul",
+          "cere": {
+            "jobProgram": ["full-time"],
+            "lipsaFlag": ["istoric_restante", "executare_silita", "spirala_datorii", "datorie_recuperator"],
+            "indatorare": { "suma": "{imprumut}", "luni": 360, "dae": "config:ipotecar.daeFixa" },
+            "motiv": "Banca te refuză pentru noul credit: are nevoie de un venit cu contract și de un istoric curat."
+          },
+          "lichideaza": "proprietate",
+          "ramburseaza": "credit:ipoteca",
+          "produsNou": [
+            {
+              "tip": "credit",
+              "furnizor": "ipoteca",
+              "suma": "{imprumut}",
+              "dae": "config:ipotecar.daeFixa",
+              "luni": 360
+            },
+            { "tip": "proprietate", "valoare": "{pretA}", "marime": "apartament" }
+          ],
+          "efecte": { "numerar": "-{pretA}", "fericire": 8 },
+          "situatie": { "locuinta": "proprietate" },
+          "etichete": ["upgradeCasa"],
+          "concepte": ["credit-ipotecar", "grad-de-indatorare"],
+          "lectie": "Garsoniera a fost o treaptă: ai cumpărat ce-ți permiteai, ai construit avere în ea și ai folosit-o ca avans pentru ceva mai mare.",
+          "jurnal": "Ai vândut garsoniera și ți-ai cumpărat un apartament cu două camere."
+        },
+        {
+          "id": "raman",
+          "eticheta": "Rămân în garsonieră",
+          "flaguri": ["upgrade_refuzat:60"],
+          "concepte": ["chirie-vs-cumparare"],
+          "lectie": "O casă mai mică înseamnă costuri mai mici și o ipotecă terminată mai repede. Și asta e o alegere bună."
         }
       ]
     },
@@ -129,7 +288,7 @@
       "id": "rata-variabila-crescuta",
       "titlu": "Rata a crescut",
       "doarUrmare": true,
-      "conditii": { "areProdus": ["credit:banca"] },
+      "conditii": { "areProdus": ["credit:ipoteca"] },
       "variabile": { "crestere": 0, "rataNoua": 0 },
       "text": "Indicele de referință (IRCC) a crescut odată cu inflația. Rata la ipotecă e mai mare cu {crestere} lei pe lună: acum plătești {rataNoua} lei.",
       "alegeri": [

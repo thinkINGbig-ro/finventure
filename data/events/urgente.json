@@ -90,7 +90,8 @@
               "urmari": [{ "eveniment": "ifn-alegere", "dupaLuni": 1 }],
               "concepte": ["ifn", "dae"],
               "lectie": "Banii vin în 15 minute, dar DAE poate trece de 100% pe an. Citește costul total, nu doar rata.",
-              "jurnal": "Ai luat {suma} lei de la un IFN, pe 6 luni."
+              "jurnal": "Ai luat {suma} lei de la un IFN, pe 6 luni.",
+              "cere": { "indatorare": { "suma": "{suma}", "luni": 6, "dae": "config:ifn.dae" } }
             }
           ]
         },
@@ -164,7 +165,8 @@
           "flaguri": ["spirala_datorii"],
           "concepte": ["spirala-datoriilor"],
           "lectie": "Ai mutat datoria, n-ai scăpat de ea. Acum plătești dobândă la dobândă.",
-          "jurnal": "Ai luat un al doilea IFN ca să-l plătești pe primul."
+          "jurnal": "Ai luat un al doilea IFN ca să-l plătești pe primul.",
+          "cere": { "indatorare": { "suma": "{datorie}", "luni": 6, "dae": "config:ifn.dae" } }
         },
         {
           "id": "extra",

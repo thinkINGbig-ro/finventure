@@ -383,7 +383,8 @@
               "efecte": { "numerar": "-{reparatie}", "fericire": -4 },
               "concepte": ["ifn"],
               "lectie": "O reparație de câteva mii de lei a devenit o datorie scumpă pe un an. CASCO sau un fond ar fi costat mult mai puțin.",
-              "jurnal": "Ai plătit reparația mașinii cu un credit IFN."
+              "jurnal": "Ai plătit reparația mașinii cu un credit IFN.",
+              "cere": { "indatorare": { "suma": "{reparatie}", "luni": 12, "dae": "config:ifn.dae" } }
             }
           ]
         },

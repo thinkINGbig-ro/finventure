@@ -346,13 +346,13 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 
 ### Ce e gata (fazele A–F)
 
-- **Conținut:** 57 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare).
+- **Conținut:** 58 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare).
 - **Motor:** an septembrie–august cu simulare lunară; max. 4 opriri pe an (lanțurile imediate cu `dupaLuni: 0`, ca CV-ul, nu se numără); sub-alegeri pe două niveluri; facturi neplătite → somație → deconectare/evacuare → recuperatori → executare → poprire pe salariu, cont, economii și investiții; faliment = insolvență (activele vandabile nu acoperă datoriile); renunțarea cere Fericire 0 trei luni la rând.
 - **Bani și produse:** cont curent, economii (fond de urgență = cont marcat), depozite, card de credit (integral / minim), credite (IFN, bancă, magazin, BNPL, auto, leasing, ipotecă fixă sau variabilă cu IRCC), investiții (ETF, acțiuni, crypto, aur, titluri de stat; crash-uri cu decizia „vinzi sau păstrezi?”), casa ca activ, Pilonii II și III.
-- **Băncile verifică:** contract (nu la negru), istoricul (restanțe, executări, spirala IFN, recuperatori), scorul de credit, **gradul de îndatorare** (`indatorare.gradMaxim`, 40%) și vârsta la scadența ipotecii. IFN-urile nu verifică nimic (e lecția).
+- **Creditorii verifică:** contract (nu la negru), istoricul (restanțe, executări, spirala IFN, recuperatori), scorul de credit, **gradul de îndatorare** (BNR: 40%, 45% pentru prima locuință; se aplică și la IFN) și vârsta la scadența ipotecii.
 - **Carieră:** CV în trei pași, 0–3 oferte după calitatea CV-ului, negociere, mărire (plafonată la 130% din salariul pieței), promovare, concediere, PFA/SRL.
 - **Stil de viață:** Modest / Confortabil / Lux, cu adaptare hedonică.
-- **Locuință:** căminul se eliberează la absolvire; „Vând investițiile pentru avans” (disponibilă doar dacă banca ar aproba creditul); ~32% dintre prudenți cumpără (vârsta mediană ~38), restul sunt opriți în principal de gradul de îndatorare cu un singur venit.
+- **Locuință:** căminul se eliberează la absolvire; garsonieră sau apartament cu 2 camere (prețuri în config); „Vând investițiile pentru avans”; garsoniera se poate vinde după 40 de ani pentru un apartament (ipoteca are furnizorul `ipoteca`); ~95% dintre prudenți cumpără (vârsta mediană ~32). Limitări asumate: un singur venit, fără Noua Casă, fără credite în valută.
 - **Final:** „Ce s-a întâmplat?” (lanțul de decizii + tiparul) sau „Cum a fost viața ta” (ce te-a ajutat / ce te-a costat, pensia estimată); checkpoint-uri (ultimele 5 + cele care au deschis o datorie, max. 10) cu „Încearcă din nou de aici”; colecție de finaluri, clasament local, card de distribuit.
 - **Publicat:** repo `thinkINGbig-ro/finventure`, ramura `main`; GitHub Pages servește din `main` / `(root)`.
 
@@ -361,7 +361,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 | Ce | Cum |
 |---|---|
 | Rulezi jocul local | `python -m http.server 8000` și deschizi `http://localhost:8000` |
-| Testele motorului | `node tests/run.js` (35 de teste) sau `/tests/run.html` în browser |
+| Testele motorului | `node tests/run.js` (38 de teste) sau `/tests/run.html` în browser |
 | Simularea de echilibru | `node tests/simulare.js --n 500` (4 profiluri: aleator, prudent, frugal, riscant; ~2 min) |
 | Raportul pentru prezentare | `node tests/simulare.js --n 500 --json docs/raport-simulare.json` |
 | Verificarea conținutului | `/tools/validate.html` (schema + flag-uri, evenimente inaccesibile, concepte fără sursă) |
@@ -375,8 +375,8 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 |---|---|---|
 | prudent | 100% | 0% |
 | frugal | 100% | 0% |
-| aleator | ~55% | ~45% |
-| riscant | ~19% | ~81% |
+| aleator | ~58% | ~42% |
+| riscant | ~25% | ~75% |
 
 Ținte stabilite: prudent > 80%, aleator 40–60%, riscant rar. **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
 
@@ -384,6 +384,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 
 - `data/config.json` = valori economice (toate `deVerificat: true`); `data/balans.json` = parametri de joc.
 - Prețurile din evenimente care țin de economie vin din config, cu `"pret:cale*factor"` (ajustate cu inflația).
+- Fiecare eveniment trebuie să aibă cel puțin o alegere fără „cere” (o verifică analiza și testele).
 - Rulează `node tests/run.js` și simularea după orice modificare de conținut sau de motor; actualizează `docs/raport-simulare.json` și tabelul din README dacă se schimbă cifrele.
 - Fără atribuire către Claude în commit-uri (verificare: `git log --format=%B | grep -i -E "co-authored|generated with"` trebuie să nu găsească nimic).
 - Push doar cu acordul explicit al echipei.

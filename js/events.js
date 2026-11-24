@@ -59,7 +59,15 @@ const STARE = {
   },
   venitPasiv: (s, _sel, ctx) => venitPasivLunar(s, ctx),
   cheltuieli: (s, _sel, ctx) => cheltuieliLunare(s, ctx),
-  dobandaIpoteca: (s) => gasesteProduse(s, 'credit:banca').filter((c) => c.luni >= 240).reduce((t, c) => t + Math.max(0, c.rata * c.luniRamase - c.rest), 0),
+  dobandaIpoteca: (s) => gasesteProduse(s, 'credit:ipoteca').reduce((t, c) => t + Math.max(0, c.rata * c.luniRamase - c.rest), 0),
+  valoareCasa: (s) => gasesteProduse(s, 'proprietate').reduce((t, p) => t + p.valoare, 0),
+  // Credit pentru un apartament: prețul de azi minus ce rămâne din vânzarea garsonierei după închiderea ipotecii.
+  imprumutPentruApartament: (s, _sel, ctx) => {
+    const pretA = Math.round(cfg(ctx, 'locuinte.pretApartament') * s.indicePreturi * 100);
+    const valoare = gasesteProduse(s, 'proprietate').reduce((t, p) => t + p.valoare, 0);
+    const datorie = gasesteProduse(s, 'credit:ipoteca').reduce((t, c) => t + datorieProdus(c), 0);
+    return Math.max(0, pretA - (valoare - datorie));
+  },
   pensieEstimata: (s, _sel, ctx) => estimeazaPensie(s, ctx).pilon1,
   datorieFacturi: (s) => gasesteProduse(s, 'factura').reduce((t, f) => t + f.restanta, 0),
   soldCard: (s) => gasesteProdus(s, 'cardCredit')?.soldScadent ?? 0,
@@ -189,9 +197,11 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     // Gradul de îndatorare: (ratele existente + rata creditului nou) / venitul net din salariu.
     indatorare: (spec) => {
       const r = gradIndatorare(state, ctx, { suma: inBani(val(spec.suma)), luni: spec.luni, dae: spec.variabila ? null : val(spec.dae) });
-      if (r.net === 0) return 'Banca te refuză: n-ai un venit din salariu pe care să-l poată verifica.';
-      const max = cfg(ctx, 'indatorare.gradMaxim');
-      return r.grad <= max || `Banca te refuză: rata ar fi ${lei(Math.round(inLei(r.rataNoua)))}, iar toate ratele ar lua ${Math.round(r.grad * 100)}% din venitul tău net (maximul e ${Math.round(max * 100)}%).`;
+      if (r.net === 0) return 'Creditorul te refuză: n-ai un venit din salariu pe care să-l poată verifica.';
+      // Prima locuință: limită mai mare, dacă n-ai și n-ai avut altă locuință (BNR: 40% + 5 puncte).
+      const primaLocuinta = spec.primaLocuinta && !areFlag(state, 'are_locuinta') && !state.produse.some((p) => p.tip === 'proprietate');
+      const max = cfg(ctx, primaLocuinta ? 'indatorare.gradMaximPrimaLocuinta' : 'indatorare.gradMaxim');
+      return r.grad <= max || `Creditorul te refuză: rata ar fi ${lei(Math.round(inLei(r.rataNoua)))}, iar toate ratele ar lua ${Math.round(r.grad * 100)}% din venitul tău net (maximul e ${Math.round(max * 100)}%).`;
     },
     asigurat: (da) => esteAsigurat(state, ctx) === da || (da ? 'Nu ești asigurat medical: lucrezi fără contract.' : 'Ești asigurat medical.'),
     stilViata: (lista) => lista.includes(state.stilViata) || 'Nu se potrivește cu stilul tău de viață.',

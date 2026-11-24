@@ -1,101 +1,105 @@
 {
-  "generat": "2026-11-24T07:26:13.997Z",
+  "generat": "2026-11-24T07:59:43.843Z",
   "seed": "sim",
   "vietiPeProfil": 500,
-  "evenimente": 57,
+  "evenimente": 58,
   "chirieVsCumparareAceleasiVieti": {
-    "perechi": 164,
-    "avereMedianaCuCasa": 1284049,
-    "avereMedianaInChirie": 1451513,
-    "diferentaMediana": -112974,
-    "procentCasaMaiBuna": 42
+    "perechi": 475,
+    "avereMedianaCuCasa": 1204092,
+    "avereMedianaInChirie": 1233632,
+    "diferentaMediana": 4725,
+    "procentCasaMaiBuna": 51
   },
   "profiluri": {
     "aleator": {
       "descriere": "alegeri și acțiuni din meniuri la întâmplare, bune și proaste",
       "n": 500,
       "procente": {
-        "pensie": 47.8,
-        "independenta": 7.6,
-        "faliment": 44.6,
+        "pensie": 49.8,
+        "independenta": 8.2,
+        "faliment": 42,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Pensionar liniștit": 43.8,
-        "Faliment personal": 17,
-        "Faliment înainte de 25": 15.4,
-        "Regele IFN-urilor": 8.8,
-        "Liber să alegi": 5.2,
-        "Victima reducerilor": 3.4,
+        "Pensionar liniștit": 42,
+        "Faliment personal": 18.6,
+        "Faliment înainte de 25": 14.6,
+        "Liber să alegi": 6,
+        "Victima reducerilor": 4.4,
+        "Regele IFN-urilor": 4.4,
         "Libertate la 40": 3.2,
-        "Rentierul": 1.6,
-        "Milionar (în lei de azi)": 1.4,
-        "Acasă la tine": 0.2
+        "Acasă la tine": 2.8,
+        "Milionar (în lei de azi)": 2,
+        "Rentierul": 1.8,
+        "Minimalistul": 0.2
       },
-      "varstaMedie": 49.8,
+      "varstaMedie": 50.5,
       "varstaMedieGameOver": 34.2,
-      "avereMedianaLei": 1959709,
-      "avereMedianaLeiDeAzi": 218560,
+      "avereMedianaLei": 2136250,
+      "avereMedianaLeiDeAzi": 232344,
       "mediiAnualeProcent": {
-        "inflatie": 4.83,
-        "etf": 7.2,
-        "salariu": 5.23,
-        "salariuReal": 0.19
+        "inflatie": 4.84,
+        "etf": 7.17,
+        "salariu": 5.32,
+        "salariuReal": 0.28
       },
       "cauzeGameOver": [
         {
-          "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
-          "numar": 43
-        },
-        {
           "cauza": "faliment: telefon-rate › rate",
-          "numar": 34
-        },
-        {
-          "cauza": "faliment: mutare › singur",
-          "numar": 17
+          "numar": 36
         },
         {
           "cauza": "faliment: mutare › colegi",
-          "numar": 17
+          "numar": 23
         },
         {
-          "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
-          "numar": 15
-        },
-        {
-          "cauza": "faliment: accident-masina › platesc/ifn",
-          "numar": 12
-        },
-        {
-          "cauza": "faliment: masina › noua/leasing",
-          "numar": 10
+          "cauza": "faliment: mutare › singur",
+          "numar": 22
         },
         {
           "cauza": "faliment: lipsa-spatiu › caut",
-          "numar": 10
+          "numar": 17
+        },
+        {
+          "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
+          "numar": 16
+        },
+        {
+          "cauza": "faliment: masina › noua/leasing",
+          "numar": 13
         },
         {
           "cauza": "faliment: facturi-somatie › ignor",
-          "numar": 9
+          "numar": 10
         },
         {
           "cauza": "faliment: facturi-somatie › partial",
+          "numar": 8
+        },
+        {
+          "cauza": "faliment: masina › noua/credit",
+          "numar": 7
+        },
+        {
+          "cauza": "faliment: accident-masina › platesc/ifn",
           "numar": 7
         }
       ],
       "chirieVsCumparare": {
         "cumparat": {
-          "vieti": 2,
-          "avereMedianaAzi": 1018774,
-          "varstaMedianaCumparare": 27,
-          "salariuBrutMedianAzi": 7045
+          "vieti": 23,
+          "garsoniera": 21,
+          "apartament": 2,
+          "garsoniereVandutePentruApartament": 1,
+          "avereMedianaAzi": 741572,
+          "varstaMedianaCumparare": 35,
+          "salariuBrutMedianAzi": 6435
         },
         "chirie": {
-          "vieti": 275,
-          "avereMedianaAzi": 316766,
-          "salariuBrutMedianAzi": 5601
+          "vieti": 267,
+          "avereMedianaAzi": 329997,
+          "salariuBrutMedianAzi": 5594
         }
       }
     },
@@ -103,43 +107,46 @@
       "descriere": "bugetul 50/30/20: fond de 6 luni, ~20% investit, se mută de acasă, stil Confortabil când își permite",
       "n": 500,
       "procente": {
-        "pensie": 97.2,
-        "independenta": 2.8,
+        "pensie": 98.2,
+        "independenta": 1.8,
         "faliment": 0,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Milionar (în lei de azi)": 34.6,
-        "Pensionar liniștit": 28.4,
-        "Rentierul": 27.4,
-        "Acasă la tine": 4.2,
-        "Liber să alegi": 2.6,
-        "Libertate la 40": 2.6,
-        "Minimalistul": 0.2
+        "Milionar (în lei de azi)": 52.6,
+        "Rentierul": 17.8,
+        "Pensionar liniștit": 13.8,
+        "Acasă la tine": 12.6,
+        "Liber să alegi": 1.8,
+        "Libertate la 40": 0.8,
+        "Minimalistul": 0.6
       },
-      "varstaMedie": 64.7,
+      "varstaMedie": 64.9,
       "varstaMedieGameOver": null,
-      "avereMedianaLei": 10583323,
-      "avereMedianaLeiDeAzi": 1168873,
+      "avereMedianaLei": 11065298,
+      "avereMedianaLeiDeAzi": 1197458,
       "mediiAnualeProcent": {
         "inflatie": 4.86,
         "etf": 7.08,
-        "salariu": 5.67,
-        "salariuReal": 0.67
+        "salariu": 5.55,
+        "salariuReal": 0.56
       },
       "cauzeGameOver": [],
       "chirieVsCumparare": {
         "cumparat": {
-          "vieti": 164,
-          "avereMedianaAzi": 1284049,
-          "varstaMedianaCumparare": 39,
-          "salariuBrutMedianAzi": 8483
+          "vieti": 475,
+          "garsoniera": 396,
+          "apartament": 79,
+          "garsoniereVandutePentruApartament": 147,
+          "avereMedianaAzi": 1204092,
+          "varstaMedianaCumparare": 32,
+          "salariuBrutMedianAzi": 7172
         },
         "chirie": {
-          "vieti": 336,
-          "avereMedianaAzi": 1097698,
-          "salariuBrutMedianAzi": 6936
+          "vieti": 25,
+          "avereMedianaAzi": 841820,
+          "salariuBrutMedianAzi": 5819
         }
       }
     },
@@ -147,40 +154,43 @@
       "descriere": "modest toată viața, fond de 6 luni, investește aproape tot restul",
       "n": 500,
       "procente": {
-        "pensie": 94.4,
-        "independenta": 5.6,
+        "pensie": 92.4,
+        "independenta": 7.6,
         "faliment": 0,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Rentierul": 58,
-        "Libertate la 40": 23,
-        "Minimalistul": 15,
-        "Liber să alegi": 4
+        "Rentierul": 52.2,
+        "Minimalistul": 23.2,
+        "Libertate la 40": 19.6,
+        "Liber să alegi": 5
       },
-      "varstaMedie": 63.9,
+      "varstaMedie": 63.6,
       "varstaMedieGameOver": null,
-      "avereMedianaLei": 18320495,
-      "avereMedianaLeiDeAzi": 2003188,
+      "avereMedianaLei": 16291117,
+      "avereMedianaLeiDeAzi": 1775718,
       "mediiAnualeProcent": {
-        "inflatie": 4.85,
-        "etf": 7.11,
-        "salariu": 5.91,
-        "salariuReal": 0.9
+        "inflatie": 4.86,
+        "etf": 7.15,
+        "salariu": 5.86,
+        "salariuReal": 0.85
       },
       "cauzeGameOver": [],
       "chirieVsCumparare": {
         "cumparat": {
           "vieti": 0,
+          "garsoniera": 0,
+          "apartament": 0,
+          "garsoniereVandutePentruApartament": 0,
           "avereMedianaAzi": null,
           "varstaMedianaCumparare": null,
           "salariuBrutMedianAzi": null
         },
         "chirie": {
           "vieti": 500,
-          "avereMedianaAzi": 2003188,
-          "salariuBrutMedianAzi": 7370
+          "avereMedianaAzi": 1775718,
+          "salariuBrutMedianAzi": 7318
         }
       }
     },
@@ -188,37 +198,37 @@
       "descriere": "IFN, la negru, card pe minim, cheltuie tot",
       "n": 500,
       "procente": {
-        "pensie": 19.2,
+        "pensie": 24.6,
         "independenta": 0,
-        "faliment": 80.8,
+        "faliment": 75.4,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Regele IFN-urilor": 64,
-        "Pensionar liniștit": 19.2,
-        "Faliment înainte de 25": 8.2,
-        "Faliment personal": 5,
-        "Victima reducerilor": 3.6
+        "Regele IFN-urilor": 51,
+        "Pensionar liniștit": 24.6,
+        "Faliment personal": 11.2,
+        "Faliment înainte de 25": 8.6,
+        "Victima reducerilor": 4.6
       },
-      "varstaMedie": 43.3,
-      "varstaMedieGameOver": 38.1,
-      "avereMedianaLei": 163463,
-      "avereMedianaLeiDeAzi": 55747,
+      "varstaMedie": 44.3,
+      "varstaMedieGameOver": 37.5,
+      "avereMedianaLei": 218643,
+      "avereMedianaLeiDeAzi": 63492,
       "mediiAnualeProcent": {
-        "inflatie": 4.84,
-        "etf": 7.03,
-        "salariu": 4.58,
-        "salariuReal": -0.51
+        "inflatie": 4.82,
+        "etf": 7,
+        "salariu": 4.57,
+        "salariuReal": -0.49
       },
       "cauzeGameOver": [
         {
           "cauza": "faliment: problema-sanatate › ma-imprumut/ifn",
-          "numar": 306
+          "numar": 276
         },
         {
           "cauza": "faliment: telefon-rate › rate",
-          "numar": 55
+          "numar": 57
         },
         {
           "cauza": "faliment: mutare › singur",
@@ -229,19 +239,19 @@
           "numar": 11
         },
         {
+          "cauza": "faliment: mutare › colegi",
+          "numar": 4
+        },
+        {
           "cauza": "faliment: urgenta-2000 › ma-imprumut/ifn",
           "numar": 3
         },
         {
-          "cauza": "faliment: mutare › colegi",
-          "numar": 2
+          "cauza": "faliment: reducere-stil › las",
+          "numar": 1
         },
         {
           "cauza": "faliment: facturi-somatie › ignor",
-          "numar": 2
-        },
-        {
-          "cauza": "faliment: reducere-stil › las",
           "numar": 1
         },
         {
@@ -256,14 +266,17 @@
       "chirieVsCumparare": {
         "cumparat": {
           "vieti": 0,
+          "garsoniera": 0,
+          "apartament": 0,
+          "garsoniereVandutePentruApartament": 0,
           "avereMedianaAzi": null,
           "varstaMedianaCumparare": null,
           "salariuBrutMedianAzi": null
         },
         "chirie": {
-          "vieti": 96,
-          "avereMedianaAzi": 170897,
-          "salariuBrutMedianAzi": 5043
+          "vieti": 123,
+          "avereMedianaAzi": 167757,
+          "salariuBrutMedianAzi": 5011
         }
       }
     }

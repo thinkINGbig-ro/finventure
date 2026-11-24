@@ -75,6 +75,11 @@
       "chirie": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "locuința ta: fără chirie" },
       "utilitati": { "valoare": 800, "deVerificat": true, "sursa": "", "nota": "utilități, întreținere, impozit pe clădire, asigurare obligatorie (PAD)" }
     },
+    "proprietateGarsoniera": {
+      "chirie": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "garsoniera ta: fără chirie" },
+      "utilitati": { "valoare": 550, "deVerificat": true, "sursa": "", "nota": "utilități, întreținere, impozit, asigurare obligatorie (PAD)" }
+    },
+    "pretGarsoniera": { "valoare": 250000, "deVerificat": true, "sursa": "", "nota": "garsonieră, oraș mare, la prețurile de start" },
     "pretApartament": { "valoare": 450000, "deVerificat": true, "sursa": "", "nota": "apartament cu 2 camere, oraș mare, la prețurile de start" },
     "crestereRealaPretAnuala": { "valoare": 0.01, "deVerificat": true, "sursa": "", "nota": "cât cresc prețurile locuințelor peste inflație, pe an" }
   },
@@ -151,7 +156,9 @@
   },
 
   "indatorare": {
-    "gradMaxim": { "valoare": 0.40, "deVerificat": true, "sursa": "", "nota": "toate ratele lunare / venitul net. BNR are limite diferite: de exemplu, mai mari pentru prima locuință și mai mici pentru creditele în valută. Aici, o singură limită, pentru creditele în lei de la bănci și firme de leasing (nu și pentru IFN)." }
+    "gradMaxim": { "valoare": 0.40, "deVerificat": true, "sursa": "Regulamentul BNR 17/2012 modificat, în vigoare din 2019", "nota": "toate ratele lunare / venitul net, pentru creditele în lei (bănci, leasing și IFN)" },
+    "gradMaximPrimaLocuinta": { "valoare": 0.45, "deVerificat": true, "sursa": "Regulamentul BNR 17/2012 modificat, în vigoare din 2019", "nota": "40% + 5 puncte, dacă debitorul nu are și nu a avut altă locuință în proprietate" },
+    "gradMaximValuta": { "valoare": 0.20, "deVerificat": true, "sursa": "Regulamentul BNR 17/2012 modificat, în vigoare din 2019", "nota": "pentru creditele în valută; nefolosit încă (jocul nu are credite în euro)" }
   },
 
   "ipotecar": {

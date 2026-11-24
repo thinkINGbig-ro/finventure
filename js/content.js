@@ -160,7 +160,7 @@ const CAMPURI_PRODUS = {
   depozit: { suma: 'num', luni: 'num', dobandaAnuala: 'num', reinnoire: 'bool' },
   cardCredit: { limita: 'num', plata: ['integral', 'minim'], cumparaturiPeCard: 'bool', dobandaAnuala: 'num' },
   credit: { furnizor: 'str', suma: 'num', dae: 'num', luni: 'num', luniFaraDobanda: 'num', laRestanta: 'eveniment', flag: 'str', variabila: 'bool' },
-  proprietate: { valoare: 'num' },
+  proprietate: { valoare: 'num', marime: ['garsoniera', 'apartament'] },
   investitie: { clasa: CLASE_INVESTITII, suma: 'num', luni: 'num' },
 };
 const PRODUSE_OBLIGATORII = { credit: ['suma', 'luni'], depozit: ['suma'], investitie: ['clasa', 'suma'], proprietate: ['valoare'] };
@@ -367,7 +367,7 @@ function valideazaConditii(cond, cale, err, cv, vars) {
     'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata', 'asigurat', 'indatorare'], cale, err);
   if (cond.indatorare !== undefined) {
     const d = cond.indatorare;
-    campuriNecunoscute(d, ['suma', 'luni', 'dae', 'variabila'], `${cale}.indatorare`, err);
+    campuriNecunoscute(d, ['suma', 'luni', 'dae', 'variabila', 'primaLocuinta'], `${cale}.indatorare`, err);
     verificaNumar(d.suma, `${cale}.indatorare.suma`, err, cv, vars);
     if (!Number.isInteger(d.luni) || d.luni <= 0) err(`${cale}.indatorare.luni`, 'număr întreg de luni');
     if (d.variabila !== true) verificaNumar(d.dae, `${cale}.indatorare.dae`, err, cv, vars);

@@ -504,7 +504,8 @@
               "efecte": { "numerar": "-{suma}" },
               "concepte": ["ifn", "dae"],
               "lectie": "Pe 12 luni, la un IFN, dai înapoi mult mai mult decât ai luat. Compară mereu cu oferta unei bănci.",
-              "jurnal": "Ai luat un credit IFN pentru tratament."
+              "jurnal": "Ai luat un credit IFN pentru tratament.",
+              "cere": { "indatorare": { "suma": "{suma}", "luni": 12, "dae": "config:ifn.dae" } }
             }
           ]
         },
@@ -519,6 +520,14 @@
             "asigurat": true,
             "motiv": "Lucrezi fără contract, deci nu ești asigurat: la stat ar trebui să plătești tot."
           }
+        },
+        {
+          "id": "amana",
+          "eticheta": "Amân tratamentul, n-am cum să-l plătesc",
+          "efecte": { "energie": -20, "fericire": -12 },
+          "concepte": ["asigurare-sanatate", "fond-urgenta"],
+          "lectie": "Fără asigurare și fără bani deoparte, o problemă de sănătate devine o alegere între datorii și durere. Contractul de muncă și fondul de urgență te scot din alegerea asta.",
+          "jurnal": "Ai amânat tratamentul pentru că n-aveai cum să-l plătești."
         }
       ]
     }

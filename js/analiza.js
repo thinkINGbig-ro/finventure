@@ -8,7 +8,7 @@
 export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
     'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job'],
-  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza'],
+  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta'],
   evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta'],
   concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare'],
 };
@@ -63,6 +63,9 @@ export function analizeazaContinut(ctx) {
     // Condiții imposibile, ușor de prins
     const co = ev.conditii ?? {};
     if (co.varstaMin != null && co.varstaMax != null && co.varstaMin > co.varstaMax) probleme.push({ id: ev.id, mesaj: 'varstaMin > varstaMax: evenimentul nu poate apărea' });
+    // Cel puțin o alegere fără nicio condiție: altfel jucătorul poate rămâne fără nicio variantă.
+    const areSigura = (ev.alegeri ?? []).some((al) => !al.cere && (!al.subalegeri || al.subalegeri.some((sub) => !sub.cere)));
+    if (!areSigura) probleme.push({ id: ev.id, mesaj: 'nicio alegere nu e mereu disponibilă (toate au „cere”): jucătorul poate rămâne blocat' });
     const contra = (co.flag ?? []).filter((f) => (co.lipsaFlag ?? []).includes(f));
     if (contra.length) probleme.push({ id: ev.id, mesaj: `cere și interzice același flag: ${contra.join(', ')}` });
   }
