@@ -36,7 +36,8 @@
       "telefonSuspendat": { "retea": 2, "podea": 10 },
       "izolare": { "prag": 20, "fericire": 2, "podea": 0 },
       "epuizare": { "prag": 20, "fericire": 2, "podea": 0 },
-      "acasaTarziu": { "varstaMin": 26, "fericire": 1, "podea": 40 }
+      "acasaTarziu": { "varstaMin": 26, "fericire": 1, "podea": 40 },
+      "boalaNetratata": { "flag": "netratat", "energie": 4, "fericire": 1, "podea": 5 }
     }
   },
 

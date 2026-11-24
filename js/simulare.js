@@ -276,6 +276,7 @@ const PONDERI_ATENT = {
   fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
   viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15, inselatorie: -15, pariu: -6,
   panica: -8, pastreaza: 4, asigurare: 2, faraAsigurare: -2, venitExtra: 2, economisire: 3, ignoraTaxe: -6, afacere: 0,
+  amanaTratament: -6,
 };
 
 export const PROFILURI = {

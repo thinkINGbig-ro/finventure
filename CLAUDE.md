@@ -1,6 +1,6 @@
 # Finventure — joc web de educație financiară (concurs Banometru)
 
-> **Stare: fazele A–F sunt terminate.** Nu mai adăugăm funcționalități noi; urmează testarea pe telefon și corecturile. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
+> **Stare: fazele A–F sunt terminate. Funcționalitățile sunt înghețate:** de acum, doar bug-uri și texte din testarea pe telefon. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
 
 ## 1. Context
 
@@ -346,7 +346,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 
 ### Ce e gata (fazele A–F)
 
-- **Conținut:** 58 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare).
+- **Conținut:** 59 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare).
 - **Motor:** an septembrie–august cu simulare lunară; max. 4 opriri pe an (lanțurile imediate cu `dupaLuni: 0`, ca CV-ul, nu se numără); sub-alegeri pe două niveluri; facturi neplătite → somație → deconectare/evacuare → recuperatori → executare → poprire pe salariu, cont, economii și investiții; faliment = insolvență (activele vandabile nu acoperă datoriile); renunțarea cere Fericire 0 trei luni la rând.
 - **Bani și produse:** cont curent, economii (fond de urgență = cont marcat), depozite, card de credit (integral / minim), credite (IFN, bancă, magazin, BNPL, auto, leasing, ipotecă fixă sau variabilă cu IRCC), investiții (ETF, acțiuni, crypto, aur, titluri de stat; crash-uri cu decizia „vinzi sau păstrezi?”), casa ca activ, Pilonii II și III.
 - **Creditorii verifică:** contract (nu la negru), istoricul (restanțe, executări, spirala IFN, recuperatori), scorul de credit, **gradul de îndatorare** (BNR: 40%, 45% pentru prima locuință; se aplică și la IFN) și vârsta la scadența ipotecii.
@@ -361,7 +361,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 | Ce | Cum |
 |---|---|
 | Rulezi jocul local | `python -m http.server 8000` și deschizi `http://localhost:8000` |
-| Testele motorului | `node tests/run.js` (38 de teste) sau `/tests/run.html` în browser |
+| Testele motorului | `node tests/run.js` (39 de teste) sau `/tests/run.html` în browser |
 | Simularea de echilibru | `node tests/simulare.js --n 500` (4 profiluri: aleator, prudent, frugal, riscant; ~2 min) |
 | Raportul pentru prezentare | `node tests/simulare.js --n 500 --json docs/raport-simulare.json` |
 | Verificarea conținutului | `/tools/validate.html` (schema + flag-uri, evenimente inaccesibile, concepte fără sursă) |
@@ -375,8 +375,8 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 |---|---|---|
 | prudent | 100% | 0% |
 | frugal | 100% | 0% |
-| aleator | ~58% | ~42% |
-| riscant | ~25% | ~75% |
+| aleator | ~55% | ~45% (incl. ~5% burnout) |
+| riscant | ~24% | ~76% |
 
 Ținte stabilite: prudent > 80%, aleator 40–60%, riscant rar. **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
 

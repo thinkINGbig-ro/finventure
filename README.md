@@ -106,8 +106,8 @@ Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezu
 |---|---|---|---|---|---|
 | **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, chiria sub 35% din venit, stil mai bun doar dacă și-l permite, cumpără casă când banca îl aprobă | **100%** | 0% | ~1,2 mil. lei | Milionar în lei de azi (53%) |
 | **Frugal** | trai modest toată viața, rămâne în chirie, investește aproape tot ce rămâne | **100%** | 0% | ~1,8 mil. lei | Rentierul (52%) |
-| **Aleator** | alege la întâmplare, inclusiv în meniuri | 58% | 42% | ~232.000 lei | Pensionar liniștit (42%) |
-| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 25% | 75% | ~63.000 lei | Regele IFN-urilor (51%) |
+| **Aleator** | alege la întâmplare, inclusiv în meniuri | 55% | 45% (40% faliment, 5% burnout) | ~224.000 lei | Pensionar liniștit (40%) |
+| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 24% | 76% | ~61.000 lei | Regele IFN-urilor (51%) |
 
 *Sursa: `docs/raport-simulare.json` (500 de vieți pe profil, 57 de evenimente). „Lei de azi” = sumele finale ajustate cu inflația simulată, ca să poată fi comparate cu prețurile de acum.*
 

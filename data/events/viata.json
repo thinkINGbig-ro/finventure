@@ -445,14 +445,16 @@
               "efecte": { "numerar": "-{suma}" },
               "concepte": ["fond-urgenta"],
               "lectie": "Fondul de urgență a făcut exact ce trebuia. Pune-l la loc în lunile următoare.",
-              "jurnal": "Ai plătit tratamentul din fondul de urgență."
+              "jurnal": "Ai plătit tratamentul din fondul de urgență.",
+              "stergeFlaguri": ["netratat"]
             },
             {
               "id": "cont",
               "eticheta": "Din contul curent",
               "cere": { "baniMin": "{suma}" },
               "efecte": { "numerar": "-{suma}" },
-              "jurnal": "Ai plătit tratamentul din cont."
+              "jurnal": "Ai plătit tratamentul din cont.",
+              "stergeFlaguri": ["netratat"]
             },
             {
               "id": "card",
@@ -461,7 +463,8 @@
               "sursaPlata": "cardCredit",
               "efecte": { "numerar": "-{suma}" },
               "urmari": [{ "eveniment": "card-scadenta", "dupaLuni": 1 }],
-              "jurnal": "Ai plătit tratamentul cu cardul de credit."
+              "jurnal": "Ai plătit tratamentul cu cardul de credit.",
+              "stergeFlaguri": ["netratat"]
             }
           ]
         },
@@ -487,7 +490,8 @@
               "efecte": { "numerar": "-{suma}" },
               "concepte": ["dae", "grad-de-indatorare"],
               "lectie": "Un credit de la bancă e mult mai ieftin decât unul de la IFN, dar îl primești doar cu un istoric curat.",
-              "jurnal": "Ai luat un credit de nevoi personale pentru tratament."
+              "jurnal": "Ai luat un credit de nevoi personale pentru tratament.",
+              "stergeFlaguri": ["netratat"]
             },
             {
               "id": "ifn",
@@ -505,7 +509,8 @@
               "concepte": ["ifn", "dae"],
               "lectie": "Pe 12 luni, la un IFN, dai înapoi mult mai mult decât ai luat. Compară mereu cu oferta unei bănci.",
               "jurnal": "Ai luat un credit IFN pentru tratament.",
-              "cere": { "indatorare": { "suma": "{suma}", "luni": 12, "dae": "config:ifn.dae" } }
+              "cere": { "indatorare": { "suma": "{suma}", "luni": 12, "dae": "config:ifn.dae" } },
+              "stergeFlaguri": ["netratat"]
             }
           ]
         },
@@ -519,15 +524,117 @@
           "cere": {
             "asigurat": true,
             "motiv": "Lucrezi fără contract, deci nu ești asigurat: la stat ar trebui să plătești tot."
-          }
+          },
+          "stergeFlaguri": ["netratat"]
         },
         {
           "id": "amana",
           "eticheta": "Amân tratamentul, n-am cum să-l plătesc",
           "efecte": { "energie": -20, "fericire": -12 },
           "concepte": ["asigurare-sanatate", "fond-urgenta"],
-          "lectie": "Fără asigurare și fără bani deoparte, o problemă de sănătate devine o alegere între datorii și durere. Contractul de muncă și fondul de urgență te scot din alegerea asta.",
-          "jurnal": "Ai amânat tratamentul pentru că n-aveai cum să-l plătești."
+          "lectie": "Amânarea nu e gratuită: te simți tot mai rău, iar o problemă netratată costă de obicei mai mult mai târziu. Contractul de muncă și fondul de urgență te scot din alegerea asta.",
+          "jurnal": "Ai amânat tratamentul pentru că n-aveai cum să-l plătești.",
+          "flaguri": ["netratat:6"],
+          "urmari": [{ "eveniment": "boala-agravata", "dupaLuni": [3, 6], "probabilitate": 0.7 }],
+          "etichete": ["amanaTratament"]
+        }
+      ]
+    },
+    {
+      "id": "boala-agravata",
+      "titlu": "Problema s-a agravat",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "conditii": { "flag": ["netratat"] },
+      "variabile": { "suma": 12000 },
+      "text": "Problema de sănătate amânată s-a agravat. Acum ai nevoie de un tratament de {suma} lei și nu mai poate aștepta.",
+      "alegeri": [
+        {
+          "id": "din-banii-mei",
+          "eticheta": "Mă tratez din banii mei",
+          "subalegeri": [
+            {
+              "id": "fond",
+              "eticheta": "Din fondul de urgență",
+              "cere": { "fondUrgentaMin": "{suma}" },
+              "sursaPlata": "fondUrgenta",
+              "efecte": { "numerar": "-{suma}", "energie": 10 },
+              "stergeFlaguri": ["netratat"],
+              "concepte": ["fond-urgenta"],
+              "jurnal": "Te-ai tratat din fondul de urgență, la un cost dublu față de prima dată."
+            },
+            {
+              "id": "cont",
+              "eticheta": "Din contul curent",
+              "cere": { "baniMin": "{suma}" },
+              "efecte": { "numerar": "-{suma}", "energie": 10 },
+              "stergeFlaguri": ["netratat"],
+              "jurnal": "Te-ai tratat din economii, la un cost dublu față de prima dată."
+            }
+          ]
+        },
+        {
+          "id": "ma-imprumut",
+          "eticheta": "Mă tratez cu un împrumut",
+          "subalegeri": [
+            {
+              "id": "banca",
+              "eticheta": "Credit de nevoi personale la bancă",
+              "cere": {
+                "ascunse": { "scorCredit": { "min": 45 } },
+                "indatorare": { "suma": "{suma}", "luni": 36, "dae": "config:creditNevoiPersonale.dae" },
+                "motiv": "Banca te refuză din cauza istoricului de credit."
+              },
+              "produsNou": {
+                "tip": "credit",
+                "furnizor": "banca",
+                "suma": "{suma}",
+                "dae": "config:creditNevoiPersonale.dae",
+                "luni": 36
+              },
+              "efecte": { "numerar": "-{suma}", "energie": 10 },
+              "stergeFlaguri": ["netratat"],
+              "concepte": ["dae"],
+              "jurnal": "Te-ai tratat cu un credit de la bancă."
+            },
+            {
+              "id": "ifn",
+              "eticheta": "Credit rapid de la IFN",
+              "cere": { "indatorare": { "suma": "{suma}", "luni": 12, "dae": "config:ifn.dae" } },
+              "produsNou": {
+                "tip": "credit",
+                "furnizor": "ifn",
+                "suma": "{suma}",
+                "dae": "config:ifn.dae",
+                "luni": 12,
+                "laRestanta": "ifn-restanta",
+                "flag": "datorie_ifn"
+              },
+              "efecte": { "numerar": "-{suma}", "energie": 10 },
+              "stergeFlaguri": ["netratat"],
+              "concepte": ["ifn"],
+              "jurnal": "Te-ai tratat cu un credit IFN, la un cost dublu."
+            }
+          ]
+        },
+        {
+          "id": "stat",
+          "eticheta": "Merg la stat, la urgențe",
+          "cere": { "asigurat": true, "motiv": "Nu ești asigurat medical: la stat ai plăti tot." },
+          "efecte": { "energie": -5, "fericire": -5 },
+          "stergeFlaguri": ["netratat"],
+          "concepte": ["asigurare-sanatate"],
+          "lectie": "Fiind asigurat, ai primit tratament gratuit, chiar dacă târziu. Data viitoare, nu amâna.",
+          "jurnal": "Te-ai tratat la stat, la urgențe."
+        },
+        {
+          "id": "raman",
+          "eticheta": "Rămân netratat",
+          "efecte": { "energie": -30, "fericire": -15 },
+          "flaguri": ["netratat:12"],
+          "concepte": ["asigurare-sanatate", "fond-urgenta"],
+          "lectie": "Fără tratament, corpul cedează încet. Sănătatea e prima cheltuială pentru care există fondul de urgență.",
+          "jurnal": "Ai rămas netratat. Te simți tot mai rău."
         }
       ]
     }

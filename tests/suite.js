@@ -648,6 +648,22 @@ function teste(ctxBaza, incarcare) {
       ok(!ifn.disponibil && ifn.motiv.includes('venit'), `fără venit verificabil, IFN-ul refuză: ${ifn.motiv}`);
     },
 
+    'amânarea tratamentului: energie în scădere lunară și o urmare mai scumpă'() {
+      const { state, ctx } = jocFaraVenit('amana');
+      state.luna = 12 * 8;
+      forteazaEveniment(state, ctx, 'problema-sanatate');
+      alege(state, ctx, 'amana');
+      ok(areFlag(state, 'netratat'), 'boala rămâne netratată');
+      ok(state.urmari.some((u) => u.eveniment === 'boala-agravata' && u.probabilitate === 0.7), 'urmarea mai scumpă e programată');
+      state.stat.energie = 60;
+      state.an = null;
+      let o = avanseaza(state, ctx);
+      while (o && state.luna < 12 * 8 + 2) o = o.tip === 'eveniment' ? alege(state, ctx, primaDisponibila(o)).oprire : continua(state, ctx);
+      ok(state.stat.energie < 60, `energia scade lunar cât boala e netratată (${Math.round(state.stat.energie)})`);
+      const ag = forteazaEveniment(state, ctx, 'boala-agravata');
+      ok(ag.variabile.suma >= 2 * 6000, 'tratamentul costă cel puțin dublu');
+    },
+
     'simulare pe profiluri: prudentul o duce mai bine decât riscantul'() {
       const prudent = simuleazaVieti(ctxNou(), { n: 15, seed: 'prof', profil: 'prudent', laSfarsitDeAn: verificaInvarianti });
       const riscant = simuleazaVieti(ctxNou(), { n: 15, seed: 'prof', profil: 'riscant', laSfarsitDeAn: verificaInvarianti });

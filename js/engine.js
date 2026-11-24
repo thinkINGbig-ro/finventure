@@ -374,6 +374,8 @@ export function proceseazaLuna(state, ctx) {
   // Izolarea și epuizarea n-au podea: doar cumulul lor poate duce Fericirea la 0.
   const { izolare, epuizare, acasaTarziu } = lunar.penalizari;
   if (state.situatie.locuinta === 'acasa' && varstaLa(state.luna) >= acasaTarziu.varstaMin) penalizeaza(state, acasaTarziu);
+  // O problemă de sănătate netratată te slăbește lună de lună.
+  if (areFlag(state, lunar.penalizari.boalaNetratata.flag)) penalizeaza(state, lunar.penalizari.boalaNetratata);
   if (state.ascunse.retea < izolare.prag) penalizeaza(state, izolare);
   if (state.stat.energie < epuizare.prag) penalizeaza(state, epuizare);
 
