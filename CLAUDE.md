@@ -1,6 +1,6 @@
 # Finventure — joc web de educație financiară (concurs Banometru)
 
-> **Stare: fazele A–F sunt terminate. Funcționalitățile sunt înghețate:** de acum, doar bug-uri și texte din testarea pe telefon. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
+> **Stare: fazele A–F sunt terminate; a început EXTINDEREA (loturile 0–9) pe ramura `extindere`.** Pe `main` (publicat pe GitHub Pages) ajung doar loturi terminate, cu testele trecute și simularea rulată, și doar după confirmarea echipei. `main` trebuie să rămână jucabil în orice moment. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
 
 ## 1. Context
 
@@ -332,7 +332,8 @@ docs/DEZVOLTARE.md  documentația tehnică: rulare locală, GitHub Pages, struct
 5. ✅ **Faza D:** ecranul „Ce s-a întâmplat?”, checkpoint-urile, finalurile, achievements, cardul de distribuit.
 6. ✅ **Faza E:** `tools/validate.html`, modul debug, testare pe mobil, deploy pe GitHub Pages, README.
 7. ✅ **Faza F:** conținutul pentru fazele de viață 4–5, simularea automată, `tools/tree.html`.
-8. **Mai târziu, doar dacă decidem:** clasamentul online.
+8. **Extinderea (loturile 0–9):** vezi secțiunea 14, „Extinderea”.
+9. **Mai târziu, doar dacă decidem:** clasamentul online.
 
 **Reguli de lucru:**
 - Commit-uri mici, cu mesaje clare, după fiecare pas funcțional.
@@ -364,7 +365,7 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 | Ce | Cum |
 |---|---|
 | Rulezi jocul local | `python -m http.server 8000` și deschizi `http://localhost:8000` |
-| Testele motorului | `node tests/run.js` (39 de teste) sau `/tests/run.html` în browser |
+| Testele motorului | `node tests/run.js` sau `/tests/run.html` în browser |
 | Simularea de echilibru | `node tests/simulare.js --n 500` (4 profiluri: aleator, prudent, frugal, riscant; ~2 min) |
 | Raportul pentru prezentare | `node tests/simulare.js --n 500 --json docs/raport-simulare.json` |
 | Verificarea conținutului | `/tools/validate.html` (schema + flag-uri, evenimente inaccesibile, concepte fără sursă) |
@@ -390,10 +391,35 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 - Fiecare eveniment trebuie să aibă cel puțin o alegere fără „cere” (o verifică analiza și testele).
 - Rulează `node tests/run.js` și simularea după orice modificare de conținut sau de motor; actualizează `docs/raport-simulare.json` și tabelele din `docs/DEZVOLTARE.md` și `README.md` dacă se schimbă cifrele (în README, pe înțelesul publicului: fără termeni tehnici, comenzi sau căi de fișiere).
 - Fără atribuire către Claude în commit-uri (verificare: `git log --format=%B | grep -i -E "co-authored|generated with"` trebuie să nu găsească nimic).
-- Push doar cu acordul explicit al echipei.
+- Push doar cu acordul explicit al echipei (pentru `extindere`: commit-uri locale; merge în `main` doar după confirmare).
+
+### Extinderea (în lucru pe ramura `extindere`)
+
+Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
+
+| Lot | Ce conține | Stare |
+|---|---|---|
+| 0 | Bug-uri: plata restanțelor din Bancă, mesaj la fiecare acțiune din meniu, ecranul „Ce s-a întâmplat” după o decizie urmată de alt card | ✅ pe `main` |
+| 1 | Meniul „Activități”: acțiuni din proprie inițiativă, cu un buget anual de acțiuni mari (balans.json); migrarea salvărilor (`versiune` în stare) | în lucru |
+| 2 | Datoriile mele: lista unificată, rambursare parțială/anticipată, eșalonare, refinanțare/consolidare, avalanșă vs. bulgăre de zăpadă | |
+| 3 | Educație: studii la orice vârstă, master, doctorat, postliceală, cursuri, certificări, permis, credit de studii, bursă | |
+| 4a/4b | Investiții: meniu complet, DCA, portofoliu, rebalansare, grafic; imobiliare de închiriat | |
+| 5 | Joburi și muncă: joburi noi (inclusiv artist, cu venit variabil), ritm de muncă, ore suplimentare, al doilea job, demisie | |
+| 6a/6b | Afacere proprie: pornire (domeniu, formă juridică, capital, pregătire), funcționare (decizii, profit vs. cash flow, riscuri, vânzare/închidere/insolvență) | |
+| 7 | Cumpărături: catalog cu calitate, depreciere, revânzare, plata cash/card/rate/BNPL, animale de companie, tentații | |
+| 8 | Infracțiuni și consecințe (doar decizii și urmări, fără „cum se face”; niciodată rentabile): cazier, money mule, evaziune | |
+| 9 | Partener și familie, asigurări, graficul averii nete, moștenire, scenarii de start | |
+
+Reguli pentru extindere:
+- Fiecare lot: teste noi (`tests/loturi.js`), analiza conținutului fără erori, simularea cu cele 4 profiluri (`--n 200` intermediar, `--n 500` la final de lot; profilurile folosesc și opțiunile noi), UI verificat la 360 px, commit separat per lot / sub-lot.
+- Operațiunile bancare (depune, retrage, plătește) sunt nelimitate; în bugetul anual de acțiuni mari intră doar ce consumă timp (cursuri, activități, căutare de job, afacere, vacanțe).
+- Fiecare acțiune din meniu întoarce `{ ok, mesaj }` (lista în `ACTIUNI`, `js/engine.js`); un test verifică toate.
+- Starea are câmpul `versiune`; orice schimbare de format vine cu o migrare în `js/state.js`, ca salvările de pe GitHub Pages să meargă mai departe.
+- Fișierele se scriu cu tool-ul de editare, nu prin bash.
+- Merge în `main` doar după confirmarea echipei.
 
 ### Ce urmează
 
-- Testare pe telefon (GitHub Pages) și corecturi.
+- Loturile 1–9 pe `extindere`, apoi testare de către echipă și merge.
 - Verificarea valorilor din `data/config.json` cu un specialist (completat `sursa`, `deVerificat: false`).
 - Mai târziu, doar dacă decidem: clasamentul online (stratul `js/storage.js` e pregătit).
