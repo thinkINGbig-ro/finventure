@@ -362,7 +362,7 @@ function valideazaConditii(cond, cale, err, cv, vars) {
   if (cond === undefined) return;
   if (!cond || typeof cond !== 'object' || Array.isArray(cond)) return err(cale, 'trebuie să fie un obiect');
   const liste = ['faza', 'flag', 'lipsaFlag', 'areProdus', 'lipsaProdus', 'job', 'studii', 'locuinta'];
-  const numerice = ['numerarMin', 'baniMin', 'economiiMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
+  const numerice = ['numerarMin', 'baniMin', 'avereLichidaMin', 'economiiMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
   campuriNecunoscute(cond, [...liste, ...numerice, 'varstaMin', 'varstaMax', 'stat', 'ascunse', 'poateRambursa', 'sau', 'motiv',
     'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata', 'asigurat', 'indatorare'], cale, err);
   if (cond.indatorare !== undefined) {

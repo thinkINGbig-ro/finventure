@@ -64,6 +64,7 @@ function trasaturi(def) {
     if (x.situatie?.locuinta === 'chirieSingur') pune('chirieScumpa');
     if (x.situatie?.locuinta === 'chirieColegi') pune('chirieIeftina');
     if (x.situatie?.locuinta?.startsWith('chirie')) pune('muta');
+    if (x.situatie?.locuinta) pune(`locuinta:${x.situatie.locuinta}`);
     if ((x.flaguri ?? []).some((f) => f.startsWith('amanat_mutarea')) || (x.recurente ?? []).some((r) => r.locuinta === 'acasa')) pune('amanaMutarea');
     if ((x.urmari ?? []).some((u) => u.eveniment === 'cv-start')) pune('cautaJob');
     for (const k of ['viitor', 'skill', 'retea', 'fericire', 'energie', 'reputatie']) {
@@ -160,7 +161,7 @@ function asiguraFond(state, ctx) {
 
 // Prudent (realist): bugetul 50/30/20. Fond de 6 luni întâi, apoi ~20% din venitul net investit,
 // ~30% pentru dorințe (stil Confortabil când își permite, cumpărături), restul pentru necesar.
-function meniuPrudent(state, ctx, _rnd, { faraCasa = false } = {}) {
+function meniuPrudent(state, ctx) {
   asiguraCont(state, ctx);
   inchideRestanteDinEconomii(state, ctx);
   const lunar = cheltuieliLunare(state, ctx);
@@ -174,12 +175,9 @@ function meniuPrudent(state, ctx, _rnd, { faraCasa = false } = {}) {
     if (pentruFond > 100) actiune(state, ctx, 'depune', { id: fond.id, suma: lei(pentruFond) });
   }
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
-  // Între 26 și 45 de ani, fără casă: pune deoparte pentru avans (15% + costuri) în loc să investească.
-  const avans = Math.round(cfg(ctx, 'locuinte.pretApartament') * 0.15 * 1.1 * state.indicePreturi * 100);
-  const stringeAvans = !faraCasa && varstaLa(state.luna) >= 26 && varstaLa(state.luna) < 45 && !state.produse.some((p) => p.tip === 'proprietate') && baniDisponibili(state) < avans + lunar;
   if (fondComplet && netLunar) {
-    // 20%: investiții (sau avansul pentru casă)
-    const deInvestit = stringeAvans ? 0 : Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - lunar);
+    // 20%: investiții (pentru casă, prudentul le vinde la nevoie: „Vând investițiile pentru avans”)
+    const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
     if (deInvestit > 50000) actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(deInvestit) });
     // 30%: dorințe — stil Confortabil dacă cheltuielile de bază rămân sub 80% din net
     if (state.stilViata === 'modest') {
@@ -188,10 +186,13 @@ function meniuPrudent(state, ctx, _rnd, { faraCasa = false } = {}) {
       if (laConfortabil <= 0.8 * netLunar) actiune(state, ctx, 'stilViata', { nivel: 'confortabil' });
     }
     // ce mai rămâne peste două luni de cheltuieli se duce pe dorințe, până la 30% din venitul anual
-    const peDorinte = stringeAvans ? 0 : Math.min(Math.round(0.3 * 12 * netLunar), baniDisponibili(state) - 2 * lunar);
+    const peDorinte = Math.min(Math.round(0.3 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
     if (peDorinte > 50000) actiune(state, ctx, 'cumpara', { suma: lei(peDorinte), fericire: 3 });
   }
-  if (state.stilViata !== 'modest' && fondUrgenta(state) < 3 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
+  // Bugetul: dacă cheltuielile trec de 85% din venitul net sau fondul scade sub 3 luni, coboară stilul.
+  if (state.stilViata !== 'modest' && (fondUrgenta(state) < 3 * lunar || (netLunar && lunar > 0.85 * netLunar))) {
+    actiune(state, ctx, 'stilViata', { nivel: state.stilViata === 'lux' ? 'confortabil' : 'modest' });
+  }
   cereMarireAnual(state, ctx);
   return cautaJobDacaTrebuie(state, ctx);
 }
@@ -287,10 +288,19 @@ export const PROFILURI = {
       const lunar = cheltuieliLunare(state, ctx);
       // „aproape complet”: între două completări anuale, cheltuielile cresc cu inflația
       const fondComplet = fondUrgenta(state) >= 5 * lunar;
+      // Locuința intră la „necesar” (50%): o chirie care ar lua peste 35% din venitul net e exclusă.
+      const c = contractCurent(state);
+      const net = c ? fluturas(c.brut, c.contract, ctx).net : 0;
+      const costLocuinta = (loc) => pret(state, ctx, `locuinte.${loc}.chirie`) + pret(state, ctx, `locuinte.${loc}.utilitati`);
+      const accesibila = (loc) => (net && costLocuinta(loc) <= 0.35 * net ? 2 : -12);
       return {
         ...PONDERI_ATENT,
+        'locuinta:chirieSingur': accesibila('chirieSingur'), 'locuinta:chirieColegi': accesibila('chirieColegi'),
+        vandPentruAvans: fondComplet ? 4 : -4,
         negociaza: areJobFullTime(state, ctx) ? 4 : -1,
-        stilSus: fondComplet ? 1 : -4, stilJos: fondComplet ? 0 : 3, rate: -3, investitieRiscanta: -1,
+        // Un stil mai scump doar dacă, după urcare, cheltuielile rămân sub 80% din venitul net.
+        stilSus: fondComplet && net && lunar + pret(state, ctx, 'costTrai.mancareTransport') * 0.8 <= 0.8 * net ? 1 : -6,
+        stilJos: fondComplet && lunar <= 0.8 * net ? 0 : 4, rate: -3, investitieRiscanta: -1,
         muta: varsta >= 23 ? 4 : -2, amanaMutarea: varsta >= 25 ? -4 : 2, chirieScumpa: 0, chirieIeftina: 1,
         cumparaCasa: fondComplet ? 3 : -3, dobandaVariabila: -2, amanaCumpararea: fondComplet ? -1 : 2,
       };
@@ -459,7 +469,6 @@ export function comparaChirieCumparare(ctx, { n = 500, seed = 'sim' } = {}) {
       if (o.eveniment === 'cumpara-locuinta') return o.alegeri.find((a) => a.id === 'chirie') ? 'chirie' : prudent.alege(o, state, c, rnd);
       return prudent.alege(o, state, c, rnd);
     },
-    meniu: (state, c, rnd) => meniuPrudent(state, c, rnd, { faraCasa: true }),
   };
   const azi = (state) => inLei(avereNeta(state)) / state.indicePreturi;
   const perechi = [];

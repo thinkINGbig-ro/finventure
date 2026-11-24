@@ -104,9 +104,9 @@ Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezu
 
 | Profil | Cum joacă | Ajung la pensie sau la independență | Faliment | Averea mediană la final (lei de azi) | Finalul cel mai des |
 |---|---|---|---|---|---|
-| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, se mută de acasă, strânge pentru o casă, stil confortabil când își permite | **100%** | 0% | ~970.000 lei | Pensionar liniștit (52%) |
-| **Frugal** | trai modest toată viața, investește aproape tot ce rămâne | **100%** | 0% | ~2,6 mil. lei | Libertate la 40 (53%) |
-| **Aleator** | alege la întâmplare, inclusiv în meniuri | 56% | 44% | ~224.000 lei | Pensionar liniștit (42%) |
+| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, chiria sub 35% din venit, stil mai bun doar dacă și-l permite, cumpără casă când banca îl aprobă | **100%** | 0% | ~1,2 mil. lei | Milionar în lei de azi (35%) |
+| **Frugal** | trai modest toată viața, investește aproape tot ce rămâne | **100%** | 0% | ~2,0 mil. lei | Rentierul (58%) |
+| **Aleator** | alege la întâmplare, inclusiv în meniuri | 55% | 45% | ~219.000 lei | Pensionar liniștit (44%) |
 | **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 19% | 81% | ~56.000 lei | Regele IFN-urilor (64%) |
 
 *Sursa: `docs/raport-simulare.json` (500 de vieți pe profil, 57 de evenimente). „Lei de azi” = sumele finale ajustate cu inflația simulată, ca să poată fi comparate cu prețurile de acum.*
@@ -120,13 +120,15 @@ Ce arată:
 
 ### Chirie sau cumpărare?
 
-O întrebare pe care o au mulți adolescenți (și părinții lor). Ca s-o testăm corect, nu am comparat pur și simplu jucătorii care au cumpărat cu cei care n-au cumpărat: cei care cumpără au, în medie, salarii cu ~22% mai mari, deci ar ieși oricum mai bogați. Am jucat **aceeași viață de două ori**, cu același seed (același job, aceleași șocuri, aceeași bursă): o dată profilul prudent cumpără casa, o dată rămâne în chirie și investește banii.
+O întrebare pe care o au mulți adolescenți (și părinții lor). În simulare, **32% dintre jucătorii prudenți cumpără o locuință**, la o vârstă mediană de 38–39 de ani, de obicei vânzându-și investițiile pentru avans. Ce îi oprește pe ceilalți e gradul de îndatorare: cu un singur salariu, rata la un apartament cu două camere trece de 40% din venitul net.
+
+Ca să răspundem corect, nu am comparat pur și simplu jucătorii care au cumpărat cu cei care n-au cumpărat: cei care cumpără au, în medie, salarii cu ~22% mai mari, deci ar ieși oricum mai bogați (comparația naivă dă 1,3 mil. față de 1,1 mil. lei de azi în favoarea casei). Am jucat **aceeași viață de două ori**, cu același seed (același job, aceleași șocuri, aceeași bursă): o dată profilul prudent cumpără casa, o dată rămâne în chirie și își păstrează investițiile.
 
 | Simulare | Vieți cu cumpărare | Averea mediană cu casa | Aceeași viață, în chirie | Casa a ieșit mai bine în |
 |---|---|---|---|---|
-| 2.000 de vieți | 69 | ~1,23 mil. lei de azi | ~1,00 mil. lei de azi | **75%** din vieți (diferența mediană: ~245.000 lei) |
+| 500 de vieți | 164 | ~1,28 mil. lei de azi | ~1,45 mil. lei de azi | **42%** din vieți (diferența mediană: −113.000 lei) |
 
-În modelul nostru, casa cumpărată câștigă de cele mai multe ori: după ce termini ipoteca, nu mai plătești chirie, iar casa își păstrează valoarea (plus ~1% real pe an). Dar nu câștigă mereu: în 25% din vieți, chiria plus investițiile au ieșit mai bine. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
+Răspunsul, în modelul nostru: **depinde, și diferența e mai mică decât cred mulți.** Casa îți aduce siguranță și nicio chirie la bătrânețe; chiria plus investițiile disciplinate au ieșit puțin mai bine în mai mult de jumătate din vieți, pentru că avansul vândut din investiții și dobânda la ipotecă (7,5%) costă mai mult decât randamentul pierdut. Lecția nu e „cumpără” sau „nu cumpăra”, ci: dacă rămâi în chirie, investește diferența, altfel casa câștigă sigur. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
 
 ## Valorile economice
 

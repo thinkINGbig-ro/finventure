@@ -82,6 +82,32 @@
           ]
         },
         {
+          "id": "vand",
+          "eticheta": "Vând investițiile ca să am avansul",
+          "cere": {
+            "jobProgram": ["full-time"],
+            "asigurat": true,
+            "ascunse": { "scorCredit": { "min": 50 } },
+            "lipsaFlag": [
+              "istoric_restante",
+              "executare_silita",
+              "spirala_datorii",
+              "datorie_recuperator",
+              "vandut_pentru_avans"
+            ],
+            "indatorare": { "suma": "{imprumut}", "luni": 360, "dae": "config:ipotecar.daeFixa" },
+            "avereLichidaMin": "{avans}",
+            "motiv": "Banca te refuză: are nevoie de un venit cu contract și de un istoric de credit curat, fără restanțe, IFN-uri în lanț sau executări."
+          },
+          "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur", "depozit"],
+          "etichete": ["vandPentruAvans"],
+          "concepte": ["chirie-vs-cumparare", "risc-randament"],
+          "lectie": "Ai vândut investiții pentru un scop plănuit, nu de frică. Exact pentru asta se investește: banii lucrează până ai nevoie de ei.",
+          "jurnal": "Ai vândut investițiile ca să ai banii de avans.",
+          "urmari": [{ "eveniment": "cumpara-locuinta", "dupaLuni": 0 }],
+          "flaguri": ["vandut_pentru_avans:1"]
+        },
+        {
           "id": "chirie",
           "eticheta": "Rămân în chirie și investesc diferența",
           "flaguri": ["amanat_cumparare:36"],

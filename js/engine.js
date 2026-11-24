@@ -70,8 +70,10 @@ export function alege(state, ctx, idAlegere) {
   state.pendinte = null;
   verificaFinal(state, ctx);
   // Lanț imediat (urmări cu dupaLuni: 0): următorul card apare acum, fără să consume o oprire din an.
-  const imediata = state.final ? null : extrageUrmareScadenta(state, ctx, { doarImediate: true });
-  if (imediata) return { rezultat, oprire: seteazaPendinte(state, ctx, { ...imediata, inLant: true }) };
+  // Plasă de siguranță: un lanț imediat de peste 8 carduri (o greșeală de conținut) continuă luna viitoare.
+  const lungimeLant = oprire.inLant ? (oprire.lungimeLant ?? 1) + 1 : 1;
+  const imediata = state.final || lungimeLant > 8 ? null : extrageUrmareScadenta(state, ctx, { doarImediate: true });
+  if (imediata) return { rezultat, oprire: seteazaPendinte(state, ctx, { ...imediata, inLant: true, lungimeLant }) };
   return { rezultat, oprire: ruleaza(state, ctx) };
 }
 
@@ -444,6 +446,11 @@ function finalizeazaStudii(state, ctx) {
   state.ascunse.skill += info.skillLaFinal;
   seteazaFlag(state, `absolvent_${info.nivel}`);
   adaugaJurnal(state, info.nivel === 'licenta' ? 'Ai terminat facultatea!' : 'Ai terminat școala și ai o calificare.');
+  // Căminul e doar pentru studenți: la absolvire, camera se eliberează.
+  if (state.situatie.locuinta === 'camin') {
+    state.situatie.locuinta = 'acasa';
+    adaugaJurnal(state, 'Ai predat camera de cămin și te-ai întors, deocamdată, la părinți.');
+  }
   // Cu diploma în mână: CV-ul și primele oferte full-time.
   if (!areJobFullTime(state, ctx)) programeazaUrmare(state, ctx, { eveniment: bal(ctx, 'cariera.evenimentCV'), dupaLuni: 1 }, null);
 }

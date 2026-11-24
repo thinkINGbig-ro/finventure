@@ -352,6 +352,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 - **Băncile verifică:** contract (nu la negru), istoricul (restanțe, executări, spirala IFN, recuperatori), scorul de credit, **gradul de îndatorare** (`indatorare.gradMaxim`, 40%) și vârsta la scadența ipotecii. IFN-urile nu verifică nimic (e lecția).
 - **Carieră:** CV în trei pași, 0–3 oferte după calitatea CV-ului, negociere, mărire (plafonată la 130% din salariul pieței), promovare, concediere, PFA/SRL.
 - **Stil de viață:** Modest / Confortabil / Lux, cu adaptare hedonică.
+- **Locuință:** căminul se eliberează la absolvire; „Vând investițiile pentru avans” (disponibilă doar dacă banca ar aproba creditul); ~32% dintre prudenți cumpără (vârsta mediană ~38), restul sunt opriți în principal de gradul de îndatorare cu un singur venit.
 - **Final:** „Ce s-a întâmplat?” (lanțul de decizii + tiparul) sau „Cum a fost viața ta” (ce te-a ajutat / ce te-a costat, pensia estimată); checkpoint-uri (ultimele 5 + cele care au deschis o datorie, max. 10) cu „Încearcă din nou de aici”; colecție de finaluri, clasament local, card de distribuit.
 - **Publicat:** repo `thinkINGbig-ro/finventure`, ramura `main`; GitHub Pages servește din `main` / `(root)`.
 
@@ -374,7 +375,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 |---|---|---|
 | prudent | 100% | 0% |
 | frugal | 100% | 0% |
-| aleator | ~56% | ~44% |
+| aleator | ~55% | ~45% |
 | riscant | ~19% | ~81% |
 
 Ținte stabilite: prudent > 80%, aleator 40–60%, riscant rar. **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.

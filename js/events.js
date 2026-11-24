@@ -157,6 +157,12 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     locuinta: (lista) => lista.includes(state.situatie.locuinta) || 'Nu se potrivește cu locul unde stai.',
     numerarMin: (v) => state.numerar >= inBani(val(v)) || `Nu ai ${lei(val(v))} cash.`,
     baniMin: (v) => baniDisponibili(state) >= inBani(val(v)) || `Nu ai ${lei(val(v))} disponibili.`,
+    avereLichidaMin: (v) => {
+      const total = baniDisponibili(state) + state.produse
+        .filter((p) => p.tip === 'depozit' || (p.tip === 'investitie' && p.clasa !== 'titluriStat'))
+        .reduce((s, p) => s + valoareProdus(p, state), 0);
+      return total >= inBani(val(v)) || `Nici cu tot ce ai investit nu ajungi la ${lei(val(v))} (fără fondul de urgență).`;
+    },
     economiiMin: (v) => economii(state) >= inBani(val(v)) || `N-ai ${lei(val(v))} puși deoparte.`,
     fondUrgentaMin: (v) => {
       if (!state.produse.some((p) => p.tip === 'contEconomii' && p.fondUrgenta)) return 'Nu ai un fond de urgență.';
