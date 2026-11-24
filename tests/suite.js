@@ -655,11 +655,20 @@ function teste(ctxBaza, incarcare) {
       alege(state, ctx, 'amana');
       ok(areFlag(state, 'netratat'), 'boala rămâne netratată');
       ok(state.urmari.some((u) => u.eveniment === 'boala-agravata' && u.probabilitate === 0.7), 'urmarea mai scumpă e programată');
+      // Comparație controlată: aceeași stare, cu și fără boala netratată, jucată aceleași 3 luni.
+      // Singura diferență între cele două e penalizarea lunară (balans: lunar.penalizari.boalaNetratata).
       state.stat.energie = 60;
       state.an = null;
-      let o = avanseaza(state, ctx);
-      while (o && state.luna < 12 * 8 + 2) o = o.tip === 'eveniment' ? alege(state, ctx, primaDisponibila(o)).oprire : continua(state, ctx);
-      ok(state.stat.energie < 60, `energia scade lunar cât boala e netratată (${Math.round(state.stat.energie)})`);
+      const fara = structuredClone(state);
+      delete fara.flaguri.netratat;
+      const joacaLuni = (s) => {
+        let o = avanseaza(s, ctx);
+        while (o && s.luna < 12 * 8 + 3) o = o.tip === 'eveniment' ? alege(s, ctx, primaDisponibila(o)).oprire : continua(s, ctx);
+      };
+      joacaLuni(state);
+      joacaLuni(fara);
+      const diferenta = fara.stat.energie - state.stat.energie;
+      ok(diferenta >= 6, `boala netratată scade energia lunar: ${Math.round(state.stat.energie)} față de ${Math.round(fara.stat.energie)} fără boală`);
       const ag = forteazaEveniment(state, ctx, 'boala-agravata');
       ok(ag.variabile.suma >= 2 * 6000, 'tratamentul costă cel puțin dublu');
     },
