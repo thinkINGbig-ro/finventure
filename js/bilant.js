@@ -12,6 +12,7 @@ export function bilantNou() {
     aniCheltuieliPeste90: 0, aniStilPesteVenit: 0, aniFaraMarire: 0,
     luniStil: { modest: 0, confortabil: 0, lux: 0 },
     ifnLuate: 0, rateCumparaturi: 0, somatiiIgnorate: 0, socuriAbsorbite: 0, socuriCuDatorie: 0,
+    vanzariPanica: 0, crizeTraversate: 0,
     varstaIndependenta: null,
   };
 }
@@ -68,6 +69,10 @@ export function inregistreazaDecizie(state, ev, cale, pachet) {
     if (p.furnizor === 'magazin' || p.furnizor === 'bnpl') bl.rateCumparaturi += 1;
   }
   if (cale.endsWith('ignor') && ['facturi-somatie', 'ifn-restanta'].includes(ev.id)) bl.somatiiIgnorate += 1;
+  if (ev.id === 'prabusire-bursa') {
+    if (cale === 'vand') bl.vanzariPanica = (bl.vanzariPanica ?? 0) + 1;
+    else bl.crizeTraversate = (bl.crizeTraversate ?? 0) + 1;
+  }
   if (EVENIMENTE_SOC.includes(ev.id)) {
     const dinBaniProprii = pachet.sursaPlata === 'fondUrgenta' || pachet.retrageEconomii || cale.startsWith('din-banii-mei/cont') || cale === 'platesc' || cale === 'fond';
     const cuDatorie = (pachet.produsNou && [pachet.produsNou].flat().some((p) => p.tip === 'credit')) || pachet.sursaPlata === 'cardCredit';

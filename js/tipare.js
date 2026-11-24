@@ -55,6 +55,11 @@ const NEGATIVE = [
     ceTrebuia: 'Un contract de muncă sau PFA plătește CASS și îți dă tratament gratuit la stat. Fără el, o boală devine o cheltuială de mii de lei.',
   },
   {
+    id: 'vanzare-panica', titlu: 'Ai vândut în panică', concept: 'prabusirea-bursei',
+    cand: (bl) => (bl.vanzariPanica ?? 0) >= 1 && { scor: bl.vanzariPanica * 4, fapt: bl.vanzariPanica === 1 ? 'Ai vândut investițiile în panică, în timpul unei prăbușiri a bursei, exact când erau cele mai ieftine.' : `Ai vândut investițiile în panică în ${numar(bl.vanzariPanica, 'prăbușire', 'prăbușiri')} ale bursei, exact când erau cele mai ieftine.` },
+    ceTrebuia: 'Când bursa scade, nu face nimic sau cumpără puțin, dacă ai bani de care nu ai nevoie. Pierderea e doar pe hârtie până vinzi.',
+  },
+  {
     id: 'salariu-inghitit', titlu: 'Salariul înghițit de inflație', concept: 'puterea-de-cumparare',
     cand: (bl) => bl.aniFaraMarire >= 3 && { scor: bl.aniFaraMarire, fapt: `${pluralAni(bl.aniFaraMarire)} fără mărire, în timp ce prețurile creșteau.` },
     ceTrebuia: 'Cere o mărire o dată pe an, cu argumente, sau caută o ofertă mai bună. Un salariu care nu crește e un salariu care scade.',
@@ -80,6 +85,11 @@ const POZITIVE = [
       fapt: `${pluralAni(ani(bl.luniCuFond))} cu fond de urgență. A absorbit ${numar(bl.socuriAbsorbite, 'șoc', 'șocuri')} fără nicio datorie.`,
     },
     deCe: 'Neprevăzutul n-a mai fost o criză: a fost doar o cheltuială.',
+  },
+  {
+    id: 'rabdare-criza', titlu: 'Răbdare în criză', concept: 'prabusirea-bursei',
+    cand: (bl) => (bl.crizeTraversate ?? 0) >= 1 && { scor: bl.crizeTraversate * 3, fapt: bl.crizeTraversate === 1 ? 'Ai trecut printr-o prăbușire a bursei fără să vinzi în panică.' : `Ai trecut prin ${numar(bl.crizeTraversate, 'prăbușire', 'prăbușiri')} ale bursei fără să vinzi în panică.` },
+    deCe: 'Investițiile și-au revenit pentru că le-ai lăsat timp. Asta nu se poate face decât cu un fond de urgență separat.',
   },
   {
     id: 'negociere', titlu: 'Ai negociat', concept: 'negociere-salariu',

@@ -1,0 +1,50 @@
+{
+  "evenimente": [
+    {
+      "id": "prabusire-bursa",
+      "titlu": "Bursa s-a prăbușit",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "conditii": { "areProdus": ["investitie"] },
+      "variabile": { "pierdere": 0, "procent": 0, "maiMult": 2000 },
+      "text": "Știrile sunt numai roșu: bursele au căzut puternic. Investițiile tale valorează cu {pierdere} lei mai puțin decât luna trecută (−{procent}%). Toată lumea vinde.",
+      "alegeri": [
+        {
+          "id": "vand",
+          "eticheta": "Vând tot, să nu pierd și mai mult",
+          "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur"],
+          "efecte": { "fericire": 3 },
+          "etichete": ["panica"],
+          "concepte": ["prabusirea-bursei"],
+          "lectie": "Ai transformat o scădere de pe hârtie într-o pierdere reală. Istoric, bursele și-au revenit după fiecare prăbușire, dar doar pentru cei care au rămas.",
+          "jurnal": "Ai vândut toate investițiile în timpul prăbușirii bursei."
+        },
+        {
+          "id": "pastrez",
+          "eticheta": "Nu fac nimic, investesc pe termen lung",
+          "efecte": { "fericire": -4 },
+          "flaguri": ["pastrat_in_criza"],
+          "etichete": ["pastreaza"],
+          "concepte": ["prabusirea-bursei"],
+          "lectie": "Cel mai greu lucru la investiții e să nu faci nimic când toți panichează. Pierderea rămâne pe hârtie cât timp nu vinzi.",
+          "jurnal": "Ai păstrat investițiile în timpul prăbușirii bursei."
+        },
+        {
+          "id": "cumpar",
+          "eticheta": "Cumpăr mai mult, cât e ieftin ({maiMult} lei)",
+          "cere": {
+            "baniMin": "{maiMult}",
+            "motiv": "N-ai {maiMult} lei liberi. Nu investi niciodată banii din fondul de urgență."
+          },
+          "produsNou": { "tip": "investitie", "clasa": "etf", "suma": "{maiMult}" },
+          "efecte": { "fericire": -2 },
+          "flaguri": ["pastrat_in_criza"],
+          "etichete": ["pastreaza"],
+          "concepte": ["prabusirea-bursei", "dobanda-compusa"],
+          "lectie": "Ai cumpărat la reducere. E o strategie bună doar cu bani de care nu ai nevoie ani de zile.",
+          "jurnal": "Ai cumpărat ETF-uri de {maiMult} lei în plină prăbușire."
+        }
+      ]
+    }
+  ]
+}

@@ -327,7 +327,7 @@ function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   const rezultat = { lectie: null, concepteNoi: [], jurnal: null, neplatit: 0 };
 
   if (p.lichideaza) {
-    for (const prod of gasesteProduse(state, p.lichideaza)) lichideaza(state, ctx, prod);
+    for (const sel of [p.lichideaza].flat()) for (const prod of gasesteProduse(state, sel)) lichideaza(state, ctx, prod);
   }
   for (const spec of [p.produsNou ?? []].flat()) {
     deschideProdus(state, ctx, rezolvaSpec(spec, val), idDecizie);

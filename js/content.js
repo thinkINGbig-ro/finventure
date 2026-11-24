@@ -274,7 +274,7 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
     else r[c].forEach((f) => { if (typeof f !== 'string' || !re.test(f)) err(`${cale}.${c}`, `„${f}” nu e valid; folosește ${ex} (litere mici, cifre, _)`); });
   }
   if (r.produsNou !== undefined) [r.produsNou].flat().forEach((p, i) => valideazaProdusNou(p, `${cale}.produsNou${Array.isArray(r.produsNou) ? `[${i}]` : ''}`, err, cv, vars, fisier, idEv));
-  if (r.lichideaza !== undefined) sel(r.lichideaza, 'lichideaza');
+  if (r.lichideaza !== undefined) [r.lichideaza].flat().forEach((s) => sel(s, 'lichideaza'));
   if (r.ramburseaza !== undefined) sel(r.ramburseaza, 'ramburseaza');
   if (r.seteazaProdus !== undefined) {
     for (const [s, campuri] of Object.entries(r.seteazaProdus)) {

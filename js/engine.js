@@ -225,11 +225,23 @@ export function proceseazaLuna(state, ctx) {
 
   // 1. Piețele se mișcă mereu (și fără investiții), ca RNG-ul să nu depindă de alegeri.
   const crash = state.luna === state.an.lunaCrash;
+  let valoareInainte = 0;
+  let valoareDupa = 0;
   for (const clasa of CLASE_PIATA) {
     const factor = randamentLunar(clasa, normal(state, 'piete'), ctx, crash);
     const inainte = valoareClasa(state, clasa);
     state.piete[clasa] *= factor;
-    ac.castigInvestitii += valoareClasa(state, clasa) - inainte;
+    const dupa = valoareClasa(state, clasa);
+    ac.castigInvestitii += dupa - inainte;
+    valoareInainte += inainte;
+    valoareDupa += dupa;
+  }
+  // Prăbușirea bursei: decizia „vinzi sau păstrezi?”, doar pentru cine are investiții de piață.
+  if (crash && valoareInainte - valoareDupa > 10000) {
+    programeazaUrmare(state, ctx, {
+      eveniment: 'prabusire-bursa', dupaLuni: 1,
+      variabile: { pierdere: Math.round(inLei(valoareInainte - valoareDupa)), procent: Math.round((1 - valoareDupa / valoareInainte) * 100) },
+    }, null);
   }
 
   // 2. Venituri

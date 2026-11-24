@@ -8,8 +8,8 @@
 export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
     'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job'],
-  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat'],
-  evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara'],
+  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza'],
+  evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa'],
   concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare'],
 };
 
