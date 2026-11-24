@@ -150,7 +150,12 @@
     "dae": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "cumpără acum, plătește mai târziu: 0% dacă plătești la timp" }
   },
 
+  "indatorare": {
+    "gradMaxim": { "valoare": 0.40, "deVerificat": true, "sursa": "", "nota": "toate ratele lunare / venitul net. BNR are limite diferite: de exemplu, mai mari pentru prima locuință și mai mici pentru creditele în valută. Aici, o singură limită, pentru creditele în lei de la bănci și firme de leasing (nu și pentru IFN)." }
+  },
+
   "ipotecar": {
+    "varstaMaximaLaScadenta": { "valoare": 70, "deVerificat": true, "sursa": "", "nota": "băncile cer de obicei ca ultima rată să fie plătită înainte de o anumită vârstă" },
     "daeFixa": { "valoare": 0.075, "deVerificat": true, "sursa": "", "nota": "DAE la credit ipotecar cu dobândă fixă" },
     "marjaVariabila": { "valoare": 0.025, "deVerificat": true, "sursa": "", "nota": "marja băncii peste indicele de referință (IRCC)" },
     "irccPesteInflatie": { "valoare": 0.005, "deVerificat": true, "sursa": "", "nota": "simplificare: IRCC urmează inflația anului" },

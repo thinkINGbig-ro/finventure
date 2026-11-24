@@ -34,7 +34,11 @@
             {
               "id": "fixa",
               "eticheta": "Cu dobândă fixă",
-              "cere": { "baniMin": "{avans}", "motiv": "N-ai {avans} lei pentru avans." },
+              "cere": {
+                "baniMin": "{avans}",
+                "motiv": "N-ai {avans} lei pentru avans.",
+                "indatorare": { "suma": "{imprumut}", "luni": 360, "dae": "config:ipotecar.daeFixa" }
+              },
               "produsNou": [
                 {
                   "tip": "credit",
@@ -49,7 +53,7 @@
               "situatie": { "locuinta": "proprietate" },
               "flaguri": ["are_locuinta"],
               "etichete": ["cumparaCasa"],
-              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila"],
+              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila", "grad-de-indatorare"],
               "lectie": "Cu dobânda fixă, rata rămâne aceeași 30 de ani, orice ar face piața. Plătești puțin mai mult pentru liniște.",
               "jurnal": "Ți-ai cumpărat un apartament, cu credit ipotecar la dobândă fixă.",
               "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }]
@@ -57,7 +61,11 @@
             {
               "id": "variabila",
               "eticheta": "Cu dobândă variabilă (rata e mai mică acum)",
-              "cere": { "baniMin": "{avans}", "motiv": "N-ai {avans} lei pentru avans." },
+              "cere": {
+                "baniMin": "{avans}",
+                "motiv": "N-ai {avans} lei pentru avans.",
+                "indatorare": { "suma": "{imprumut}", "luni": 360, "variabila": true }
+              },
               "produsNou": [
                 { "tip": "credit", "furnizor": "banca", "suma": "{imprumut}", "variabila": true, "luni": 360 },
                 { "tip": "proprietate", "valoare": "{pret}" }
@@ -66,7 +74,7 @@
               "situatie": { "locuinta": "proprietate" },
               "flaguri": ["are_locuinta"],
               "etichete": ["cumparaCasa", "dobandaVariabila"],
-              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila"],
+              "concepte": ["credit-ipotecar", "dobanda-fixa-variabila", "grad-de-indatorare"],
               "lectie": "Cu dobânda variabilă, rata urmează indicele de referință (IRCC): azi e mai mică, dar poate crește în anii cu inflație mare.",
               "jurnal": "Ți-ai cumpărat un apartament, cu credit ipotecar la dobândă variabilă.",
               "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }]

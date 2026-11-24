@@ -169,7 +169,8 @@
               "cere": {
                 "ascunse": { "scorCredit": { "min": 45 } },
                 "lipsaFlag": ["istoric_restante", "executare_silita", "datorie_recuperator"],
-                "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit."
+                "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit.",
+                "indatorare": { "suma": "{noua}", "luni": 60, "dae": "config:creditAuto.dae" }
               },
               "produsNou": {
                 "tip": "credit",
@@ -182,7 +183,7 @@
               "recurente": [{ "tip": "cheltuiala", "suma": "{costuri}", "eticheta": "Mașina: RCA, revizii, benzină" }],
               "flaguri": ["are_masina"],
               "etichete": ["rate", "stilSus"],
-              "concepte": ["credit-auto", "dae"],
+              "concepte": ["credit-auto", "dae", "grad-de-indatorare"],
               "lectie": "Rata nu e tot costul mașinii: asigurarea, reviziile și benzina se plătesc lunar, iar mașina pierde din valoare în fiecare an.",
               "jurnal": "Ți-ai luat o mașină nouă, cu credit pe 5 ani.",
               "urmari": [{ "eveniment": "asigurare-masina", "dupaLuni": 0 }]
@@ -194,7 +195,8 @@
                 "ascunse": { "scorCredit": { "min": 45 } },
                 "lipsaFlag": ["istoric_restante", "executare_silita", "datorie_recuperator"],
                 "motiv": "Banca te refuză: ai restanțe în istoricul de la Biroul de Credit.",
-                "baniMin": "{avansLeasing}"
+                "baniMin": "{avansLeasing}",
+                "indatorare": { "suma": "{sumaLeasing}", "luni": 60, "dae": "config:leasing.dae" }
               },
               "produsNou": {
                 "tip": "credit",
@@ -207,7 +209,7 @@
               "recurente": [{ "tip": "cheltuiala", "suma": "{costuri}", "eticheta": "Mașina: RCA, revizii, benzină" }],
               "flaguri": ["are_masina"],
               "etichete": ["rate", "stilSus"],
-              "concepte": ["leasing", "credit-auto"],
+              "concepte": ["leasing", "credit-auto", "grad-de-indatorare"],
               "lectie": "În leasing, mașina e a firmei de leasing până la ultima rată. Avansul mai mare scade rata, dar costul total rămâne peste prețul mașinii.",
               "jurnal": "Ți-ai luat o mașină nouă, în leasing.",
               "urmari": [{ "eveniment": "asigurare-masina", "dupaLuni": 0 }]

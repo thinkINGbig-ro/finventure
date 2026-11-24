@@ -104,19 +104,29 @@ Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezu
 
 | Profil | Cum joacă | Ajung la pensie sau la independență | Faliment | Averea mediană la final (lei de azi) | Finalul cel mai des |
 |---|---|---|---|---|---|
-| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, se mută de acasă, strânge pentru o casă, stil confortabil când își permite | **100%** | 0% | ~940.000 lei | Pensionar liniștit (52%) |
-| **Frugal** | trai modest toată viața, investește aproape tot ce rămâne | **100%** | 0% | ~2,5 mil. lei | Libertate la 40 (52%) |
-| **Aleator** | alege la întâmplare, inclusiv în meniuri | 47% | 53% | ~144.000 lei | Pensionar liniștit (32%) |
-| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 19% | 81% | ~54.000 lei | Regele IFN-urilor (63%) |
+| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, se mută de acasă, strânge pentru o casă, stil confortabil când își permite | **100%** | 0% | ~970.000 lei | Pensionar liniștit (52%) |
+| **Frugal** | trai modest toată viața, investește aproape tot ce rămâne | **100%** | 0% | ~2,6 mil. lei | Libertate la 40 (53%) |
+| **Aleator** | alege la întâmplare, inclusiv în meniuri | 56% | 44% | ~224.000 lei | Pensionar liniștit (42%) |
+| **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 19% | 81% | ~56.000 lei | Regele IFN-urilor (64%) |
 
 *Sursa: `docs/raport-simulare.json` (500 de vieți pe profil, 57 de evenimente). „Lei de azi” = sumele finale ajustate cu inflația simulată, ca să poată fi comparate cu prețurile de acum.*
 
 Ce arată:
 
 - **Diferența vine din decizii, nu din noroc.** Toate profilurile trăiesc aceleași tipuri de evenimente (boli, concedieri, crize pe bursă), dar prudentul le absoarbe din fondul de urgență, iar riscantul le acoperă cu credite scumpe.
-- **Lecțiile se văd în cauzele falimentului.** La riscant, falimentul pornește de cele mai multe ori de la un credit IFN luat pentru o urgență și continuă cu restanțe, recuperatori și poprire. La aleator, cauzele frecvente sunt mașina nouă luată cu credit, telefonul în rate și IFN-ul pentru o problemă de sănătate.
+- **Lecțiile se văd în cauzele falimentului.** La riscant, falimentul pornește de cele mai multe ori de la un credit IFN luat pentru o urgență și continuă cu restanțe, recuperatori și poprire. La aleator, cauzele frecvente sunt IFN-ul pentru o problemă de sănătate, telefonul în rate și mutarea singur fără bani deoparte. Creditele bancare sunt limitate de gradul de îndatorare (ca în realitate, plafonul BNR), așa că un jucător nu poate lua o mașină sau o casă pe care nu și-o permite; un IFN, însă, nu verifică nimic.
 - **Lecțiile se văd și în salarii.** Pe durata unei vieți simulate, inflația medie e ~4,8% pe an și randamentul ETF ~7% pe an. Salariul crește peste inflație doar dacă ceri măriri, accepți promovări sau schimbi jobul: real, +0,6–0,8% pe an la prudent și frugal, ~0% la aleator, −0,5% la riscant. Valorile economice din `data/config.json` sunt marcate „de verificat” și vor fi confirmate de un specialist.
 - **N-am „ajustat” rezultatele.** Când un profil a ieșit nerealist (de exemplu, la început prudentul ajungea la averi de zeci de milioane), am căutat cauza în mecanici (măririle nu aveau plafon față de piață, crash-urile bursiere erau numărate de două ori) și am reparat-o, nu am schimbat procentele.
+
+### Chirie sau cumpărare?
+
+O întrebare pe care o au mulți adolescenți (și părinții lor). Ca s-o testăm corect, nu am comparat pur și simplu jucătorii care au cumpărat cu cei care n-au cumpărat: cei care cumpără au, în medie, salarii cu ~22% mai mari, deci ar ieși oricum mai bogați. Am jucat **aceeași viață de două ori**, cu același seed (același job, aceleași șocuri, aceeași bursă): o dată profilul prudent cumpără casa, o dată rămâne în chirie și investește banii.
+
+| Simulare | Vieți cu cumpărare | Averea mediană cu casa | Aceeași viață, în chirie | Casa a ieșit mai bine în |
+|---|---|---|---|---|
+| 2.000 de vieți | 69 | ~1,23 mil. lei de azi | ~1,00 mil. lei de azi | **75%** din vieți (diferența mediană: ~245.000 lei) |
+
+În modelul nostru, casa cumpărată câștigă de cele mai multe ori: după ce termini ipoteca, nu mai plătești chirie, iar casa își păstrează valoarea (plus ~1% real pe an). Dar nu câștigă mereu: în 25% din vieți, chiria plus investițiile au ieșit mai bine. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
 
 ## Valorile economice
 

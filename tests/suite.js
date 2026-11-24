@@ -563,7 +563,7 @@ function teste(ctxBaza, incarcare) {
       egal(alegeFinal(ctx.finaluri, rezumatViata(state, ctx)).id, 'libertate-40', 'la 19 ani: Libertate la 40');
     },
 
-    'ipoteca: refuzată după spirala IFN; casa intră în avere; rata variabilă se recalculează anual'() {
+    'ipoteca: refuzată după spirala IFN și peste gradul de îndatorare; casa intră în avere; rata variabilă se recalculează anual'() {
       const { state, ctx } = jocCuJob('casa');
       state.luna = 12 * 8; // 26 de ani
       state.ascunse.scorCredit = 70;
@@ -576,6 +576,12 @@ function teste(ctxBaza, incarcare) {
       state.pendinte = null;
       delete state.flaguri.spirala_datorii;
       o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      const refuz = alegerePeCale(o, 'credit/fixa');
+      ok(!refuz.disponibil && refuz.motiv.includes('% din venitul tău net'), `cu salariul de curier, refuz pentru gradul de îndatorare: ${refuz.motiv}`);
+      state.pendinte = null;
+      gasesteProdus(state, 'contractMunca').brut = inBani(20000);
+      o = forteazaEveniment(state, ctx, 'cumpara-locuinta');
+      ok(alegerePeCale(o, 'credit/variabila').disponibil, 'cu un salariu mare, ipoteca e posibilă');
       const avereInainte = avereNeta(state);
       alege(state, ctx, 'credit/variabila');
       const credit = state.produse.find((p) => p.tip === 'credit' && p.variabila);

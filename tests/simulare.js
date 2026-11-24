@@ -5,7 +5,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { formateazaEroare, incarcaContinut } from '../js/content.js';
-import { PROFILURI, formateazaRaport, raportJson, simuleazaVieti } from '../js/simulare.js';
+import { PROFILURI, comparaChirieCumparare, formateazaRaport, raportJson, simuleazaVieti, sumaMare } from '../js/simulare.js';
 
 const arg = (nume, implicit) => {
   const i = process.argv.indexOf(`--${nume}`);
@@ -26,11 +26,22 @@ const profiluri = arg('profil', Object.keys(PROFILURI).join(',')).split(',');
 const start = Date.now();
 const rapoarte = profiluri.map((profil) => simuleazaVieti(ctx, { n, seed, profil }));
 console.log(formateazaRaport(rapoarte));
+
+// Chirie vs. cumpărare la prudent: aceleași vieți, jucate o dată cu casa și o dată în chirie.
+let chirieCumparare = null;
+if (profiluri.includes('prudent')) {
+  chirieCumparare = comparaChirieCumparare(ctx, { n, seed });
+  const c = chirieCumparare;
+  console.log('\nChirie vs. cumpărare (prudent, aceeași viață jucată de două ori, averea cu casa inclusă, în lei de azi):');
+  console.log(c.perechi
+    ? `  ${c.perechi} vieți în care a cumpărat: cu casa ${sumaMare(c.avereMedianaCuCasa)}, aceeași viață în chirie ${sumaMare(c.avereMedianaInChirie)}.\n  Diferența mediană: ${sumaMare(c.diferentaMediana)}; casa a ieșit mai bine în ${c.procentCasaMaiBuna}% din vieți.`
+    : '  (nicio viață cu cumpărare)');
+}
 console.log(`\n(${((Date.now() - start) / 1000).toFixed(1)} s)`);
 
 const fisierJson = arg('json');
 if (fisierJson) {
-  const json = raportJson(rapoarte, { generat: new Date().toISOString(), seed, vietiPeProfil: n, evenimente: ctx.evenimente.size });
+  const json = raportJson(rapoarte, { generat: new Date().toISOString(), seed, vietiPeProfil: n, evenimente: ctx.evenimente.size, chirieVsCumparareAceleasiVieti: chirieCumparare });
   await writeFile(fisierJson, JSON.stringify(json, null, 2) + '\n');
   console.log(`Raport JSON scris în ${fisierJson}`);
 }

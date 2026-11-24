@@ -124,6 +124,7 @@ export function creeazaProdus(spec, state, ctx) {
         luniRestanta: 0, dobandaTotala: 0,
       };
     case 'credit': {
+      spec = { ...spec, luni: luniCreditDupaVarsta(state, ctx, spec.luni) };
       // Dobânda variabilă = marja băncii + indicele de referință din anul curent (state.piete.ircc).
       if (spec.variabila) spec = { ...spec, dae: cfg(ctx, 'ipotecar.marjaVariabila') + ircc(state, ctx) };
       const rLunar = rataLunara(spec.dae);
@@ -166,6 +167,13 @@ export function creeazaProdus(spec, state, ctx) {
 // Indicele de referință pentru creditele cu dobândă variabilă (simplificare: urmează inflația).
 export function ircc(state, ctx) {
   return state.piete.ircc ?? cfg(ctx, 'inflatie.medieAnuala') + cfg(ctx, 'ipotecar.irccPesteInflatie');
+}
+
+// Creditele lungi (ipoteca, 20+ ani) trebuie să se termine până la vârsta maximă din config.
+export function luniCreditDupaVarsta(state, ctx, luni) {
+  if (luni < 240) return luni;
+  const varsta = 18 + Math.max(0, Math.floor(state.luna / 12));
+  return Math.max(60, Math.min(luni, (cfg(ctx, 'ipotecar.varstaMaximaLaScadenta') - varsta) * 12));
 }
 
 export function rataAnuitate(principal, r, n) {

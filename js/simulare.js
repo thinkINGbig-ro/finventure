@@ -160,7 +160,7 @@ function asiguraFond(state, ctx) {
 
 // Prudent (realist): bugetul 50/30/20. Fond de 6 luni întâi, apoi ~20% din venitul net investit,
 // ~30% pentru dorințe (stil Confortabil când își permite, cumpărături), restul pentru necesar.
-function meniuPrudent(state, ctx) {
+function meniuPrudent(state, ctx, _rnd, { faraCasa = false } = {}) {
   asiguraCont(state, ctx);
   inchideRestanteDinEconomii(state, ctx);
   const lunar = cheltuieliLunare(state, ctx);
@@ -176,7 +176,7 @@ function meniuPrudent(state, ctx) {
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
   // Între 26 și 45 de ani, fără casă: pune deoparte pentru avans (15% + costuri) în loc să investească.
   const avans = Math.round(cfg(ctx, 'locuinte.pretApartament') * 0.15 * 1.1 * state.indicePreturi * 100);
-  const stringeAvans = varstaLa(state.luna) >= 26 && varstaLa(state.luna) < 45 && !state.produse.some((p) => p.tip === 'proprietate') && baniDisponibili(state) < avans + lunar;
+  const stringeAvans = !faraCasa && varstaLa(state.luna) >= 26 && varstaLa(state.luna) < 45 && !state.produse.some((p) => p.tip === 'proprietate') && baniDisponibili(state) < avans + lunar;
   if (fondComplet && netLunar) {
     // 20%: investiții (sau avansul pentru casă)
     const deInvestit = stringeAvans ? 0 : Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - lunar);
@@ -370,6 +370,8 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
   const aparitii = Object.fromEntries([...ctx.evenimente.keys()].map((id) => [id, 0]));
   const alegeriVazute = new Set();
   const finaluriColectie = {};
+  // Chirie vs. cumpărare: averea finală (cu casa la valoarea de piață), pe cele două grupuri.
+  const locuinta = { cumparat: [], chirie: [], varstaCumparare: [], salariuCumparat: [], salariuChirie: [] };
 
   for (let i = 0; i < n; i++) {
     const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn });
@@ -395,6 +397,16 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     varste.toate.push(varsta);
     averi.push(inLei(avereNeta(state)));
     averiAzi.push(inLei(avereNeta(state)) / state.indicePreturi);
+    if (!['faliment', 'burnout', 'renuntare'].includes(motiv)) {
+      const cumparare = state.decizii.find((d) => d.eveniment === 'cumpara-locuinta' && d.alegere.startsWith('credit/'));
+      if (cumparare) {
+        locuinta.cumparat.push(inLei(avereNeta(state)) / state.indicePreturi);
+        locuinta.varstaCumparare.push(varstaLa(cumparare.luna));
+      } else locuinta.chirie.push(inLei(avereNeta(state)) / state.indicePreturi);
+      // salariul brut mediu din carieră (lei de azi): ca să se vadă dacă grupurile sunt comparabile
+      const bl = state.bilant;
+      if (bl?.luniCIM) (cumparare ? locuinta.salariuCumparat : locuinta.salariuChirie).push(inLei(bl.sumaBrutRealCIM / bl.luniCIM));
+    }
     if (!['pensie', 'independenta', 'neterminat'].includes(motiv)) {
       varste.gameOver.push(varsta);
       const lant = state.final.cauza ? lantDecizii(state, state.final.cauza) : [];
@@ -425,9 +437,46 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
     mediiAnuale: Object.fromEntries(Object.entries(medii).map(([k, xs]) => [k, xs.length ? Math.round((xs.reduce((s, x) => s + x, 0) / xs.length) * 10000) / 100 : null])),
     cauzeGameOver: Object.entries(cauze).sort((a, b) => b[1] - a[1]),
     finaluriColectie: Object.entries(finaluriColectie).sort((a, b) => b[1] - a[1]),
+    chirieVsCumparare: {
+      cumparat: { vieti: locuinta.cumparat.length, avereMedianaAzi: mediana(locuinta.cumparat), varstaMedianaCumparare: mediana(locuinta.varstaCumparare), salariuBrutMedianAzi: mediana(locuinta.salariuCumparat) },
+      chirie: { vieti: locuinta.chirie.length, avereMedianaAzi: mediana(locuinta.chirie), salariuBrutMedianAzi: mediana(locuinta.salariuChirie) },
+    },
     evenimenteNeaparute: Object.entries(aparitii).filter(([, k]) => k === 0).map(([id]) => id),
     alegeriNealese: toateAlegerile.filter((a) => !alegeriVazute.has(a)),
     aparitii,
+  };
+}
+
+// Chirie vs. cumpărare, „aceeași persoană, două alegeri”: fiecare viață în care prudentul a cumpărat
+// e rejucată cu același seed (aceleași evenimente de bază, aceeași bursă) de un prudent care nu cumpără
+// niciodată și investește în loc. Diferența de avere vine doar din decizia despre casă.
+export function comparaChirieCumparare(ctx, { n = 500, seed = 'sim' } = {}) {
+  const prudent = PROFILURI.prudent;
+  const faraCasa = {
+    ...prudent,
+    nume: 'prudent',
+    alege: (o, state, c, rnd) => {
+      if (o.eveniment === 'cumpara-locuinta') return o.alegeri.find((a) => a.id === 'chirie') ? 'chirie' : prudent.alege(o, state, c, rnd);
+      return prudent.alege(o, state, c, rnd);
+    },
+    meniu: (state, c, rnd) => meniuPrudent(state, c, rnd, { faraCasa: true }),
+  };
+  const azi = (state) => inLei(avereNeta(state)) / state.indicePreturi;
+  const perechi = [];
+  for (let i = 0; i < n; i++) {
+    const s = `${seed}-${i}`;
+    const a = simuleazaViata(ctx, s, prudent).state;
+    if (!a.decizii.some((d) => d.eveniment === 'cumpara-locuinta' && d.alegere.startsWith('credit/'))) continue;
+    const b = simuleazaViata(ctx, s, faraCasa).state;
+    perechi.push({ cuCasa: azi(a), faraCasa: azi(b) });
+  }
+  const dif = perechi.map((p) => p.cuCasa - p.faraCasa);
+  return {
+    perechi: perechi.length,
+    avereMedianaCuCasa: mediana(perechi.map((p) => p.cuCasa)),
+    avereMedianaInChirie: mediana(perechi.map((p) => p.faraCasa)),
+    diferentaMediana: mediana(dif),
+    procentCasaMaiBuna: perechi.length ? Math.round((dif.filter((d) => d > 0).length / perechi.length) * 100) : null,
   };
 }
 
@@ -467,6 +516,11 @@ export function formateazaRaport(rapoarte) {
       ...ORDINE_FINALURI.filter((m) => r.finaluri[m]).map((m) => `  ${NUME_FINALURI[m].padEnd(22)} ${String(r.finaluri[m]).padStart(5)}  ${pct(r, m)}`),
       `  vârsta medie la game over: ${r.varstaMedieGameOver ?? '-'}`,
       `  finaluri colecționabile: ${r.finaluriColectie.map(([t, k]) => `${t} ${Math.round((k / r.n) * 100)}%`).join(', ')}`,
+      ...(r.chirieVsCumparare.cumparat.vieti >= 10 && r.chirieVsCumparare.chirie.vieti >= 10 ? [
+        `  chirie vs. cumpărare (fără falimente, averea cu casa inclusă, în lei de azi):`,
+        `    au cumpărat (${r.chirieVsCumparare.cumparat.vieti} vieți, vârsta mediană la cumpărare ${r.chirieVsCumparare.cumparat.varstaMedianaCumparare}, salariu brut mediu ${sumaMare(r.chirieVsCumparare.cumparat.salariuBrutMedianAzi)}): ${sumaMare(r.chirieVsCumparare.cumparat.avereMedianaAzi)}`,
+        `    au rămas în chirie (${r.chirieVsCumparare.chirie.vieti} vieți, salariu brut mediu ${sumaMare(r.chirieVsCumparare.chirie.salariuBrutMedianAzi)}): ${sumaMare(r.chirieVsCumparare.chirie.avereMedianaAzi)}`,
+      ] : []),
       '  cauze game over (prima decizie din lanț):',
       ...(r.cauzeGameOver.length ? r.cauzeGameOver.slice(0, 8).map(([c, k]) => `    ${String(k).padStart(5)}  ${c}`) : ['    (niciunul)']));
   }
@@ -493,6 +547,7 @@ export function raportJson(rapoarte, extra = {}) {
       avereMedianaLeiDeAzi: r.avereMedianaAzi,
       mediiAnualeProcent: r.mediiAnuale,
       cauzeGameOver: r.cauzeGameOver.slice(0, 10).map(([cauza, numar]) => ({ cauza, numar })),
+      chirieVsCumparare: r.chirieVsCumparare,
     }])),
   };
 }

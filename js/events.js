@@ -1,10 +1,10 @@
 // Evenimente: condiții, variabile, selecție, aplicarea alegerilor, flag-uri, urmări programate.
 
-import { bal, clamp, dupaCale, formateazaLei, inBani, inLei, varstaLa } from './util.js';
+import { bal, cfg, clamp, dupaCale, formateazaLei, inBani, inLei, varstaLa } from './util.js';
 import { aleator, alegePonderat, intreg, sansa } from './rng.js';
 import {
   baniDisponibili, cardDisponibil, fluturas, contCurent, creeazaProdus, datorieProdus, fondUrgenta,
-  incaseaza, plataMinimaCard, plateste, pret, valoareProdus, valoareVanzare,
+  incaseaza, ircc, luniCreditDupaVarsta, plataMinimaCard, plateste, pret, rataAnuitate, rataLunara, valoareProdus, valoareVanzare,
 } from './finance.js';
 import { actualizeazaDerivate, adaugaJurnal, areFlag, cheltuieliLunare, schimbaStil, seteazaFlag } from './state.js';
 import { estimeazaPensie, inregistreazaDecizie, venitPasivLunar } from './bilant.js';
@@ -22,6 +22,18 @@ export function potrivesteProdus(p, selector) {
 }
 
 // Asigurat medical: contract de muncă sau PFA (plătești CASS), student, sau imediat după concediere (șomaj).
+export function gradIndatorare(state, ctx, { suma, luni, dae }) {
+  const c = state.produse.find((p) => p.tip === 'contractMunca');
+  const net = c && c.contract !== 'negru' ? fluturas(c.brut, c.contract, ctx).net : 0;
+  const daeEfectiv = dae ?? cfg(ctx, 'ipotecar.marjaVariabila') + ircc(state, ctx);
+  const rataNoua = rataAnuitate(suma, rataLunara(daeEfectiv), luniCreditDupaVarsta(state, ctx, luni));
+  // Ratele existente: toate creditele (și IFN-urile, banca le vede la Biroul de Credit) și plata minimă la card.
+  const existente = state.produse.reduce((t, p) => t
+    + (p.tip === 'credit' && p.stadiu === 'activ' ? Math.min(p.rata, p.rest) : 0)
+    + (p.tip === 'cardCredit' ? plataMinimaCard(p.soldScadent, ctx) : 0), 0);
+  return { net, rataNoua, grad: net ? (existente + rataNoua) / net : Infinity };
+}
+
 export function esteAsigurat(state) {
   const c = state.produse.find((p) => p.tip === 'contractMunca');
   return (c && c.contract !== 'negru') || !!state.situatie.studii || areFlag(state, 'somaj');
@@ -168,6 +180,13 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     areOferta: (n) => vars[`brut${n}`] != null || 'CV-ul n-a convins destui angajatori pentru încă o ofertă.',
     jobProgram: (lista) => lista.includes(jobCurent(state, ctx)?.program ?? 'niciunul') || 'Nu se potrivește cu programul tău de lucru.',
     inStudii: (da) => !!state.situatie.studii === da || (da ? 'Nu ești la studii.' : 'Încă ești la studii.'),
+    // Gradul de îndatorare: (ratele existente + rata creditului nou) / venitul net din salariu.
+    indatorare: (spec) => {
+      const r = gradIndatorare(state, ctx, { suma: inBani(val(spec.suma)), luni: spec.luni, dae: spec.variabila ? null : val(spec.dae) });
+      if (r.net === 0) return 'Banca te refuză: n-ai un venit din salariu pe care să-l poată verifica.';
+      const max = cfg(ctx, 'indatorare.gradMaxim');
+      return r.grad <= max || `Banca te refuză: rata ar fi ${lei(Math.round(inLei(r.rataNoua)))}, iar toate ratele ar lua ${Math.round(r.grad * 100)}% din venitul tău net (maximul e ${Math.round(max * 100)}%).`;
+    },
     asigurat: (da) => esteAsigurat(state, ctx) === da || (da ? 'Nu ești asigurat medical: lucrezi fără contract.' : 'Ești asigurat medical.'),
     stilViata: (lista) => lista.includes(state.stilViata) || 'Nu se potrivește cu stilul tău de viață.',
     promovareDisponibila: (da) => promovareDisponibila(state, ctx) === da || 'Nu e momentul pentru o promovare.',
@@ -176,7 +195,8 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
   for (const [cheie, valoare] of Object.entries(cond)) {
     if (cheie === 'motiv') continue;
     const r = verificari[cheie](valoare);
-    if (r !== true) return cond.motiv ? textCuVariabile(cond.motiv, vars) : r;
+    // Îndatorarea are mereu mesajul ei, cu cifre; „motiv” din JSON acoperă doar celelalte condiții.
+    if (r !== true) return cond.motiv && cheie !== 'indatorare' ? textCuVariabile(cond.motiv, vars) : r;
   }
   return null;
 }

@@ -240,6 +240,11 @@
       "id": "dividende",
       "titlu": "Dividendele",
       "text": "Dividendele sunt partea din profitul unei firme plătită acționarilor sau asociaților. La un SRL, profitul se impozitează întâi la firmă, apoi dividendul se impozitează când ajunge la tine. Dividendele vin doar dacă firma are profit, nu în fiecare lună, ca un salariu. Exemplu: dacă SRL-ul tău are 50.000 lei profit, după taxe îți pot rămâne în jur de 38.000 lei."
+    },
+    {
+      "id": "grad-de-indatorare",
+      "titlu": "Gradul de îndatorare",
+      "text": "Gradul de îndatorare arată cât din venitul tău net pleacă pe rate: toate ratele lunare împărțite la salariul net. Băncile au voie să-ți dea un credit nou doar dacă gradul rămâne sub o limită stabilită de BNR (în jur de 40%, cu excepții, de exemplu pentru prima locuință). Limita te protejează: o lună proastă nu trebuie să te lase fără bani de mâncare. Exemplu: cu 5.000 lei net și o rată la mașină de 1.200 lei, o ipotecă cu rata de 1.000 lei ar duce gradul la 44%, adică peste limită."
     }
   ]
 }

@@ -364,7 +364,14 @@ function valideazaConditii(cond, cale, err, cv, vars) {
   const liste = ['faza', 'flag', 'lipsaFlag', 'areProdus', 'lipsaProdus', 'job', 'studii', 'locuinta'];
   const numerice = ['numerarMin', 'baniMin', 'economiiMin', 'fondUrgentaMin', 'depoziteMin', 'cardDisponibilMin'];
   campuriNecunoscute(cond, [...liste, ...numerice, 'varstaMin', 'varstaMax', 'stat', 'ascunse', 'poateRambursa', 'sau', 'motiv',
-    'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata', 'asigurat'], cale, err);
+    'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata', 'asigurat', 'indatorare'], cale, err);
+  if (cond.indatorare !== undefined) {
+    const d = cond.indatorare;
+    campuriNecunoscute(d, ['suma', 'luni', 'dae', 'variabila'], `${cale}.indatorare`, err);
+    verificaNumar(d.suma, `${cale}.indatorare.suma`, err, cv, vars);
+    if (!Number.isInteger(d.luni) || d.luni <= 0) err(`${cale}.indatorare.luni`, 'număr întreg de luni');
+    if (d.variabila !== true) verificaNumar(d.dae, `${cale}.indatorare.dae`, err, cv, vars);
+  }
   if (cond.stilViata !== undefined && !Array.isArray(cond.stilViata)) err(`${cale}.stilViata`, 'listă de niveluri (ex. ["modest"])');
   if (cond.areOferta !== undefined && ![1, 2, 3].includes(cond.areOferta)) err(`${cale}.areOferta`, 'trebuie să fie 1, 2 sau 3');
   if (cond.jobProgram !== undefined && (!Array.isArray(cond.jobProgram) || cond.jobProgram.some((p) => !['part-time', 'full-time', 'niciunul'].includes(p)))) {

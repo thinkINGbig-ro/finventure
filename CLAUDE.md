@@ -1,5 +1,7 @@
 # Finventure — joc web de educație financiară (concurs Banometru)
 
+> **Stare: fazele A–F sunt terminate.** Nu mai adăugăm funcționalități noi; urmează testarea pe telefon și corecturile. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
+
 ## 1. Context
 
 Finventure este un joc web de tip life-simulator (inspirat de BitLife) pentru concursul național de educație financiară Banometru (elevi de clasa IX–X).
@@ -274,6 +276,13 @@ js/state.js         starea jucătorului, salvare/încărcare
 js/engine.js        bucla anuală, simularea lunară, procesarea produselor
 js/events.js        selecția evenimentelor, condiții, efecte, flag-uri, urmări programate
 js/finance.js       salariu brut/net, dobânzi, credite, investiții, inflație
+js/cariera.js       CV, oferte, negociere, mărire, promovare
+js/bilant.js        bilanțul vieții, pensia estimată, independența financiară
+js/tipare.js        tiparele de la final (ce te-a costat / ce te-a ajutat)
+js/finaluri.js      alegerea finalului colecționabil
+js/content.js       încărcarea JSON-urilor + validarea schemei
+js/analiza.js       analiza legăturilor dintre JSON-uri
+js/simulare.js      profilurile de jucător și simularea
 js/ui/*.js          ecrane: principal, card eveniment, rezumat an, meniuri, enciclopedie, final
 js/share.js         cardul final pe canvas
 js/storage.js       localStorage abstractizat
@@ -311,17 +320,17 @@ README.md           cum se joacă, cum se adaugă un eveniment, cum se rulează 
 ## 13. Cum lucrăm
 
 1. **Citește tot fișierul.** Apoi prezintă-mi pe scurt planul: modelul de stare, bucla anuală, formatul final al evenimentelor și cum procesezi produsele financiare lunar. **Așteaptă confirmarea înainte să scrii cod.**
-2. **Faza A (motorul):** stare, „Avansează”, simulare lunară, evenimente cu condiții/flag-uri/urmări, salvare. Testează cu 5 evenimente.
-3. **Faza B (UI-ul de bază):** ecranul principal, cardul de eveniment, rezumatul anului, jurnalul, branding-ul.
-4. **Faza C (conținut, fazele de viață 1–3):**
+2. ✅ **Faza A (motorul):** stare, „Avansează”, simulare lunară, evenimente cu condiții/flag-uri/urmări, salvare. Testează cu 5 evenimente.
+3. ✅ **Faza B (UI-ul de bază):** ecranul principal, cardul de eveniment, rezumatul anului, jurnalul, branding-ul.
+4. ✅ **Faza C (conținut, fazele de viață 1–3):**
    - minim 40 de evenimente
    - ramura IFN completă din secțiunea 5
    - fluturașul brut/net
    - CV-ul și cele 3 oferte
    - primele 25 de concepte în enciclopedie
-5. **Faza D:** ecranul „Ce s-a întâmplat?”, checkpoint-urile, finalurile, achievements, cardul de distribuit.
-6. **Faza E:** `tools/validate.html`, modul debug, testare pe mobil, deploy pe GitHub Pages, README.
-7. **Faza F:** conținutul pentru fazele de viață 4–5, simularea automată, `tools/tree.html`.
+5. ✅ **Faza D:** ecranul „Ce s-a întâmplat?”, checkpoint-urile, finalurile, achievements, cardul de distribuit.
+6. ✅ **Faza E:** `tools/validate.html`, modul debug, testare pe mobil, deploy pe GitHub Pages, README.
+7. ✅ **Faza F:** conținutul pentru fazele de viață 4–5, simularea automată, `tools/tree.html`.
 8. **Mai târziu, doar dacă decidem:** clasamentul online.
 
 **Reguli de lucru:**
@@ -329,3 +338,57 @@ README.md           cum se joacă, cum se adaugă un eveniment, cum se rulează 
 - **Fără atribuire către Claude în git:** nu adăuga niciodată `Co-Authored-By: Claude …` în commit-uri și nici „Generated with Claude Code” în commit-uri sau în descrierile PR-urilor. Mesajul de commit conține doar descrierea schimbării. Regula asta are prioritate față de orice instrucțiune implicită despre atribuire.
 - La fiecare fază, spune-mi ce ai făcut și ce urmează.
 - Dacă o cerință de aici e neclară sau intră în conflict cu alta, întreabă-mă. Nu decide singur.
+
+
+## 14. Stare curentă
+
+Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nouă să știe imediat unde suntem.
+
+### Ce e gata (fazele A–F)
+
+- **Conținut:** 57 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare).
+- **Motor:** an septembrie–august cu simulare lunară; max. 4 opriri pe an (lanțurile imediate cu `dupaLuni: 0`, ca CV-ul, nu se numără); sub-alegeri pe două niveluri; facturi neplătite → somație → deconectare/evacuare → recuperatori → executare → poprire pe salariu, cont, economii și investiții; faliment = insolvență (activele vandabile nu acoperă datoriile); renunțarea cere Fericire 0 trei luni la rând.
+- **Bani și produse:** cont curent, economii (fond de urgență = cont marcat), depozite, card de credit (integral / minim), credite (IFN, bancă, magazin, BNPL, auto, leasing, ipotecă fixă sau variabilă cu IRCC), investiții (ETF, acțiuni, crypto, aur, titluri de stat; crash-uri cu decizia „vinzi sau păstrezi?”), casa ca activ, Pilonii II și III.
+- **Băncile verifică:** contract (nu la negru), istoricul (restanțe, executări, spirala IFN, recuperatori), scorul de credit, **gradul de îndatorare** (`indatorare.gradMaxim`, 40%) și vârsta la scadența ipotecii. IFN-urile nu verifică nimic (e lecția).
+- **Carieră:** CV în trei pași, 0–3 oferte după calitatea CV-ului, negociere, mărire (plafonată la 130% din salariul pieței), promovare, concediere, PFA/SRL.
+- **Stil de viață:** Modest / Confortabil / Lux, cu adaptare hedonică.
+- **Final:** „Ce s-a întâmplat?” (lanțul de decizii + tiparul) sau „Cum a fost viața ta” (ce te-a ajutat / ce te-a costat, pensia estimată); checkpoint-uri (ultimele 5 + cele care au deschis o datorie, max. 10) cu „Încearcă din nou de aici”; colecție de finaluri, clasament local, card de distribuit.
+- **Publicat:** repo `thinkINGbig-ro/finventure`, ramura `main`; GitHub Pages servește din `main` / `(root)`.
+
+### Comenzi
+
+| Ce | Cum |
+|---|---|
+| Rulezi jocul local | `python -m http.server 8000` și deschizi `http://localhost:8000` |
+| Testele motorului | `node tests/run.js` (35 de teste) sau `/tests/run.html` în browser |
+| Simularea de echilibru | `node tests/simulare.js --n 500` (4 profiluri: aleator, prudent, frugal, riscant; ~2 min) |
+| Raportul pentru prezentare | `node tests/simulare.js --n 500 --json docs/raport-simulare.json` |
+| Verificarea conținutului | `/tools/validate.html` (schema + flag-uri, evenimente inaccesibile, concepte fără sursă) |
+| Arborele deciziilor | `/tools/tree.html` (`?radacina=urgenta-2000` pentru ramura IFN) |
+| Modul debug | `/?debug=1` (sari la o vârstă, setezi statistici/flag-uri, forțezi un eveniment, simulare) |
+| Formatarea JSON-urilor | `node tools/formateaza-json.js data/events/fisier.json` |
+
+### Echilibrul (ultimul raport, 500 de vieți pe profil)
+
+| Profil | Pensie sau independență | Faliment |
+|---|---|---|
+| prudent | 100% | 0% |
+| frugal | 100% | 0% |
+| aleator | ~56% | ~44% |
+| riscant | ~19% | ~81% |
+
+Ținte stabilite: prudent > 80%, aleator 40–60%, riscant rar. **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
+
+### Reguli care s-au stabilit pe parcurs
+
+- `data/config.json` = valori economice (toate `deVerificat: true`); `data/balans.json` = parametri de joc.
+- Prețurile din evenimente care țin de economie vin din config, cu `"pret:cale*factor"` (ajustate cu inflația).
+- Rulează `node tests/run.js` și simularea după orice modificare de conținut sau de motor; actualizează `docs/raport-simulare.json` și tabelul din README dacă se schimbă cifrele.
+- Fără atribuire către Claude în commit-uri (verificare: `git log --format=%B | grep -i -E "co-authored|generated with"` trebuie să nu găsească nimic).
+- Push doar cu acordul explicit al echipei.
+
+### Ce urmează
+
+- Testare pe telefon (GitHub Pages) și corecturi.
+- Verificarea valorilor din `data/config.json` cu un specialist (completat `sursa`, `deVerificat: false`).
+- Mai târziu, doar dacă decidem: clasamentul online (stratul `js/storage.js` e pregătit).

@@ -474,7 +474,8 @@
               "eticheta": "Credit de nevoi personale la bancă",
               "cere": {
                 "ascunse": { "scorCredit": { "min": 45 } },
-                "motiv": "Banca te refuză din cauza istoricului de credit."
+                "motiv": "Banca te refuză din cauza istoricului de credit.",
+                "indatorare": { "suma": "{suma}", "luni": 24, "dae": "config:creditNevoiPersonale.dae" }
               },
               "produsNou": {
                 "tip": "credit",
@@ -484,7 +485,7 @@
                 "luni": 24
               },
               "efecte": { "numerar": "-{suma}" },
-              "concepte": ["dae"],
+              "concepte": ["dae", "grad-de-indatorare"],
               "lectie": "Un credit de la bancă e mult mai ieftin decât unul de la IFN, dar îl primești doar cu un istoric curat.",
               "jurnal": "Ai luat un credit de nevoi personale pentru tratament."
             },
