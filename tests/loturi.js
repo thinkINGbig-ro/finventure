@@ -17,6 +17,7 @@ import { descrieAsigurari } from '../js/asigurari.js';
 import { aplicaFamilie, bugetFamilie, casaComuna, proceseazaFamilie, venitPartener, verificaCuplu } from '../js/familie.js';
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
+import { COD_PAGINA } from '../js/versiune.js';
 
 export function testeLoturi(ctxBaza, a) {
   return {
@@ -63,6 +64,30 @@ function migrareDinMain(ctxBaza, a) {
     ok(Number.isFinite(avereNeta(state)), 'averea netă e un număr');
   };
   return {
+    async 'pornire: index.html și codul au aceeași versiune, iar încărcătorul găsește toate modulele din main.js'() {
+      const index = await a.citeste('index.html');
+      egal(index.match(/<meta name="finventure-cod" content="([^"]+)">/)?.[1], COD_PAGINA, 'versiunea din index.html = js/versiune.js');
+      ok(/window\.finventurePregateste\(\)\.then\(\(\) => import\('\.\/js\/main\.js'\)\)/.test(index), 'main.js pornește după verificarea modulelor');
+      ok(!/<script type="module" src=/.test(index), 'fără încărcare directă a lui main.js (ar ocoli verificarea)');
+      const sursa = index.match(/const IMPORTURI = (\/.+\/g);/)?.[1];
+      ok(sursa, 'expresia pentru importuri e în index.html');
+      const IMPORTURI = new RegExp(sursa.slice(1, -2), 'g');
+      // Același mers ca în index.html, pe fișiere: fiecare modul atins există, iar expresia prinde toate importurile relative.
+      const vazute = new Set();
+      const mergi = async (cale) => {
+        if (vazute.has(cale)) return;
+        vazute.add(cale);
+        const text = await a.citeste(cale);
+        const gasite = [...text.matchAll(IMPORTURI)].map((m) => m[1] ?? m[2]);
+        const asteptate = (text.match(/\bfrom\s*['"]\.{1,2}\//g)?.length ?? 0) + (text.match(/\bimport\s*\(\s*['"]\.{1,2}\//g)?.length ?? 0);
+        egal(gasite.length, asteptate, `${cale}: importuri găsite`);
+        const baza = new URL(cale, 'https://x/');
+        await Promise.all(gasite.map((g) => mergi(new URL(g, baza).pathname.slice(1))));
+      };
+      await mergi('js/main.js');
+      for (const m of ['js/ui/debug.js', 'js/familie.js', 'js/storage.js', 'js/versiune.js', 'js/ui/meniuri.js', 'js/content.js']) ok(vazute.has(m), `${m} e atins`);
+      ok(vazute.size >= 35, `${vazute.size} module`);
+    },
     'salvări: prefixul cheilor depinde de adresă (site-ul principal „finventure.”, preview-ul și restul „finventure-preview.”)'() {
       const adresa = (url) => new URL(url);
       for (const url of [

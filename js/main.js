@@ -21,17 +21,25 @@ import { deschidePanou } from './ui/meniuri.js';
 import { creeazaEcranPrincipal } from './ui/principal.js';
 import { stratDeschis } from './ui/strat.js';
 import { arataLectie } from './ui/toast.js';
+import { COD_PAGINA } from './versiune.js';
 
 const NUME = ['Alex', 'Ana', 'Andrei', 'Ioana', 'Matei', 'Maria', 'Radu', 'Elena', 'Vlad', 'Daria', 'Luca', 'Sara', 'Tudor', 'Irina', 'Eric', 'Bianca'];
 
 async function porneste() {
+  // index.html din cache, din altă versiune decât codul: cerem fișierele din nou (vezi index.html).
+  const pagina = document.querySelector('meta[name="finventure-cod"]')?.content;
+  if (pagina !== COD_PAGINA && await repara(`pagina ${pagina ?? 'veche'}, codul ${COD_PAGINA}`)) return;
+
   let incarcare;
   try {
     incarcare = await incarcaContinut(cititorFetch('./'));
   } catch (e) {
+    if (await repara(`conținut: ${e.message}`)) return;
     return eroareFatala(e);
   }
   const { ctx, erori, avertismente } = incarcare;
+  // Conținutul publicat trece testele; erori la pornire înseamnă de obicei un content.js vechi din cache.
+  if (erori.length && await repara(`${erori.length} erori de conținut`)) return;
   if (erori.length) arataErori(erori);
   avertismente.forEach((a) => console.warn(`[conținut] ${formateazaEroare(a)}`));
   if (!ctx.evenimente.has(ctx.balans?.start?.evenimentStart)) return eroareFatala(new Error('Evenimentul de start lipsește (vezi erorile de conținut).'));
@@ -142,16 +150,17 @@ async function porneste() {
     });
   }
 
-  $('#btn-avere').addEventListener('click', () => {
+  // Butoanele din antet sunt opționale: o pagină veche din cache, fără ele, nu oprește jocul.
+  $('#btn-avere')?.addEventListener('click', () => {
     if (!ocupat && !stratDeschis()) arataAvere(state);
   });
 
-  $('#btn-concepte').addEventListener('click', () => {
+  $('#btn-concepte')?.addEventListener('click', () => {
     if (ocupat) return;
     deschidePanou('enciclopedie', { state, ctx, conceptGlobale: storage.citeste(CHEI.concepte, []), laSchimbare: randeaza });
   });
 
-  $('#btn-meniu').addEventListener('click', () => {
+  $('#btn-meniu')?.addEventListener('click', () => {
     if (ocupat) return;
     deschidePanou('meniu', {
       state, ctx, laSchimbare: randeaza,
@@ -180,6 +189,22 @@ async function porneste() {
 
   randeaza();
   ruleaza(oprireCurenta(state, ctx)); // reia o decizie rămasă deschisă (sau prima decizie, la joc nou)
+}
+
+// Cu index.html nou, repararea completă e acolo. O pagină veche n-o are: o cerem din rețea și reîncărcăm
+// (pagina nouă aduce repararea completă). Întoarce true dacă pagina se reîncarcă.
+async function repara(motiv) {
+  if (typeof window.finventureRepara === 'function') return window.finventureRepara(motiv);
+  try {
+    const ultima = Number(sessionStorage.getItem('finventure-reparat') || 0);
+    if (Date.now() - ultima < 5 * 60 * 1000) return false;
+    sessionStorage.setItem('finventure-reparat', String(Date.now()));
+    await fetch(location.href.split('#')[0], { cache: 'reload' });
+  } catch {
+    return false;
+  }
+  location.reload();
+  return true;
 }
 
 function stareNoua(ctx, scenariu = 'obisnuit') {

@@ -212,6 +212,13 @@ git worktree remove ../finventure-main
 
 **Salvările pe adrese diferite** (`js/storage.js`, `prefixPentru`): doar site-ul principal (`thinkingbig-ro.github.io/finventure/`) folosește cheile `finventure.*`; orice altă adresă (preview, localhost, alt repo) folosește `finventure-preview.*`. Toate site-urile de pe același domeniu `*.github.io` au același localStorage, așa că un preview publicat tot pe `thinkingbig-ro.github.io` nu poate strica salvările jucătorilor.
 
+**Cache-ul după o actualizare:** GitHub Pages lasă browserul să folosească fișierele 10 minute fără să întrebe serverul. Ca un jucător să nu primească un amestec de fișiere vechi și noi:
+- `index.html` nu încarcă direct `js/main.js`: întâi verifică la server toate modulele, urmărind importurile din `main.js` (cereri condiționate, 304 dacă nu s-au schimbat). JSON-urile se cer oricum așa (`js/content.js`).
+- Dacă tot apare o nepotrivire, `window.finventureRepara` cere din nou din rețea pagina, stilul și modulele, apoi reîncarcă, cel mult o dată la 5 minute. Nepotrivirile posibile: un modul nu pornește, conținutul are erori la pornire sau `index.html` are altă versiune decât codul.
+- Versiunea paginii stă în `<meta name="finventure-cod">` din `index.html` și în `js/versiune.js`. Schimb-o în ambele locuri când codul depinde de o schimbare din `index.html`; un test le compară.
+- Butoanele din antet sunt opționale în `main.js`, ca o pagină veche să nu oprească jocul.
+- Importurile rămân statice și relative (`from './x.js'`); un test verifică faptul că încărcătorul le găsește pe toate.
+
 ## Cum am testat echilibrul jocului
 
 Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezultate bune, iar cele proaste la probleme, fără ca rezultatul să fie forțat. Ca să verificăm asta, am scris patru „jucători automați” (profiluri) și i-am pus să joace câte **500 de vieți fiecare**, de la 18 la 65 de ani, cu aceleași reguli și aceleași evenimente ca un jucător real. Profilurile folosesc și meniurile (bancă, investiții, carieră, stil de viață), nu doar cardurile de decizie.

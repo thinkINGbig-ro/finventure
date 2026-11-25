@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#1E1638">
   <meta name="description" content="Finventure: un joc despre bani, decizii și viață, de la 18 la 65 de ani.">
+  <meta name="finventure-cod" content="2026-11-25">
   <title>Finventure</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,6 +65,54 @@
   </div>
 
   <noscript><p class="noscript">Finventure are nevoie de JavaScript.</p></noscript>
-  <script type="module" src="js/main.js"></script>
+  <script>
+    // Cache-ul după o actualizare: GitHub Pages lasă browserul să țină fișierele 10 minute fără să întrebe,
+    // așa că un jucător poate primi un amestec de fișiere vechi și noi. La pornire, modulele se verifică la
+    // server (cereri condiționate: 304 dacă nu s-au schimbat) urmărind importurile din main.js; datele JSON
+    // se cer oricum așa (js/content.js). Dacă tot apare o nepotrivire (un export lipsă, o pagină veche),
+    // finventureRepara cere totul din nou și reîncarcă: cel mult o dată la 5 minute, ca să nu intre în buclă.
+    const IMPORTURI = /(?:import|export)\s[^'"]*?from\s*['"](\.{1,2}\/[^'"]+)['"]|import\s*\(?\s*['"](\.{1,2}\/[^'"]+)['"]/g;
+    async function improspateaza(radacini, mod) {
+      const vazute = new Set();
+      const descarca = async (url) => {
+        if (vazute.has(url)) return;
+        vazute.add(url);
+        try {
+          const text = await (await fetch(url, { cache: mod })).text();
+          if (!new URL(url).pathname.endsWith('.js')) return;
+          await Promise.all([...text.matchAll(IMPORTURI)].map((m) => descarca(new URL(m[1] ?? m[2], url).href)));
+        } catch { /* fără rețea: merge din cache */ }
+      };
+      await Promise.all(radacini.map((cale) => descarca(new URL(cale, location.href).href)));
+      return vazute.size;
+    }
+    window.finventurePregateste = () => improspateaza(['js/main.js'], 'no-cache');
+    window.finventureRepara = async function (motiv) {
+      const CHEIE = 'finventure-reparat';
+      try {
+        const ultima = Number(sessionStorage.getItem(CHEIE) || 0);
+        if (Date.now() - ultima < 5 * 60 * 1000) return false;
+        sessionStorage.setItem(CHEIE, String(Date.now()));
+      } catch {
+        return false;
+      }
+      console.warn('[pornire] fișiere din versiuni diferite în cache; le cer din nou:', motiv);
+      await improspateaza([location.href.split('#')[0], './', 'css/style.css', 'js/main.js'], 'reload');
+      location.reload();
+      return true;
+    };
+  </script>
+  <script type="module">
+    window.finventurePregateste().then(() => import('./js/main.js')).catch(async (e) => {
+      console.error(e);
+      if (await window.finventureRepara(`modul: ${e.message}`)) return;
+      const app = document.getElementById('app');
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.margin = '16px';
+      card.innerHTML = '<h2>Jocul nu a putut porni</h2><p>Reîncarcă pagina peste câteva minute. Salvarea ta rămâne pe acest dispozitiv.</p>';
+      app.replaceChildren(card);
+    });
+  </script>
 </body>
 </html>
