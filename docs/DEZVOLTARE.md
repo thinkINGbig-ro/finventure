@@ -200,6 +200,16 @@ node tests/simulare.js --n 500 --json docs/raport-simulare.json   # regenerează
 
 Nu e nevoie de `npm install`: scripturile folosesc doar Node.
 
+**Salvările jucătorilor:** testul „migrare: salvările reale de pe main…” încarcă `tests/fixtures/salvari-main-v1.json`, adică 10 salvări (și checkpoint-uri) scrise de codul de pe `main`, cu versiunea 1, unele în mijlocul anului, cu un card deschis. Testul verifică migrarea, panourile din meniuri și 3 ani de joc. Când se schimbă formatul pe `main`, regenerează fixture-ul:
+
+```
+git worktree add --detach ../finventure-main main
+node tools/genereaza-salvari-main.js ../finventure-main tests/fixtures/salvari-main-v1.json
+git worktree remove ../finventure-main
+```
+
+**Testarea pe telefon fără `main`:** pornește `python -m http.server 8000 --bind 0.0.0.0` pe ramura de test și deschide `http://<IP-ul calculatorului>:8000` de pe telefon, în aceeași rețea. Nu publica o ramură de test pe alt site `thinkingbig-ro.github.io/…`: toate site-urile de pe acel domeniu au același localStorage, iar cheile `finventure.*` ar fi comune cu jocul publicat. Lista ecranelor de verificat e în `docs/testare-telefon.md`.
+
 ## Cum am testat echilibrul jocului
 
 Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezultate bune, iar cele proaste la probleme, fără ca rezultatul să fie forțat. Ca să verificăm asta, am scris patru „jucători automați” (profiluri) și i-am pus să joace câte **500 de vieți fiecare**, de la 18 la 65 de ani, cu aceleași reguli și aceleași evenimente ca un jucător real. Profilurile folosesc și meniurile (bancă, investiții, carieră, stil de viață), nu doar cardurile de decizie.

@@ -4,15 +4,16 @@ import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, jocNou, oprireCu
 import { gradIndatorare, motivNeindeplinire as motivNeindeplinireTest, textRezultat } from '../js/events.js';
 import { baniDisponibili, creeazaProdus, datorieProdus, facturiLunare, fluturas, pret, valoareProdus } from '../js/finance.js';
 import { aplicaComisioaneAnuale, miscaCompanii, portofoliu, proceseazaDCA } from '../js/investitii.js';
-import { actualizeazaImobileAnual, proceseazaImobile, simuleazaCumparare, simuleazaVanzare } from '../js/imobiliare.js';
+import { actualizeazaImobileAnual, descrieImobile, proceseazaImobile, simuleazaCumparare, simuleazaVanzare } from '../js/imobiliare.js';
 import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
 import { indeplinesteCerinte, luniPanaLaPromovare, schimbaJob } from '../js/cariera.js';
-import { proceseazaSecundar, simuleazaOreSuplimentare, venitArtistLuna } from '../js/munca.js';
+import { descrieSecundare, proceseazaSecundar, simuleazaOreSuplimentare, venitArtistLuna } from '../js/munca.js';
 import { pregatire, proceseazaAfacere, simuleazaPornire, simuleazaVanzare as simuleazaVanzareFirma } from '../js/afacere.js';
-import { optiuniPlata, proceseazaBunuri } from '../js/cumparaturi.js';
+import { descrieCatalog, optiuniPlata, proceseazaBunuri } from '../js/cumparaturi.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, motivTimp, timpPeAn, timpRamas } from '../js/activitati.js';
-import { creeazaStorageMemorie } from '../js/storage.js';
+import { creeazaStorage, creeazaStorageMemorie } from '../js/storage.js';
+import { descrieAsigurari } from '../js/asigurari.js';
 import { aplicaFamilie, bugetFamilie, casaComuna, proceseazaFamilie, venitPartener, verificaCuplu } from '../js/familie.js';
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
@@ -33,6 +34,68 @@ export function testeLoturi(ctxBaza, a) {
     ...lot9a(ctxBaza, a),
     ...lot9b(ctxBaza, a),
     ...lot9c(ctxBaza, a),
+    ...migrareDinMain(ctxBaza, a),
+  };
+}
+
+// ---------- Salvările reale de pe `main` (versiunea 1) se încarcă și se joacă pe extindere ----------
+// Fixture-ul e generat cu codul de pe `main`: node tools/genereaza-salvari-main.js <worktree-main> tests/fixtures/salvari-main-v1.json
+
+function migrareDinMain(ctxBaza, a) {
+  const { ok, egal } = a;
+  const storageDin = (date) => {
+    const m = new Map(Object.entries(date));
+    return creeazaStorage({ tip: 'memorie', getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) });
+  };
+  // Tot ce citesc panourile din meniuri (fără DOM): dacă o salvare veche n-are un câmp, aici se vede.
+  const deschideMeniurile = (state, ctx) => {
+    descrieActivitati(state, ctx);
+    listaDatorii(state, ctx);
+    portofoliu(state, ctx);
+    descrieImobile(state, ctx);
+    descrieCatalog(state, ctx);
+    descrieSecundare(state, ctx);
+    descrieAsigurari(state, ctx);
+    bugetFamilie(state, ctx);
+    for (const p of ctx.educatie.programe.values()) descrieProgram(state, ctx, p);
+    for (const c of ctx.educatie.cursuri.values()) descrieCurs(state, ctx, c);
+    ok(Number.isFinite(avereNeta(state)), 'averea netă e un număr');
+  };
+  return {
+    async 'migrare: salvările reale de pe main (versiunea 1) se încarcă, se văd în meniuri și se joacă 3 ani'() {
+      const fixture = JSON.parse(await a.citeste('tests/fixtures/salvari-main-v1.json'));
+      const cazuri = Object.entries(fixture.cazuri);
+      ok(cazuri.length >= 8, `${cazuri.length} salvări`);
+      let cuCard = 0;
+      for (const [id, caz] of cazuri) {
+        const ctx = ctxBaza;
+        const storage = storageDin(caz.localStorage);
+        const state = incarcaJoc(storage);
+        ok(state, `${id}: salvarea se încarcă`);
+        egal(state.versiune, VERSIUNE_SALVARE, `${id}: versiunea adusă la zi`);
+        ok(state.familie && state.infractiuni && Array.isArray(state.cursuri) && state.timp, `${id}: câmpurile noi`);
+        deschideMeniurile(state, ctx);
+        if (state.final) continue; // un joc terminat se vede doar pe ecranul de final
+        const oprire = oprireCurenta(state, ctx);
+        if (oprire) cuCard++;
+        a.consuma(state, ctx, oprire, a.primaDisponibila);
+        for (const tip of ['activitate', 'asigurare']) actiune(state, ctx, tip, tip === 'activitate' ? { activitate: 'alergare' } : { tip: 'viata' });
+        for (let an = 0; an < 3 && !state.final; an++) {
+          a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+          a.verificaInvarianti(state);
+        }
+        deschideMeniurile(state, ctx);
+        // Checkpoint-urile salvate pe main se încarcă și ele.
+        for (const cp of listaCheckpointuri(storage)) {
+          const s = incarcaCheckpoint(storage, cp.id);
+          ok(s && s.versiune === VERSIUNE_SALVARE, `${id}: checkpoint „${cp.eticheta}”`);
+          a.consuma(s, ctx, oprireCurenta(s, ctx) ?? avanseaza(s, ctx), a.primaDisponibila);
+          a.verificaInvarianti(s);
+        }
+      }
+      ok(cuCard >= 3, `${cuCard} salvări cu un card de eveniment deschis`);
+      return `${cazuri.length} salvări, ${cuCard} cu un card deschis`;
+    },
   };
 }
 
