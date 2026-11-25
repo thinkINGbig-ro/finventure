@@ -255,7 +255,7 @@ Viitor scăzut nu dă game over. Dă un final slab la pensie, cu explicație.
 - **Portocaliul se folosește puțin:** doar pe butonul „Avansează”, pe acțiunea principală dintr-un card și pe banii care intră.
 - **Textul de pe butoanele portocalii** e `--bg` (mov închis), nu alb.
 - **Verdele și roșul** apar doar ca feedback la schimbarea valorilor.
-- **Logo:** placeholder în `assets/logo.svg` (îl înlocuim noi). Numele „Finventure” are „Fin” în portocaliu și „venture” în `--text`.
+- **Logo:** busola echipei, în `assets/logo.svg` (din 2026-11-25; marginile goale tăiate prin `viewBox`, desenul neschimbat): iconița din tab-ul browserului și, mic, în antet lângă nume. Numele „Finventure” are „Fin” în portocaliu și „venture” în `--text`.
 
 ## 10. Constrângeri tehnice
 
