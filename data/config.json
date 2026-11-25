@@ -419,6 +419,15 @@
     "luniBnpl": { "valoare": 4, "deVerificat": true, "sursa": "", "nota": "patru rate lunare fără dobândă" }
   },
 
+  "asigurari": {
+    "_info": "Asigurări facultative. PAD (obligatorie) e deja în utilitățile locuinței și acoperă doar cutremur, inundații naturale și alunecări de teren. Prime lunare în lei, la prețurile de start.",
+    "primaLocuinta": { "valoare": 40, "deVerificat": true, "sursa": "", "nota": "facultativă: incendiu, inundație de la vecini, furt, răspundere civilă" },
+    "primaViata": { "valoare": 120, "deVerificat": true, "sursa": "", "nota": "viață + boli grave, ~100.000 lei sumă asigurată, la 30–40 de ani" },
+    "indemnizatieBoalaGrava": { "valoare": 60000, "deVerificat": true, "sursa": "" },
+    "franciza": { "valoare": 500, "deVerificat": true, "sursa": "" },
+    "varstaMaxViata": { "valoare": 60, "deVerificat": true, "sursa": "", "nota": "după vârsta asta, asigurătorii nu mai încheie polițe noi (simplificat)" }
+  },
+
   "infractiuni": {
     "_info": "Pedepsele din joc sunt simplificate și orientative; în realitate depind de faptă, de valoare, de antecedente și de instanță. Sumele sunt în lei, la prețurile de start.",
     "amendaFurt": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "amendă penală pentru un furt mărunt, la prima abatere" },

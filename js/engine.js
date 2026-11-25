@@ -43,6 +43,7 @@ import {
 import { cumparaBun, proceseazaBunuri, vindeBun } from './cumparaturi.js';
 import { inDetentie, proceseazaDetentie } from './infractiuni.js';
 import { aplicaScenariu } from './scenarii.js';
+import { asigura, verificaAsigurari } from './asigurari.js';
 
 export const VARSTA_PENSIE = 65;
 
@@ -258,6 +259,7 @@ export function proceseazaLuna(state, ctx) {
   let neplatit = 0;
   expiraFlaguri(state);
   proceseazaDetentie(state, ctx);
+  verificaAsigurari(state);
 
   // 1. Piețele se mișcă mereu (și fără investiții), ca RNG-ul să nu depindă de alegeri.
   // Companiile individuale au fluxul lor („companii”), ca piața principală să nu se schimbe.
@@ -734,7 +736,7 @@ export const ACTIUNI = ['deschide', 'seteaza', 'depune', 'retrage', 'lichideaza'
   'investeste', 'vinde', 'seteazaDCA', 'depunePilon3', 'rebalanseaza', 'cumparaImobil', 'vindeImobil',
   'seteazaRitm', 'oreSuplimentare', 'cerePromovare', 'cursFirma', 'demisie', 'devinoArtist', 'incepeSecundar', 'opresteSecundar',
   'faPlanAfaceri', 'faStudiuPiata', 'aplicaGrant', 'pornesteAfacere', 'retrageDinFirma', 'depuneInFirma', 'inchideAfacere',
-  'seteazaAfacere', 'extindeAfacerea', 'imprumutFirma', 'vindeAfacerea', 'cumparaBun', 'vindeBun', 'vreauLocuinta'];
+  'seteazaAfacere', 'extindeAfacerea', 'imprumutFirma', 'vindeAfacerea', 'cumparaBun', 'vindeBun', 'vreauLocuinta', 'asigurare'];
 
 const NUME_PRODUS = { contCurent: 'contul curent', contEconomii: 'contul de economii', depozit: 'depozitul', cardCredit: 'cardul de credit', investitie: 'investiția' };
 const leiText = (bani) => `${formateazaLei(inLei(bani))} lei`;
@@ -752,7 +754,7 @@ export function actiune(state, ctx, tip, param = {}) {
 }
 
 // Ce poți face și din detenție: doar operațiuni cu banii pe care îi ai.
-const ACTIUNI_IN_DETENTIE = ['depune', 'retrage', 'ramburseaza', 'platesteRestanta', 'seteaza', 'seteazaDCA', 'vinde', 'vindeBun', 'retrageDinFirma', 'depuneInFirma'];
+const ACTIUNI_IN_DETENTIE = ['depune', 'retrage', 'ramburseaza', 'platesteRestanta', 'seteaza', 'seteazaDCA', 'vinde', 'vindeBun', 'retrageDinFirma', 'depuneInFirma', 'asigurare'];
 
 function executaActiune(state, ctx, tip, param) {
   if (state.pendinte?.tip === 'eveniment' || state.final) return { ok: false, mesaj: 'Termină întâi decizia curentă.' };
@@ -945,6 +947,11 @@ function executaActiune(state, ctx, tip, param) {
     }
     case 'vindeBun': {
       rez = vindeBun(state, ctx, prod);
+      if (!rez.ok) return rez;
+      break;
+    }
+    case 'asigurare': {
+      rez = asigura(state, ctx, { tip: param.tip, activ: param.activ !== false });
       if (!rez.ok) return rez;
       break;
     }

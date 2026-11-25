@@ -14,6 +14,7 @@ import { confirma } from './ecrane.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../activitati.js';
 import { datoriiTotal, listaDatorii, simuleazaConsolidare, simuleazaEsalonare, simuleazaRambursare } from '../datorii.js';
+import { descrieAsigurari } from '../asigurari.js';
 import { descrieCurs, descrieProgram } from '../educatie.js';
 import { companieFalimentata, infoClasa, portofoliu } from '../investitii.js';
 import { baniDisponibili, paramClasa } from '../finance.js';
@@ -395,6 +396,17 @@ function panouBanca(o, reranda) {
       datorii.some((d) => d.restanta > 0 || d.luniRestante > 0) ? 'Ai restanțe: fiecare lună de întârziere adaugă penalități.' : 'Totul e plătit la zi.',
       h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-principal', onclick: () => deschidePanou('datorii', o) }, 'Vezi și gestionează')))
     : h('p', { class: 'mic' }, 'N-ai nicio datorie. Bravo.'));
+
+  // Asigurări facultative: prima e o cheltuială lunară; fără asigurare, paguba o plătești tu.
+  sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Asigurări'));
+  for (const as of descrieAsigurari(state, ctx)) {
+    const buton = as.activa
+      ? h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => executa('asigurare', { tip: as.tip, activ: false }) }, 'Renunț')
+      : h('button', { type: 'button', class: 'btn btn-secundar', disabled: as.motiv ? true : null, onclick: () => executa('asigurare', { tip: as.tip }) }, 'Mă asigur');
+    sectiuni.push(produs(`${as.emoji} ${as.titlu}`, `${lei(as.prima)} / lună`,
+      as.activa ? `Activă. ${as.descriere}` : as.motiv ?? as.descriere,
+      h('div', { class: 'rand-butoane' }, buton)));
+  }
   return sectiuni;
 }
 

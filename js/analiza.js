@@ -8,7 +8,8 @@
 export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
     'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job', 'clauza_fidelitate', 'cazier',
-    'fara_bac'], // din scenariile de start (data/scenarii.json)
+    'fara_bac', // din scenariile de start (data/scenarii.json)
+    'asigurare_locuinta', 'asigurare_viata'], // din meniul Bancă → Asigurări (js/asigurari.js)
   flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat', 'clauza_fidelitate',
     'concurenta_afacere', 'cazier'],
   evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta',

@@ -1,0 +1,246 @@
+{
+  "_info": "Lotul 9b: asigurări (locuință, viață), moșteniri, donații, ajutorul pentru părinți. Flagurile asigurare_locuinta / asigurare_viata vin din meniul Bancă → Asigurări (js/asigurari.js).",
+  "evenimente": [
+    {
+      "id": "inundatie-locuinta",
+      "titlu": "Inundație de la vecinul de sus",
+      "faza": [3, 4, 5],
+      "conditii": { "areProdus": ["proprietate"] },
+      "pondere": 1,
+      "cooldownLuni": 60,
+      "checkpoint": true,
+      "variabile": { "pagube": 12000, "franciza": "pret:asigurari.franciza" },
+      "text": "S-a spart o țeavă la vecinul de sus. Tavanul, parchetul și o parte din mobilă sunt distruse: {pagube} lei. PAD-ul obligatoriu nu acoperă așa ceva, doar dezastrele naturale.",
+      "alegeri": [
+        {
+          "id": "asigurare",
+          "eticheta": "Plătește asigurarea, eu doar franciza ({franciza} lei)",
+          "cere": { "flag": ["asigurare_locuinta"], "motiv": "N-ai asigurare facultativă pentru locuință." },
+          "efecte": { "numerar": "-{franciza}" },
+          "etichete": ["asigurare"],
+          "concepte": ["asigurare-locuinta"],
+          "lectie": "Pentru asta plătești prima în fiecare lună: o pagubă mare devine una mică.",
+          "jurnal": "Asigurarea locuinței a plătit pagubele după o inundație."
+        },
+        {
+          "id": "fond",
+          "eticheta": "Plătesc din fondul de urgență",
+          "cere": { "fondUrgentaMin": "{pagube}" },
+          "sursaPlata": "fondUrgenta",
+          "efecte": { "numerar": "-{pagube}", "viitor": -3 },
+          "concepte": ["fond-urgenta", "asigurare-locuinta"],
+          "lectie": "Fondul de urgență te-a salvat. O asigurare de câteva zeci de lei pe lună l-ar fi lăsat întreg.",
+          "jurnal": "Ai reparat apartamentul după o inundație, din fondul de urgență."
+        },
+        {
+          "id": "vecin",
+          "eticheta": "Îi cer vecinului să plătească",
+          "efecte": { "numerar": "-{pagube}", "fericire": -6, "energie": -5, "retea": -2 },
+          "concepte": ["asigurare-locuinta"],
+          "lectie": "Fără asigurare, ai de recuperat banii de la vecin, poate prin instanță, ani la rând. Până atunci, reparația o plătești tu.",
+          "jurnal": "Ai plătit singur reparațiile după o inundație și ai început un proces cu vecinul."
+        }
+      ]
+    },
+    {
+      "id": "diagnostic-grav",
+      "titlu": "Un diagnostic greu",
+      "faza": [4, 5],
+      "conditii": { "varstaMin": 35 },
+      "pondere": 1,
+      "maxAparitii": 1,
+      "checkpoint": true,
+      "variabile": { "clinica": 40000, "indemnizatie": "pret:asigurari.indemnizatieBoalaGrava" },
+      "text": "Analizele au ieșit prost. Tratamentul durează luni bune. La stat e gratuit, dar cu așteptare; la o clinică privată costă cam {clinica} lei.",
+      "alegeri": [
+        {
+          "id": "asigurare",
+          "eticheta": "Asigurarea de viață îmi dă {indemnizatie} lei",
+          "cere": { "flag": ["asigurare_viata"], "motiv": "N-ai asigurare de viață cu boli grave." },
+          "efecte": { "numerar": "{indemnizatie}", "energie": -15 },
+          "etichete": ["asigurare"],
+          "concepte": ["asigurare-viata"],
+          "lectie": "Banii de la asigurare acoperă tratamentul și lunile în care nu poți munci la fel.",
+          "jurnal": "Ai primit un diagnostic grav; asigurarea de viață ți-a plătit indemnizația."
+        },
+        {
+          "id": "stat",
+          "eticheta": "Mă tratez la stat",
+          "cere": { "asigurat": true },
+          "efecte": { "energie": -25, "fericire": -8 },
+          "concepte": ["asigurare-sanatate"],
+          "lectie": "Asigurarea de sănătate de stat (CASS) acoperă tratamentul. Așteptarea e grea, dar nu te îndatorezi.",
+          "jurnal": "Te-ai tratat la stat după un diagnostic grav."
+        },
+        {
+          "id": "credit",
+          "eticheta": "Fac un credit pentru clinica privată",
+          "produsNou": { "tip": "credit", "furnizor": "banca", "suma": "{clinica}", "dae": "config:creditNevoiPersonale.dae", "luni": 60 },
+          "efecte": { "numerar": "-{clinica}", "energie": -15, "fericire": -4 },
+          "etichete": ["credit"],
+          "concepte": ["asigurare-viata", "rata"],
+          "lectie": "Sănătatea pe credit: rata te urmărește 5 ani. O asigurare de viață costă cât un abonament la sală.",
+          "jurnal": "Ai luat un credit ca să te tratezi la o clinică privată."
+        }
+      ]
+    },
+    {
+      "id": "mostenire-bani",
+      "titlu": "O moștenire",
+      "faza": [4, 5],
+      "conditii": { "varstaMin": 30 },
+      "pondere": 1,
+      "maxAparitii": 1,
+      "variabile": { "suma": 40000, "notar": 2000, "net": 38000 },
+      "text": "O mătușă cu care vorbeai rar ți-a lăsat economiile ei: {suma} lei. Notarul cere {notar} lei pentru acte.",
+      "alegeri": [
+        {
+          "id": "pun-deoparte",
+          "eticheta": "Pun banii deoparte sau îi investesc",
+          "efecte": { "numerar": "{net}", "viitor": 5 },
+          "etichete": ["economisire"],
+          "concepte": ["mostenire"],
+          "lectie": "La moștenirea dezbătută în primii 2 ani nu plătești impozit, doar notarul. Banii puși la treabă cresc mai departe.",
+          "jurnal": "Ai moștenit economiile unei mătuși și le-ai pus deoparte."
+        },
+        {
+          "id": "cheltui",
+          "eticheta": "Îmi fac un cadou: mașină nouă și o vacanță",
+          "efecte": { "numerar": "-{notar}", "fericire": 8 },
+          "etichete": ["stilSus"],
+          "concepte": ["mostenire"],
+          "lectie": "Bucuria unei cumpărături mari trece repede. O moștenire investită poate deveni o parte din pensie.",
+          "jurnal": "Ai moștenit bani și i-ai cheltuit pe o mașină și o vacanță."
+        }
+      ]
+    },
+    {
+      "id": "mostenire-datorii",
+      "titlu": "Casa unchiului",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 25 },
+      "pondere": 1,
+      "maxAparitii": 1,
+      "variabile": { "casa": 60000, "datorii": 90000, "diferenta": 30000 },
+      "text": "Unchiul ți-a lăsat casa lui de la țară, care valorează cam {casa} lei. La notar afli că lasă și datorii la bancă: {datorii} lei.",
+      "alegeri": [
+        {
+          "id": "renunt",
+          "eticheta": "Renunț la moștenire",
+          "concepte": ["mostenire"],
+          "lectie": "Moștenești și datoriile. Când sunt mai mari decât averea, poți renunța la notar.",
+          "jurnal": "Ai renunțat la moștenirea unchiului, care avea mai multe datorii decât valoarea casei."
+        },
+        {
+          "id": "accept",
+          "eticheta": "Accept: vând casa și plătesc datoriile",
+          "produsNou": { "tip": "credit", "furnizor": "banca", "suma": "{diferenta}", "dae": "config:creditNevoiPersonale.dae", "luni": 60 },
+          "efecte": { "numerar": "-{diferenta}", "fericire": -3 },
+          "concepte": ["mostenire"],
+          "lectie": "Ai preluat o datorie care nu era a ta. Citește actele înainte să accepți o moștenire.",
+          "jurnal": "Ai acceptat moștenirea unchiului: după vânzarea casei, ai rămas cu 30.000 lei de plătit."
+        }
+      ]
+    },
+    {
+      "id": "ajutor-parinti",
+      "titlu": "Părinții",
+      "faza": [4, 5],
+      "conditii": { "varstaMin": 38 },
+      "pondere": 1,
+      "maxAparitii": 2,
+      "cooldownLuni": 60,
+      "variabile": { "lunar": 500, "unic": 6000 },
+      "text": "Pensia părinților nu mai ajunge pentru facturi și medicamente. Ți-au spus, cu greu, că le-ar prinde bine {lunar} lei pe lună.",
+      "alegeri": [
+        {
+          "id": "lunar",
+          "eticheta": "Îi ajut lunar, 5 ani",
+          "recurente": [{ "tip": "cheltuiala", "suma": "{lunar}", "luni": 60, "eticheta": "Ajutor pentru părinți" }],
+          "efecte": { "fericire": 3, "retea": 5 },
+          "concepte": ["buget"],
+          "lectie": "Ajutorul pentru părinți intră în buget ca orice cheltuială fixă. Planificat, nu te dezechilibrează.",
+          "jurnal": "Ai început să-ți ajuți părinții cu bani în fiecare lună."
+        },
+        {
+          "id": "unic",
+          "eticheta": "Le dau o sumă acum ({unic} lei)",
+          "cere": { "baniMin": "{unic}" },
+          "efecte": { "numerar": "-{unic}", "fericire": 2, "retea": 3 },
+          "lectie": "O sumă o dată rezolvă o lună grea, nu o pensie mică. Merită discutat ce urmează.",
+          "jurnal": "Le-ai dat părinților o sumă de bani."
+        },
+        {
+          "id": "nu-pot",
+          "eticheta": "Acum nu pot",
+          "efecte": { "fericire": -5, "retea": -3 },
+          "lectie": "Uneori chiar nu poți. Pentru cei care vin după tine, pensia ta de mâine contează și ea: o economisești de azi.",
+          "jurnal": "N-ai putut să-ți ajuți părinții cu bani."
+        }
+      ]
+    },
+    {
+      "id": "ajutor-avans",
+      "titlu": "O mână de ajutor",
+      "faza": [3, 4],
+      "conditii": { "varstaMin": 25, "varstaMax": 35, "lipsaFlag": ["are_locuinta"], "ascunse": { "retea": { "min": 50 } } },
+      "pondere": 1,
+      "maxAparitii": 1,
+      "variabile": { "donatie": 30000 },
+      "text": "Părinții vor să-ți dea {donatie} lei din economiile lor, pentru avansul unei locuințe.",
+      "alegeri": [
+        {
+          "id": "accept",
+          "eticheta": "Accept, îi păstrez pentru avans",
+          "efecte": { "numerar": "{donatie}", "fericire": 4 },
+          "etichete": ["economisire"],
+          "concepte": ["donatie"],
+          "lectie": "Banii primiți de la părinți nu se impozitează. Ține-i separat, ca să nu se topească în cheltuielile lunare.",
+          "jurnal": "Părinții ți-au dat bani pentru avansul unei locuințe."
+        },
+        {
+          "id": "refuz",
+          "eticheta": "Refuz, să-i păstreze pentru pensia lor",
+          "efecte": { "retea": 3, "viitor": 1 },
+          "concepte": ["donatie"],
+          "lectie": "Și asta e o decizie financiară: economiile lor sunt plasa lor de siguranță.",
+          "jurnal": "Ai refuzat banii părinților, ca să-i păstreze pentru pensie."
+        }
+      ]
+    },
+    {
+      "id": "formular-230",
+      "titlu": "3,5% din impozit",
+      "faza": [3, 4, 5],
+      "conditii": { "job": ["orice"] },
+      "pondere": 1,
+      "cooldownLuni": 36,
+      "variabile": { "donatie": 200 },
+      "text": "E primăvară. Un coleg îți spune că poți trimite 3,5% din impozitul pe salariu către un ONG, prin formularul 230. Pe tine nu te costă nimic.",
+      "alegeri": [
+        {
+          "id": "completez",
+          "eticheta": "Completez formularul",
+          "efecte": { "fericire": 2, "reputatie": 1 },
+          "concepte": ["redirectionare-impozit"],
+          "lectie": "Banii aceia oricum mergeau la stat. Așa decizi tu unde ajung.",
+          "jurnal": "Ai redirecționat 3,5% din impozit către un ONG."
+        },
+        {
+          "id": "donez",
+          "eticheta": "Donez și {donatie} lei din buzunar",
+          "efecte": { "numerar": "-{donatie}", "fericire": 3 },
+          "concepte": ["redirectionare-impozit"],
+          "lectie": "Formularul 230 e gratuit; o donație în plus e alegerea ta, din bugetul tău.",
+          "jurnal": "Ai făcut o donație unui ONG și ai completat formularul 230."
+        },
+        {
+          "id": "nu",
+          "eticheta": "N-am timp de hârtii",
+          "lectie": "Dacă nu-l completezi, cei 3,5% rămân la stat. Durează 5 minute, online.",
+          "jurnal": "N-ai completat formularul 230."
+        }
+      ]
+    }
+  ]
+}

@@ -30,6 +30,76 @@ export function testeLoturi(ctxBaza, a) {
     ...lot7(ctxBaza, a),
     ...lot8(ctxBaza, a),
     ...lot9a(ctxBaza, a),
+    ...lot9b(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 9b: asigurări, moșteniri, donații, părinți ----------
+
+function lot9b(ctxBaza, a) {
+  const { ok, egal } = a;
+  return {
+    'lotul 9b: asigurarea de viață: prima lunară, flagul, renunțarea; fără venit e refuzată'() {
+      const { ctx, state } = a.jocCuJob('asig-viata');
+      a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+      const r = actiune(state, ctx, 'asigurare', { tip: 'viata' });
+      ok(r.ok, r.mesaj);
+      ok(areFlag(state, 'asigurare_viata'), 'flagul');
+      const rec = state.recurente.find((x) => x.asigurare === 'viata');
+      egal(rec.suma, pret(state, ctx, 'asigurari.primaViata'), 'prima');
+      ok(!actiune(state, ctx, 'asigurare', { tip: 'viata' }).ok, 'nu de două ori');
+      ok(actiune(state, ctx, 'asigurare', { tip: 'viata', activ: false }).ok, 'renunțarea');
+      ok(!areFlag(state, 'asigurare_viata') && !state.recurente.some((x) => x.asigurare), 'fără flag și fără primă');
+      state.produse = state.produse.filter((p) => p.tip !== 'contractMunca');
+      ok(/venit/.test(actiune(state, ctx, 'asigurare', { tip: 'viata' }).mesaj), 'fără venit: motivul');
+    },
+
+    'lotul 9b: inundația: cu asigurare plătești franciza, fără ea toată paguba'() {
+      const pierdere = (cuAsigurare) => {
+        const { ctx, state } = a.jocCuJob('inundatie');
+        a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+        state.produse.push(creeazaProdus({ tip: 'proprietate', valoare: inBani(250_000), marime: 'garsoniera' }, state, ctx));
+        state.numerar = inBani(50_000);
+        if (cuAsigurare) ok(actiune(state, ctx, 'asigurare', { tip: 'locuinta' }).ok, 'asigurarea');
+        state.pendinte = null;
+        forteazaEveniment(state, ctx, 'inundatie-locuinta');
+        const oprire = oprireCurenta(state, ctx);
+        egal(oprire.alegeri.find((x) => x.id === 'asigurare').disponibil, cuAsigurare, 'alegerea cu asigurarea');
+        const inainte = baniDisponibili(state);
+        alege(state, ctx, cuAsigurare ? 'asigurare' : 'vecin');
+        return inainte - baniDisponibili(state);
+      };
+      const cu = pierdere(true);
+      const fara = pierdere(false);
+      ok(cu < fara / 10, `cu asigurare ${cu / 100} lei, fără ${fara / 100} lei`);
+    },
+
+    'lotul 9b: asigurarea locuinței dispare când vinzi ultima locuință'() {
+      const { ctx, state } = a.jocCuJob('asig-vanzare');
+      a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+      ok(/locuință a ta/.test(actiune(state, ctx, 'asigurare', { tip: 'locuinta' }).mesaj), 'fără locuință: motivul');
+      const casa = creeazaProdus({ tip: 'proprietate', valoare: inBani(250_000), marime: 'garsoniera' }, state, ctx);
+      state.produse.push(casa);
+      ok(actiune(state, ctx, 'asigurare', { tip: 'locuinta' }).ok, 'asigurată');
+      state.produse = state.produse.filter((p) => p !== casa);
+      state.pendinte = null;
+      a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+      ok(!state.recurente.some((x) => x.asigurare === 'locuinta'), 'prima nu se mai plătește');
+    },
+
+    'lotul 9b: moștenirea cu datorii: renunțarea nu costă nimic, acceptarea lasă o datorie'() {
+      const { ctx, state } = a.jocCuJob('mostenire-datorii');
+      a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+      state.pendinte = null;
+      const datoriiInainte = state.produse.filter((p) => p.tip === 'credit').length;
+      forteazaEveniment(state, ctx, 'mostenire-datorii');
+      const copie = cloneaza(state);
+      alege(state, ctx, 'renunt');
+      egal(state.produse.filter((p) => p.tip === 'credit').length, datoriiInainte, 'renunț: nicio datorie nouă');
+      alege(copie, ctx, 'accept');
+      ok(copie.produse.filter((p) => p.tip === 'credit').length === datoriiInainte + 1, 'accept: un credit nou');
+      ok(copie.concepte.includes('mostenire'), 'conceptul');
+    },
   };
 }
 
@@ -1118,6 +1188,7 @@ function lot0(ctxBaza, a) {
         cumparaBun: [{ bun: 'bicicleta', plata: 'cash' }, { bun: 'nu-exista', plata: 'cash' }, { bun: 'ceas', plata: 'bnpl' }],
         vindeBun: [{ id: id('contCurent') }],
         vreauLocuinta: [{}],
+        asigurare: [{ tip: 'viata' }, { tip: 'locuinta' }, { tip: 'viata', activ: false }, { tip: 'nu-exista' }],
       };
       for (const tip of ACTIUNI) ok(cazuri[tip], `acțiunea „${tip}” nu are caz de test`);
       let n = 0;

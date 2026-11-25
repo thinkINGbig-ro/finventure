@@ -55,6 +55,7 @@ js/afacere.js       afacerea proprie: pregătire, pornire, luna firmei, dividend
 js/cumparaturi.js   catalogul de cumpărături: plată, depreciere, revânzare, costuri lunare
 js/infractiuni.js   fapte, dosar penal, pedepse, detenție, cazier
 js/scenarii.js      scenariile de start (datorii, fără bac, moștenire)
+js/asigurari.js     asigurările facultative (locuință, viață)
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -157,6 +158,10 @@ Domeniile pot avea `incasareLuni` (clienții plătesc după 1–2 luni) și `sto
 `data/scenarii.json`, `js/scenarii.js`: la „Joc nou” (din meniul ⋯ sau de pe ecranul de final) jucătorul alege cu ce pornește. Prima viață pornește mereu cu „obisnuit” (fără ecran în plus înainte de prima decizie). Câmpurile: `datorie` (credit cu `suma` în lei, `dae` număr sau `config:…`, `luni`; banii sunt deja cheltuiți), `flaguri`, `imobil` (`garsoniera` / `apartament`, o locuință de închiriat moștenită), `efecte` (statistici), `jurnal`, `concepte`. „Fără bac” pune flagul `fara_bac`: condiția `lipsaFlag: ["fara_bac"]` închide facultatea și postliceala (cu mesajul ei, care are prioritate față de `motiv`), joburile cu `"cereBac": true` (poliția) nu apar, iar cursul „Bacalaureatul, din nou” (`stergeFlag`) șterge flagul. Simularea: `node tests/simulare.js --n 200 --scenariu datorii`.
 
 Averea netă an de an: `state.istoricPortofoliu` (instantaneu la sfârșitul fiecărui an); graficul (`graficAvere` din `js/ui/grafic.js`) apare din butonul 📈 al antetului și pe ecranul de final.
+
+## Asigurările, moștenirile, părinții
+
+`js/asigurari.js`, panoul Bancă → Asigurări (acțiunea `asigurare` cu `{ tip: 'locuinta' | 'viata', activ }`). Prima e o recurență marcată `asigurare` (din `config.json` → `asigurari`), iar flagurile `asigurare_locuinta` / `asigurare_viata` sunt citite de evenimentele din `data/events/familie-bani.json`: inundația de la vecini (cu asigurare plătești doar franciza), diagnosticul grav (indemnizația asigurării de viață, tratamentul la stat sau credit pentru clinica privată), moștenirea în bani, moștenirea cu datorii (poți renunța), ajutorul pentru părinți, donația părinților pentru avans, formularul 230. Asigurarea locuinței se oprește singură când nu mai ai nicio locuință.
 
 ## Infracțiunile și consecințele
 

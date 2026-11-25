@@ -249,6 +249,7 @@ function meniuFrugal(state, ctx) {
     actiune(state, ctx, 'seteazaDCA', { clasa: 'etf', suma: Math.round(lei(fluturas(cFrugal.brut, cFrugal.contract, ctx).net) * 0.1) });
   }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
+  asigurariAtent(state, ctx, { viata: false });
   cereMarireAnual(state, ctx);
   // Frugalul păstrează venitul în plus cât are energie: toți banii în plus merg la investiții.
   muncaAtent(state, ctx, fondUrgenta(state) >= 6 * lunar, { pastreazaSecundarul: true });
@@ -282,6 +283,7 @@ function meniuPrudent(state, ctx) {
   const fond = asiguraFond(state, ctx);
   const c = contractCurent(state);
   const netLunar = c ? fluturas(c.brut, c.contract, ctx).net : 0;
+  asigurariAtent(state, ctx, { viata: true });
 
   const surplus = baniDisponibili(state) - lunar;
   if (fond && surplus > 0) {
@@ -386,6 +388,7 @@ function meniuRiscant(state, ctx, rnd) {
 // Aleator: în fiecare an, 0–3 acțiuni de meniu luate la întâmplare, bune sau proaste.
 const ACTIUNI_ALEATOARE = [
   (state, ctx) => actiune(state, ctx, 'deschide', { tip: 'contCurent', pachet: varstaLa(state.luna) <= 25 ? 'tineri' : 'standard' }),
+  (state, ctx, rnd) => actiune(state, ctx, 'asigurare', { tip: rnd() < 0.5 ? 'locuinta' : 'viata', activ: rnd() < 0.7 }),
   (state, ctx, rnd) => actiune(state, ctx, 'stilViata', { nivel: ['modest', 'confortabil', 'lux'][Math.floor(rnd() * 3)] }),
   (state, ctx, rnd) => {
     let e = gasesteProduse(state, 'contEconomii')[0];
@@ -525,12 +528,18 @@ function alegeAleator(oprire, state, ctx, rnd) {
   return sub[Math.floor(rnd() * sub.length)].cale;
 }
 
-// Ponderile comune ale jucătorilor atenți la bani (prudent și frugal).
 // Jucătorii atenți: cu rate de plătit și fără un venit din muncă, întâi muncesc, apoi studiază
 // (ex. scenariul de start „Începi cu datorii”).
 const rateFaraVenit = (state) => !state.produse.some((p) => p.tip === 'contractMunca')
   && state.produse.some((p) => p.tip === 'credit' && p.stadiu === 'activ' && p.rata > 0);
 
+// Asigurările jucătorilor atenți: locuința, de cum au una; viața (doar prudentul), de la 30 de ani, cu venit.
+function asigurariAtent(state, ctx, { viata }) {
+  if (!state.flaguri.asigurare_locuinta && state.produse.some((p) => p.tip === 'proprietate' || p.tip === 'imobil')) actiune(state, ctx, 'asigurare', { tip: 'locuinta' });
+  if (viata && !state.flaguri.asigurare_viata && varstaLa(state.luna) >= 30) actiune(state, ctx, 'asigurare', { tip: 'viata' });
+}
+
+// Ponderile comune ale jucătorilor atenți la bani (prudent și frugal).
 const PONDERI_ATENT = {
   ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
   fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
