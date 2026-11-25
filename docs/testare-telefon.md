@@ -4,6 +4,8 @@ Ramura `extindere` (loturile 0–9c). Pentru fiecare ecran: **unde** (tab, buton
 
 **Ce urmărești peste tot:** nimic nu iese din ecran pe orizontală (fără scroll lateral), cifrele nu se rup pe două rânduri în mijlocul sumei, butoanele au cel puțin un deget lățime (44 px) și nu se suprapun, textele lungi se rup pe rânduri în loc să fie tăiate, mesajul verde / roșu apare sus după fiecare acțiune.
 
+**Telefonul ținut orizontal și calculatorul:** jocul trece pe două coloane (stânga: cine ești, barele, Avansează, meniurile doar cu iconițe pe telefon; dreapta: jurnalul). Rotește telefonul o dată pe ecranul principal, cu un card de decizie deschis și cu un meniu deschis: Avansează și toate cele 6 meniuri se văd fără derulare, cardul cu 4 variante încape (variantele pe două coloane), lecțiile apar jos peste jurnal. Pe calculator, la fel, în fereastra browserului micșorată și mărită.
+
 **Adresa de test:** https://mihaimpmo.github.io/finventure-preview/?debug=1 (se actualizează singură la câteva minute după un push pe `extindere`; commit-ul publicat e în `/versiune.txt`). Salvarea de acolo e separată de jocul publicat.
 
 **Scurtături:** deschide jocul cu `?debug=1` la final de adresă. Din panoul de debug poți sări la o vârstă, seta bani, statistici sau flag-uri și forța un eveniment după id (id-urile sunt scrise mai jos, în paranteze). Pentru ecranele care cer bani, setează întâi numerar mult (ex. 500.000 lei).

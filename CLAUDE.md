@@ -229,7 +229,7 @@ Viitor scăzut nu dă game over. Dă un final slab la pensie, cu explicație.
 
 ## 9. Interfața
 
-- **Mobile-first;** pe desktop jocul apare centrat, cu lățime de telefon.
+- **Mobile-first;** pe telefon ținut vertical, o singură coloană; pe tabletă ținută vertical, aceeași coloană, mai lată (560 px). Pe ecrane late (≥ 900 px) și pe telefon ținut orizontal: două coloane (stânga antetul, barele, Avansează și meniurile; dreapta jurnalul), cardurile și panourile centrate ca ferestre. Tot layout-ul e în `css/style.css` (secțiunea „Două coloane”); HTML-ul și ordinea lui nu depind de ecran.
 - **Ecranul principal:**
   - **sus:** nume, vârstă, numerar, cele 4 bare
   - **mijloc:** jurnalul vieții (scroll)
