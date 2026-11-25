@@ -66,7 +66,8 @@ button { cursor: pointer; }
 .antet { padding: 12px 16px 10px; background: var(--bg); border-bottom: 1px solid var(--linie); }
 .antet-sus { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .antet-butoane { display: flex; gap: 2px; }
-.wordmark { font-weight: 700; font-size: 18px; letter-spacing: .2px; }
+.wordmark { font-weight: 700; font-size: 18px; letter-spacing: .2px; display: inline-flex; align-items: center; gap: 8px; }
+.logo { width: 30px; height: 30px; flex: none; }
 .fin { color: var(--accent); }
 .btn-icon {
   min-width: 44px; min-height: 44px; border: 0; border-radius: 50%;
