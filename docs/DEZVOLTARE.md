@@ -219,7 +219,17 @@ git worktree remove ../finventure-main
 - Versiunea paginii stă în `<meta name="finventure-cod">` din `index.html` și în `js/versiune.js`. Schimb-o în ambele locuri când codul depinde de o schimbare din `index.html`; un test le compară.
 - Butoanele din antet sunt opționale în `main.js`, ca o pagină veche să nu oprească jocul.
 - Importurile rămân relative (`from './x.js'` sau `import('./x.js')`), ca testul să le găsească pe toate.
-- Pornirea măsurată cu „Slow 4G” în Chrome: vezi tabelul de mai jos.
+
+**Pornirea pe o rețea mobilă lentă** (Chrome, presetul „Slow 4G” din DevTools: ~560 ms latență, 1,6 Mbps; până apare numele jucătorului în antet; măsurat pe 2026-11-25):
+
+| Varianta | Prima vizită | Vizita repetată |
+|---|---|---|
+| Înainte: JSON-urile unul după altul, modulele urmărite nivel cu nivel | ~20,8 s | ~18,5 s |
+| JSON-urile în paralel | ~5,7 s | ~3,4 s |
+| JSON-urile în paralel + lista fixă `MODULE` (acum, pe preview) | ~4,9 s | ~2,4 s |
+| Limita de jos, fără nicio verificare a modulelor (doar pentru comparație) | ~5,7 s | ~1,5 s |
+
+La vizita repetată, timpul vine aproape numai din latență: pagina, verificarea modulelor (un val) și conținutul (două valuri: fișierele de bază, apoi evenimentele din `data/events/index.json`). Scriptul de măsurare folosește Chrome headless prin protocolul DevTools; nu e în repo.
 
 ## Cum am testat echilibrul jocului
 
