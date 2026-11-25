@@ -10,6 +10,12 @@
     "student-si-adult.json",
     "investitii.json",
     "locuinta.json",
-    "adult.json"
+    "adult.json",
+    "imobiliare.json",
+    "afaceri.json",
+    "cumparaturi.json",
+    "infractiuni.json",
+    "familie-bani.json",
+    "familie.json"
   ]
 }

@@ -12,7 +12,7 @@
         {
           "id": "vand",
           "eticheta": "Vând tot, să nu pierd și mai mult",
-          "lichideaza": ["investitie:etf", "investitie:actiuni", "investitie:crypto", "investitie:aur"],
+          "lichideaza": ["investitie:piata"],
           "efecte": { "fericire": 3 },
           "etichete": ["panica"],
           "concepte": ["prabusirea-bursei"],

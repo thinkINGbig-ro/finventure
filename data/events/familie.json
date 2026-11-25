@@ -1,0 +1,480 @@
+{
+  "_info": "Lotul 9c: partener și familie. Efectul „familie” (js/familie.js) schimbă starea familiei; banii lunari (partea partenerului, copiii, alocația, pensia de întreținere) se calculează în motor.",
+  "evenimente": [
+    {
+      "id": "intalnire",
+      "titlu": "Cineva special",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 21, "varstaMax": 45, "lipsaFlag": ["partener"] },
+      "pondere": 2,
+      "cooldownLuni": 36,
+      "maxAparitii": 3,
+      "variabile": { "venit": "pret:familie.venitPartenerNet" },
+      "text": "Ai cunoscut pe cineva cu care te înțelegi foarte bine. După câteva luni, vorbiți despre o locuință comună. Câștigă cam {venit} lei pe lună.",
+      "alegeri": [
+        {
+          "id": "muta",
+          "eticheta": "Se mută la mine",
+          "cere": { "locuinta": ["chirieSingur", "proprietate", "proprietateGarsoniera"], "motiv": "Stai cu părinții sau cu colegi: întâi ai nevoie de o locuință doar a ta." },
+          "familie": "partener",
+          "flaguri": ["impreuna_recent:12"],
+          "efecte": { "fericire": 8, "retea": 3 },
+          "etichete": ["partener"],
+          "concepte": ["buget-comun"],
+          "lectie": "Doi oameni sub același acoperiș plătesc o singură chirie și o singură factură. Stabiliți de la început cine ce plătește.",
+          "jurnal": "V-ați mutat împreună."
+        },
+        {
+          "id": "chirie-noua",
+          "eticheta": "Ne luăm o chirie doar a noastră",
+          "cere": { "locuinta": ["acasa", "camin", "chirieColegi"], "motiv": "Ai deja o locuință doar a ta." },
+          "familie": "partener",
+          "situatie": { "locuinta": "chirieSingur" },
+          "flaguri": ["impreuna_recent:12"],
+          "efecte": { "fericire": 8, "retea": 2 },
+          "etichete": ["partener"],
+          "concepte": ["buget-comun"],
+          "lectie": "Chiria pentru doi e mai mică decât două chirii. Partenerul plătește jumătate din chirie și din facturi.",
+          "jurnal": "V-ați luat o garsonieră în chirie, doar voi doi."
+        },
+        {
+          "id": "incet",
+          "eticheta": "Ne mai cunoaștem, fiecare la casa lui",
+          "efecte": { "fericire": 4 },
+          "lectie": "Nicio grabă. O mutare împreună e și o decizie de bani: chirie, facturi, obiceiuri de cheltuială.",
+          "jurnal": "Ai cunoscut pe cineva, dar fiecare a rămas la casa lui."
+        }
+      ]
+    },
+    {
+      "id": "bani-in-cuplu",
+      "titlu": "Banii voștri",
+      "faza": [3, 4, 5],
+      "conditii": { "flag": ["partener", "impreuna_recent"] },
+      "pondere": 6,
+      "maxAparitii": 2,
+      "text": "Prima lună împreună. Cine plătește chiria, mâncarea, vacanța? Partenerul câștigă altfel decât tine.",
+      "alegeri": [
+        {
+          "id": "proportional",
+          "eticheta": "Un cont comun pentru cheltuieli, restul separat",
+          "efecte": { "fericire": 3, "viitor": 1 },
+          "etichete": ["economisire"],
+          "concepte": ["buget-comun"],
+          "lectie": "Cheltuielile comune dintr-un cont comun, banii personali separat: fiecare știe ce are și nimeni nu dă socoteală pentru o cafea.",
+          "jurnal": "Ați deschis un cont comun pentru cheltuielile casei."
+        },
+        {
+          "id": "separat",
+          "eticheta": "Fiecare plătește jumătate, la orice",
+          "efecte": { "fericire": 1 },
+          "concepte": ["buget-comun"],
+          "lectie": "Jumătate-jumătate pare corect, dar dacă unul câștigă mult mai puțin, ajunge să nu-și mai permită nimic altceva.",
+          "jurnal": "Ați hotărât să împărțiți orice cheltuială pe din două."
+        },
+        {
+          "id": "tot-comun",
+          "eticheta": "Punem toți banii la comun",
+          "efecte": { "fericire": 4 },
+          "concepte": ["buget-comun"],
+          "lectie": "Merge când aveți aceleași obiceiuri. Dacă unul cheltuie mult, celălalt plătește; vorbiți lunar despre buget.",
+          "jurnal": "Ați pus toți banii la comun."
+        }
+      ]
+    },
+    {
+      "id": "nunta",
+      "titlu": "Nunta",
+      "faza": [3, 4, 5],
+      "conditii": { "varstaMin": 23, "flag": ["partener"], "lipsaFlag": ["casatorit", "impreuna_recent"] },
+      "pondere": 2,
+      "cooldownLuni": 24,
+      "maxAparitii": 2,
+      "variabile": {
+        "mare": "pret:familie.costNuntaMare",
+        "dar": "pret:familie.darNuntaMare",
+        "restMare": "pret:familie.costNuntaMare*0.3333",
+        "mica": "pret:familie.costNuntaMica",
+        "civila": "pret:familie.costStareCivila"
+      },
+      "text": "V-ați hotărât să vă căsătoriți. Restaurantul vrea avans acum. O nuntă cu 150 de invitați costă cam {mare} lei; darul acoperă de obicei cam {dar} lei.",
+      "alegeri": [
+        {
+          "id": "mare",
+          "eticheta": "Nuntă mare, cu 150 de invitați",
+          "familie": "casatorie",
+          "produsNou": { "tip": "credit", "furnizor": "banca", "suma": "{restMare}", "dae": "config:creditNevoiPersonale.dae", "luni": 36 },
+          "efecte": { "numerar": "-{restMare}", "fericire": 10 },
+          "etichete": ["stilSus", "rate"],
+          "concepte": ["costul-nuntii", "rata"],
+          "lectie": "Darul a acoperit {dar} din {mare} lei; restul, {restMare} lei, l-ați pus pe un credit de 3 ani. O zi frumoasă, plătită lună de lună.",
+          "jurnal": "V-ați căsătorit cu o nuntă mare; o parte din cost e pe credit."
+        },
+        {
+          "id": "mica",
+          "eticheta": "Nuntă mică, cu familia ({mica} lei)",
+          "cere": { "baniMin": "{mica}" },
+          "familie": "casatorie",
+          "efecte": { "numerar": "-{mica}", "fericire": 8 },
+          "etichete": ["economisire"],
+          "concepte": ["costul-nuntii"],
+          "lectie": "O nuntă plătită din economii nu vă lasă cu rate în prima zi de căsnicie.",
+          "jurnal": "V-ați căsătorit, cu o nuntă mică, plătită din economii."
+        },
+        {
+          "id": "civila",
+          "eticheta": "Doar la starea civilă și o masă acasă",
+          "familie": "casatorie",
+          "efecte": { "numerar": "-{civila}", "fericire": 6 },
+          "etichete": ["economisire"],
+          "concepte": ["costul-nuntii"],
+          "lectie": "Căsătoria e un act la primărie. Petrecerea e opțională, iar banii rămași pot deveni avansul pentru o casă.",
+          "jurnal": "V-ați căsătorit la starea civilă."
+        },
+        {
+          "id": "nu",
+          "eticheta": "Nu ne grăbim",
+          "efecte": { "fericire": -1 },
+          "lectie": "Fără nuntă nu aveți comunitate de bunuri: fiecare rămâne cu ce a cumpărat pe numele lui.",
+          "jurnal": "Ați amânat nunta."
+        }
+      ]
+    },
+    {
+      "id": "copil-decizie",
+      "titlu": "Un copil?",
+      "faza": [4, 5],
+      "conditii": { "varstaMin": 24, "varstaMax": 43, "flag": ["partener"], "lipsaFlag": ["sarcina", "impreuna_recent"] },
+      "pondere": 2,
+      "cooldownLuni": 30,
+      "maxAparitii": 3,
+      "variabile": { "cost": "pret:familie.costLunarCopil", "alocatie": "pret:familie.alocatiePeste2", "alocatieMic": "pret:familie.alocatieSub2" },
+      "text": "Vorbiți tot mai des despre un copil. Un copil costă cam {cost} lei pe lună, până la 18 ani; statul dă o alocație de {alocatieMic} lei pe lună până la 2 ani, apoi {alocatie} lei.",
+      "alegeri": [
+        {
+          "id": "da",
+          "eticheta": "Da, ne dorim un copil",
+          "flaguri": ["sarcina:12"],
+          "urmari": [{ "eveniment": "nastere", "dupaLuni": 9 }],
+          "efecte": { "fericire": 5 },
+          "etichete": ["copil"],
+          "concepte": ["costul-unui-copil"],
+          "lectie": "Partenerul plătește jumătate din costurile copilului. Un fond de urgență pentru o familie e mai mare decât pentru o persoană.",
+          "jurnal": "V-ați hotărât să aveți un copil."
+        },
+        {
+          "id": "astept",
+          "eticheta": "Mai așteptăm",
+          "efecte": { "fericire": -1 },
+          "concepte": ["costul-unui-copil"],
+          "lectie": "Nu există momentul perfect, dar un fond de urgență și un venit stabil fac primii ani mult mai liniștiți.",
+          "jurnal": "Ați amânat decizia unui copil."
+        }
+      ]
+    },
+    {
+      "id": "nastere",
+      "titlu": "S-a născut!",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "variabile": {
+        "indemn": "stare:salariuNet*0.85",
+        "min": "pret:familie.indemnizatieMin",
+        "max": "pret:familie.indemnizatieMax",
+        "bona": "pret:familie.costBona",
+        "luni": "config:familie.luniConcediuCrestere"
+      },
+      "text": "Bun venit pe lume! Cineva trebuie să stea cu cel mic. Concediul de creștere durează {luni} luni, cu o indemnizație de 85% din salariul net (la tine, cam {indemn} lei, între {min} și {max} lei).",
+      "alegeri": [
+        {
+          "id": "eu",
+          "eticheta": "Iau eu concediul de creștere",
+          "cere": { "job": ["orice"], "asigurat": true, "motiv": "Indemnizația se calculează din salariul cu contract; acum n-ai unul." },
+          "familie": ["copil", "concediuEu"],
+          "stergeFlaguri": ["sarcina"],
+          "efecte": { "fericire": 12, "energie": -10 },
+          "etichete": ["copil"],
+          "concepte": ["concediu-crestere", "alocatia"],
+          "lectie": "Doi ani primești indemnizația în locul salariului, plus alocația. Bugetul scade: planificați-l dinainte.",
+          "jurnal": "Ți s-a născut un copil. Ai intrat în concediul de creștere."
+        },
+        {
+          "id": "partener",
+          "eticheta": "Ia partenerul concediul",
+          "familie": ["copil", "concediuPartener"],
+          "stergeFlaguri": ["sarcina"],
+          "efecte": { "fericire": 12, "energie": -8 },
+          "etichete": ["copil"],
+          "concepte": ["concediu-crestere", "alocatia"],
+          "lectie": "Partenerul primește indemnizația, deci contribuie mai puțin la casă. Tu duci mai mult din cheltuieli doi ani.",
+          "jurnal": "Ți s-a născut un copil. Partenerul a intrat în concediul de creștere."
+        },
+        {
+          "id": "bona",
+          "eticheta": "Ne întoarcem amândoi la muncă, cu bonă",
+          "familie": "copil",
+          "stergeFlaguri": ["sarcina"],
+          "recurente": [{ "tip": "cheltuiala", "suma": "{bona}", "luni": 24, "eticheta": "Bonă" }],
+          "efecte": { "fericire": 6, "energie": -15 },
+          "etichete": ["copil"],
+          "concepte": ["alocatia", "costul-unui-copil"],
+          "lectie": "Bona costă {bona} lei pe lună. Merită doar dacă salariile voastre aduc mai mult decât indemnizația plus costul bonei.",
+          "jurnal": "Ți s-a născut un copil. V-ați întors amândoi la muncă și ați angajat o bonă."
+        }
+      ]
+    },
+    {
+      "id": "partener-somaj",
+      "titlu": "Partenerul a rămas fără job",
+      "faza": [3, 4, 5],
+      "conditii": { "flag": ["partener"], "lipsaFlag": ["partener_fara_venit", "partener_concediu", "impreuna_recent"] },
+      "pondere": 1,
+      "cooldownLuni": 48,
+      "variabile": { "luni": "balans:familie.luniPartenerFaraVenit" },
+      "text": "Firma partenerului s-a restructurat. Cam {luni} luni nu va mai putea pune nimic la comun: chiria, facturile și copiii rămân pe tine.",
+      "alegeri": [
+        {
+          "id": "economii",
+          "eticheta": "Ne descurcăm din ce avem pus deoparte",
+          "familie": "partenerSomer",
+          "efecte": { "fericire": -2, "viitor": -2 },
+          "etichete": ["fond"],
+          "concepte": ["fond-urgenta", "buget-comun"],
+          "lectie": "Un fond de urgență de familie acoperă lunile în care unul dintre voi n-are venit.",
+          "jurnal": "Partenerul a rămas fără job; ați trăit din economii până și-a găsit altul."
+        },
+        {
+          "id": "tai",
+          "eticheta": "Tăiem din cheltuieli până își găsește ceva",
+          "familie": "partenerSomer",
+          "stilViata": -1,
+          "efecte": { "fericire": -4 },
+          "etichete": ["economisire"],
+          "concepte": ["buget-comun"],
+          "lectie": "Un buget de criză: mai puține ieșiri, nimic cumpărat în rate. Lunile grele trec mai ușor fără datorii noi.",
+          "jurnal": "Partenerul a rămas fără job; ați strâns cureaua câteva luni."
+        }
+      ]
+    },
+    {
+      "id": "divort",
+      "titlu": "Despărțirea",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "variabile": { "notar": "pret:familie.costDivortNotar", "instanta": "pret:familie.costDivortInstanta" },
+      "text": "Certurile, pe bani și pe orice altceva, s-au înmulțit. Vă gândiți serios să vă despărțiți.",
+      "alegeri": [
+        {
+          "id": "notar",
+          "eticheta": "Divorțăm prin acord, la notar ({notar} lei)",
+          "cere": { "flag": ["casatorit"], "motiv": "Nu sunteți căsătoriți: nu e nevoie de divorț." },
+          "familie": "divortNotar",
+          "efecte": { "numerar": "-{notar}", "fericire": -12 },
+          "etichete": ["divort"],
+          "concepte": ["partaj", "pensie-intretinere"],
+          "lectie": "Divorțul prin acord e rapid și ieftin. Copiii au nevoie în continuare de amândoi: pensia de întreținere e o cheltuială fixă până la 18 ani.",
+          "jurnal": "Ați divorțat prin acord, la notar."
+        },
+        {
+          "id": "instanta",
+          "eticheta": "Ajungem la tribunal ({instanta} lei)",
+          "cere": { "flag": ["casatorit"], "motiv": "Nu sunteți căsătoriți: nu e nevoie de divorț." },
+          "familie": "divortInstanta",
+          "efecte": { "numerar": "-{instanta}", "fericire": -20, "energie": -10 },
+          "etichete": ["divort"],
+          "concepte": ["partaj", "pensie-intretinere"],
+          "lectie": "Un proces de divorț costă de câteva ori mai mult și durează ani. De multe ori, avocații câștigă mai mult decât oricare dintre voi.",
+          "jurnal": "Ați divorțat după un proces lung."
+        },
+        {
+          "id": "despartire",
+          "eticheta": "Ne despărțim",
+          "cere": { "lipsaFlag": ["casatorit"], "motiv": "Sunteți căsătoriți: e nevoie de divorț." },
+          "familie": "divortNotar",
+          "efecte": { "fericire": -10 },
+          "etichete": ["divort"],
+          "concepte": ["pensie-intretinere"],
+          "lectie": "Fără căsătorie, fiecare pleacă cu ce e pe numele lui. Ce ați cumpărat împreună (o casă, un credit) rămâne de împărțit.",
+          "jurnal": "V-ați despărțit."
+        },
+        {
+          "id": "impacare",
+          "eticheta": "Mai încercăm o dată",
+          "familie": "impacare",
+          "efecte": { "fericire": -3 },
+          "lectie": "Cele mai multe certuri în cuplu sunt despre bani. Un buget făcut împreună și un fond de urgență scad tensiunea.",
+          "jurnal": "Ați trecut printr-o criză în cuplu și ați hotărât să mai încercați."
+        }
+      ]
+    },
+    {
+      "id": "divort-casa",
+      "titlu": "Casa și creditul comun",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "variabile": { "valoare": 0, "datorie": 0, "partea": 0, "luni": 0 },
+      "text": "Casa e pe numele amândurora, la fel și creditul: mai sunt {datorie} lei de dat, iar casa valorează cam {valoare} lei. Pentru bancă, nu contează că v-ați despărțit: amândoi datorați toată suma.",
+      "alegeri": [
+        {
+          "id": "vindem",
+          "eticheta": "Vindem casa și împărțim ce rămâne",
+          "familie": "vindeCasaComuna",
+          "efecte": { "fericire": -3 },
+          "etichete": ["vandCasa"],
+          "concepte": ["co-debitor", "partaj"],
+          "lectie": "Banca se plătește prima din preț. Ce rămâne se împarte; dacă prețul nu acoperă creditul, plătiți amândoi diferența.",
+          "jurnal": "Ați vândut casa comună după despărțire."
+        },
+        {
+          "id": "preiau",
+          "eticheta": "Păstrez casa: preiau creditul și îi dau partea lui ({partea} lei)",
+          "cere": {
+            "baniMin": "{partea}",
+            "indatorare": { "suma": 0, "luni": 12, "dae": "config:ipotecar.daeFixa" },
+            "motiv": "N-ai {partea} lei ca să-i dai partea lui din casă."
+          },
+          "familie": "preiaCreditul",
+          "efecte": { "numerar": "-{partea}" },
+          "etichete": ["preiauCreditul"],
+          "concepte": ["co-debitor", "partaj"],
+          "lectie": "Banca a acceptat să rămâi singur pe credit doar pentru că salariul tău acoperă toată rata. Casa e acum doar a ta.",
+          "jurnal": "Ai păstrat casa după despărțire și ai preluat singur creditul."
+        },
+        {
+          "id": "ramanem",
+          "eticheta": "Rămânem amândoi pe credit, fiecare cu jumătate",
+          "familie": "creditComun",
+          "etichete": ["ramanPeCreditComun"],
+          "concepte": ["co-debitor"],
+          "lectie": "Pare cea mai simplă variantă, dar rămâi legat de fostul partener ani la rând: dacă nu-și mai plătește partea, banca îți cere ție toată rata.",
+          "jurnal": "După despărțire, ați rămas amândoi pe creditul casei."
+        }
+      ]
+    },
+    {
+      "id": "fostul-nu-plateste",
+      "titlu": "Rata întreagă",
+      "doarUrmare": true,
+      "checkpoint": true,
+      "text": "Fostul partener nu și-a mai plătit partea din rată de două luni. Banca te sună pe tine: pentru ea, datorați amândoi toată suma.",
+      "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "Plătesc eu toată rata de acum încolo",
+          "familie": "platescEu",
+          "efecte": { "fericire": -6 },
+          "concepte": ["co-debitor"],
+          "lectie": "Ca co-debitor răspunzi pentru tot creditul, nu doar pentru jumătatea ta. Poți cere banii de la fostul partener în instanță, dar banca nu așteaptă.",
+          "jurnal": "Fostul partener nu și-a mai plătit partea; ai preluat toată rata."
+        },
+        {
+          "id": "vindem",
+          "eticheta": "Vindem casa și închidem creditul",
+          "familie": "vindeCasaComuna",
+          "efecte": { "fericire": -4 },
+          "etichete": ["vandCasa"],
+          "concepte": ["co-debitor", "partaj"],
+          "lectie": "Vânzarea închide creditul și legătura cu fostul partener. Data viitoare, despărțiți și creditul odată cu voi.",
+          "jurnal": "Ați vândut casa ca să închideți creditul comun."
+        }
+      ]
+    },
+    {
+      "id": "cumpara-impreuna",
+      "titlu": "O casă pentru amândoi?",
+      "faza": [4, 5],
+      "conditii": {
+        "varstaMin": 26,
+        "flag": ["partener"],
+        "jobProgram": ["full-time"],
+        "locuinta": ["chirieSingur", "chirieColegi", "acasa"],
+        "lipsaFlag": ["amanat_cumparare", "impreuna_recent"]
+      },
+      "pondere": 4,
+      "cooldownLuni": 24,
+      "checkpoint": true,
+      "variabile": {
+        "pretA": "pret:locuinte.pretApartament",
+        "avansA": "pret:locuinte.pretApartament*0.15",
+        "parteaTaAvans": "pret:locuinte.pretApartament*0.075",
+        "imprumutA": "pret:locuinte.pretApartament*0.85",
+        "platestiA": "pret:locuinte.pretApartament*0.925"
+      },
+      "text": "Vă uitați la apartamente cu 2 camere: {pretA} lei, cu {avansA} lei avans. Banca vă spune că, dacă luați creditul împreună, pune la socoteală ambele salarii. Atunci însă amândoi răspundeți pentru toată datoria, chiar și dacă vă despărțiți.",
+      "alegeri": [
+        {
+          "id": "impreuna",
+          "eticheta": "Cumpărăm împreună (co-debitori)",
+          "cere": {
+            "jobProgram": ["full-time"],
+            "asigurat": true,
+            "ascunse": { "scorCredit": { "min": 50 } },
+            "lipsaFlag": ["istoric_restante", "executare_silita", "spirala_datorii", "datorie_recuperator"],
+            "motiv": "Banca te refuză: are nevoie de un venit cu contract și de un istoric de credit curat, fără restanțe, IFN-uri în lanț sau executări."
+          },
+          "subalegeri": [
+            {
+              "id": "fixa",
+              "eticheta": "Credit cu dobândă fixă",
+              "cere": {
+                "baniMin": "{parteaTaAvans}",
+                "indatorare": { "suma": "{imprumutA}", "luni": 360, "dae": "config:ipotecar.daeFixa", "primaLocuinta": true, "coDebitor": true },
+                "motiv": "N-ai {parteaTaAvans} lei, jumătatea ta din avans."
+              },
+              "produsNou": [
+                { "tip": "credit", "furnizor": "ipoteca", "suma": "{imprumutA}", "dae": "config:ipotecar.daeFixa", "luni": 360, "coDebitor": true },
+                { "tip": "proprietate", "valoare": "{pretA}", "marime": "apartament" }
+              ],
+              "efecte": { "numerar": "-{platestiA}", "fericire": 8 },
+              "situatie": { "locuinta": "proprietate" },
+              "flaguri": ["are_locuinta"],
+              "etichete": ["cumparaCasa", "creditComun"],
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }],
+              "concepte": ["co-debitor", "credit-ipotecar", "grad-de-indatorare"],
+              "lectie": "Cu două salarii, banca vă dă mai mult. Partenerul plătește jumătate din rată, dar pentru bancă amândoi datorați tot.",
+              "jurnal": "Ați cumpărat împreună un apartament, cu credit ipotecar comun, la dobândă fixă."
+            },
+            {
+              "id": "variabila",
+              "eticheta": "Credit cu dobândă variabilă",
+              "cere": {
+                "baniMin": "{parteaTaAvans}",
+                "indatorare": { "suma": "{imprumutA}", "luni": 360, "variabila": true, "primaLocuinta": true, "coDebitor": true },
+                "motiv": "N-ai {parteaTaAvans} lei, jumătatea ta din avans."
+              },
+              "produsNou": [
+                { "tip": "credit", "furnizor": "ipoteca", "suma": "{imprumutA}", "variabila": true, "luni": 360, "coDebitor": true },
+                { "tip": "proprietate", "valoare": "{pretA}", "marime": "apartament" }
+              ],
+              "efecte": { "numerar": "-{platestiA}", "fericire": 8 },
+              "situatie": { "locuinta": "proprietate" },
+              "flaguri": ["are_locuinta"],
+              "etichete": ["cumparaCasa", "creditComun", "dobandaVariabila"],
+              "urmari": [{ "eveniment": "chirie-sau-casa", "dupaLuni": [6, 18] }],
+              "concepte": ["co-debitor", "credit-ipotecar", "dobanda-fixa-variabila"],
+              "lectie": "Rata urmează indicele de referință (IRCC). Amândoi răspundeți pentru ea, oricât ar crește.",
+              "jurnal": "Ați cumpărat împreună un apartament, cu credit ipotecar comun, la dobândă variabilă."
+            }
+          ]
+        },
+        {
+          "id": "singur",
+          "eticheta": "Cumpăr pe numele meu",
+          "urmari": [{ "eveniment": "cumpara-locuinta", "dupaLuni": 0 }],
+          "concepte": ["grad-de-indatorare"],
+          "lectie": "Singur, banca se uită doar la venitul tău, dar casa și creditul rămân doar ale tale, orice s-ar întâmpla.",
+          "jurnal": "Te-ai uitat la o casă pe numele tău."
+        },
+        {
+          "id": "chirie",
+          "eticheta": "Rămânem în chirie",
+          "flaguri": ["amanat_cumparare:36"],
+          "etichete": ["amanaCumpararea"],
+          "concepte": ["chirie-vs-cumparare"],
+          "lectie": "Chiria vă lasă liberi să vă mutați. Contează ce faceți cu diferența dintre chirie și rata plus costurile unei case.",
+          "jurnal": "Ați hotărât să rămâneți în chirie."
+        }
+      ]
+    }
+  ]
+}

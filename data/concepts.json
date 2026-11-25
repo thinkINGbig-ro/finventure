@@ -245,6 +245,211 @@
       "id": "grad-de-indatorare",
       "titlu": "Gradul de îndatorare",
       "text": "Gradul de îndatorare arată cât din venitul tău net pleacă pe rate: toate ratele lunare împărțite la salariul net. Băncile au voie să-ți dea un credit nou doar dacă gradul rămâne sub o limită stabilită de BNR (în jur de 40%, cu excepții, de exemplu pentru prima locuință). Limita te protejează: o lună proastă nu trebuie să te lase fără bani de mâncare. Exemplu: cu 5.000 lei net și o rată la mașină de 1.200 lei, o ipotecă cu rata de 1.000 lei ar duce gradul la 44%, adică peste limită."
+    },
+    {
+      "id": "rambursare-anticipata",
+      "titlu": "Rambursarea anticipată",
+      "text": "Rambursarea anticipată înseamnă să dai înapoi o parte din credit (sau tot) înainte de termen. Dobânda se calculează pe ce mai datorezi, așa că fiecare leu dat în plus azi nu mai face dobândă de mâine. Poți alege să-ți scadă rata (aceeași durată) sau să termini mai repede (aceeași rată); a doua variantă economisește mai mult. La dobânda fixă poate exista un mic comision, la cea variabilă de obicei nu. Exemplu: la un credit de 20.000 lei cu DAE 12% pe 5 ani, 5.000 lei dați în plus după primul an economisesc peste 2.200 lei din dobândă dacă termini mai repede, sau cam 1.200 lei dacă îți scade rata."
+    },
+    {
+      "id": "avalansa-bulgare",
+      "titlu": "Avalanșă sau bulgăre de zăpadă",
+      "text": "Sunt două metode de a scăpa de mai multe datorii. La avalanșă plătești minimul peste tot și dai tot ce ai în plus pe datoria cu cea mai mare dobândă (DAE): economisești cei mai mulți bani. La bulgărele de zăpadă dai banii în plus pe datoria cea mai mică: o închizi repede, te bucuri și treci la următoarea, cu rata ei eliberată. Exemplu: cu un IFN de 1.000 lei (DAE 120%) și un card de 4.000 lei (22%), avalanșa și bulgărele aleg amândouă IFN-ul întâi; cu un credit de 3.000 lei la 10% și cardul de 4.000 lei la 22%, avalanșa alege cardul."
+    },
+    {
+      "id": "refinantare",
+      "titlu": "Refinanțarea și consolidarea",
+      "text": "Refinanțarea înseamnă să iei un credit nou, mai ieftin, ca să închizi unul scump. Consolidarea strânge mai multe datorii (card, IFN, rate) într-un singur credit, cu o singură rată. Banca verifică venitul, istoricul și gradul de îndatorare, deci merge doar dacă încă plătești la timp. Atenție la durată: o rată mai mică pe mai mulți ani poate însemna mai mulți bani dați în total. Exemplu: 10.000 lei datorie pe card (22%) mutați într-un credit la 10% pe 3 ani te costă cam 1.550 lei dobândă, față de aproape 4.400 lei (și 7 ani și jumătate) dacă plătești doar minimul la card."
+    },
+    {
+      "id": "etf",
+      "titlu": "ETF-ul",
+      "text": "Un ETF e un fond care cumpără automat toate acțiunile dintr-un indice (de exemplu cele mai mari 500 de companii americane sau mii de companii din toată lumea) și se tranzacționează la bursă ca o acțiune. Cu o singură cumpărare devii coproprietar pe o bucățică din sute de companii. Pentru că nu are pe cineva care să aleagă acțiunile, comisionul anual e foarte mic. Exemplu: cu 500 lei într-un ETF pe bursa mondială ai bani puși în peste 1.500 de companii, cu un cost de cam 1 leu pe an."
+    },
+    {
+      "id": "cost-comisioane",
+      "titlu": "Costul comisioanelor pe termen lung",
+      "text": "Un comision anual pare mic, dar se scade în fiecare an din toată suma, inclusiv din câștiguri, iar efectul se adună ca dobânda compusă, doar că împotriva ta. De aceea un fond cu 2% pe an rămâne mult în urma unui ETF cu 0,2%, chiar dacă investesc în aceleași companii. Înainte să investești, uită-te la comisionul de cumpărare, la cel de vânzare și mai ales la cel anual. Exemplu: 10.000 lei care cresc 7% pe an ajung în 30 de ani la cam 72.000 lei cu 0,2% comision și la doar cam 43.000 lei cu 2%."
+    },
+    {
+      "id": "diversificare",
+      "titlu": "Diversificarea",
+      "text": "Diversificarea înseamnă să nu pui toate ouăle în același coș: banii împărțiți pe multe companii și pe mai multe tipuri de investiții (acțiuni, titluri de stat, aur). O companie poate da faliment, dar sute deodată, foarte greu; iar când bursele scad, titlurile de stat și aurul de obicei țin. Nu-ți crește randamentul, dar îți scade mult riscul. Exemplu: cu toți banii într-o singură companie care dă faliment pierzi tot; într-un ETF cu 500 de companii, același faliment te costă cam 0,2%."
+    },
+    {
+      "id": "investitie-lunara",
+      "titlu": "Investiția lunară automată",
+      "text": "Investiția lunară automată (în engleză, DCA) înseamnă să pui aceeași sumă în fiecare lună, oricum ar fi bursa. Când prețurile sunt mici cumperi mai multe unități, când sunt mari, mai puține, deci nu trebuie să ghicești momentul potrivit. E și cel mai simplu obicei: banii pleacă singuri după salariu, înainte să apuci să-i cheltui. Exemplu: 300 lei pe lună timp de 30 de ani înseamnă 108.000 lei puși deoparte; cu un randament mediu de 7% pe an ajung la peste 340.000 lei."
+    },
+    {
+      "id": "rebalansare",
+      "titlu": "Rebalansarea",
+      "text": "Rebalansarea înseamnă să readuci portofoliul la proporțiile pe care le-ai ales. După un an bun, acțiunile au crescut și ocupă o parte mai mare decât voiai, deci riscul tău a crescut fără să decizi asta. Vinzi puțin din ce a crescut și cumperi din ce a rămas în urmă. Se face rar (o dată pe an), pentru că fiecare vânzare costă comision și, uneori, impozit. Exemplu: 60% acțiuni și 40% titluri devin, după un an bun, 70% și 30%; rebalansarea te aduce înapoi la 60/40."
+    },
+    {
+      "id": "randament-chirie",
+      "titlu": "Randamentul unei proprietăți de închiriat",
+      "text": "Randamentul net al unui apartament dat în chirie e ce rămâne pe an din chirii, după impozit, costurile de proprietar (impozit pe clădire, asigurare, reparații) și lunile fără chiriaș, împărțit la cât te-a costat cu totul. Cu credit, din chirie se plătește și rata, iar dacă chiria nu o acoperă, diferența iese din salariul tău. Un apartament se vinde greu și cu costuri, deci banii nu sunt la îndemână ca la un ETF. Exemplu: o garsonieră de 250.000 lei cu 2.000 lei chirie aduce, după 10% impozit și 120 lei costuri lunare, cam 20.200 lei pe an, adică 7,8%, înainte de lunile goale și reparații."
+    },
+    {
+      "id": "ore-suplimentare",
+      "titlu": "Orele suplimentare",
+      "text": "Orele lucrate peste program se plătesc cu un spor de cel puțin 75% din salariul pe oră, dacă angajatorul nu ți le compensează cu timp liber în următoarele zile. Sunt un venit bun pe termen scurt, dar obosesc, iar un buget construit pe ele se prăbușește când dispar. Codul muncii limitează și câte ore poți lucra pe săptămână. Exemplu: la 6.000 lei brut și 168 de ore pe lună, o oră normală e cam 36 de lei brut; 20 de ore suplimentare aduc cam 1.250 lei brut în plus."
+    },
+    {
+      "id": "clauza-fidelitate",
+      "titlu": "Clauza de fidelitate",
+      "text": "Când firma îți plătește un curs scump, îți poate cere să semnezi o clauză de fidelitate: rămâi angajat o perioadă (de obicei 1–3 ani), altfel returnezi o parte din costul cursului. E corect pentru amândoi: firma investește în tine, tu câștigi o calificare. Citește clauza înainte să semnezi: cât timp, cât plătești și dacă suma scade în timp. Exemplu: un curs de 3.000 lei cu clauză de 2 ani te costă 3.000 lei dacă pleci după 6 luni și nimic dacă pleci după 2 ani."
+    },
+    {
+      "id": "venit-variabil",
+      "titlu": "Bugetul pe venit variabil",
+      "text": "Artiștii, freelancerii și cei care lucrează pe comision au luni foarte bune și luni aproape goale. Regula de aur: îți faci bugetul pe luna slabă, nu pe media lunilor, și pui deoparte surplusul din lunile bune. Fondul de urgență trebuie să fie mai mare decât la un salariat, de 6–12 luni de cheltuieli. Exemplu: dacă într-un an câștigi 1.000, 6.000 și 2.000 lei în luni diferite, nu-ți fixa cheltuielile la 3.000 lei, ci în jur de 1.500, iar restul merge în fond."
+    },
+    {
+      "id": "plan-de-afaceri",
+      "titlu": "Planul de afaceri",
+      "text": "Planul de afaceri e calculul de dinainte: ce vinzi, cui, la ce preț, cât te costă lunar (chirie, salarii, marfă, taxe) și în cât timp își scoate afacerea banii investiți. Nu ghicește viitorul, dar arată unde se pot rupe lucrurile, de exemplu dacă primele luni vin cu prea puțini clienți. Băncile și programele de granturi îl cer întotdeauna. Exemplu: o cafenea de 80.000 lei care face 4.000 lei profit pe lună își scoate investiția în aproape 2 ani, dacă totul merge conform planului."
+    },
+    {
+      "id": "raspundere-limitata",
+      "titlu": "Răspunderea limitată",
+      "text": "La PFA și la întreprinderea individuală, firma ești tu: dacă afacerea face datorii, le plătești din banii tăi, iar creditorii pot ajunge până la casă sau la salariu. La SRL, firma e o persoană separată: dacă dă faliment, datoriile ei rămân ale ei, iar tu pierzi doar ce ai pus în firmă. Excepția: ce ai garantat personal (de obicei creditele luate de firmă). Exemplu: un SRL care rămâne cu 50.000 lei datorii la furnizori intră în insolvență, dar banii din contul tău personal nu se ating."
+    },
+    {
+      "id": "capital-de-lucru",
+      "titlu": "Capitalul de lucru",
+      "text": "Capitalul de lucru sunt banii de care o afacere are nevoie ca să funcționeze de la o lună la alta: chirie, salarii, marfă, până când vin încasările. Multe afaceri bune dau faliment nu pentru că n-au clienți, ci pentru că rămân fără bani în primele luni, când vânzările abia pornesc. De aceea, pe lângă investiție, pui deoparte câteva luni de costuri fixe. Exemplu: o cafenea cu 15.000 lei costuri fixe pe lună are nevoie de cam 45.000 lei rezervă pentru primele 3 luni."
+    },
+    {
+      "id": "profit-vs-cash-flow",
+      "titlu": "Profitul nu e același lucru cu banii din cont",
+      "text": "Profitul spune cât ai câștigat pe hârtie: vânzările lunii minus costurile ei. Cash flow-ul spune câți bani au intrat și au ieșit efectiv din cont. Cele două diferă când clienții plătesc după 30–60 de zile sau când cumperi marfa înainte s-o vinzi. O firmă poate fi pe profit și totuși să nu aibă bani de salarii, iar asta e una dintre cele mai dese cauze de faliment la firmele mici. Exemplu: vinzi în martie lucrări de 20.000 lei cu plata în mai; în martie și aprilie ai profit, dar plătești salariile din rezervă."
+    },
+    {
+      "id": "salariu-angajator",
+      "titlu": "Cât costă un angajat",
+      "text": "Un angajat costă mai mult decât salariul lui brut: angajatorul mai plătește contribuția asiguratorie pentru muncă, plus echipament, instruire și timpul în care angajatul învață. De aceea, înainte să angajezi, calculează câtă muncă în plus aduce fiecare om și câți clienți în plus poți servi. Un angajat fără destui clienți e doar un cost fix în plus. Exemplu: un salariu de 4.300 lei brut costă firma cam 4.400 lei pe lună, adică peste 52.000 lei pe an."
+    },
+    {
+      "id": "evaluare-afacere",
+      "titlu": "Cât valorează o afacere",
+      "text": "O afacere valorează cât profit va mai face, nu cât ai investit în ea. Cumpărătorii se uită la profitul ultimilor ani și plătesc de obicei echivalentul a câțiva ani de profit, mai mult dacă afacerea crește și merge fără tine, mai puțin dacă depinde doar de tine. O afacere pe pierdere nu are cumpărători, oricât ar fi costat amenajarea. Exemplu: o cafenea cu 50.000 lei profit pe an se poate vinde cu 100.000–150.000 lei."
+    },
+    {
+      "id": "control-fiscal",
+      "titlu": "Controlul fiscal",
+      "text": "ANAF verifică periodic firmele: dacă veniturile sunt declarate, dacă facturile sunt corecte și dacă taxele au fost plătite la timp. Greșelile de acte se amendează, iar veniturile ascunse înseamnă taxe recalculate, penalități și, în cazurile grave, dosar penal. Un contabil bun și actele ținute la zi sunt cea mai ieftină protecție. Exemplu: o amendă pentru facturi înregistrate greșit poate costa câteva mii de lei, mai mult decât un an de contabilitate."
+    },
+    {
+      "id": "depreciere",
+      "titlu": "Deprecierea",
+      "text": "Deprecierea e cât valoare pierde un lucru cu timpul. Telefoanele și laptopurile pierd repede (o treime pe an), mașinile noi cam 15–20% pe an, hainele aproape tot imediat ce le porți; un ceas bun sau o bicicletă îngrijită pierd mai încet. De asta, la revânzare primești mult mai puțin decât ai dat. Exemplu: un telefon de 6.000 lei mai valorează cam 4.400 după un an și cam 2.400 după trei ani."
+    },
+    {
+      "id": "cost-total-detinere",
+      "titlu": "Costul total de deținere",
+      "text": "Prețul de cumpărare e doar începutul. O mașină vine cu asigurare, revizii, combustibil, parcare și cu deprecierea; un animal de companie vine cu hrană și veterinar ani la rând. Costul total de deținere le adună pe toate, pe toată durata în care ai lucrul respectiv. Exemplu: o mașină de 85.000 lei, ținută 5 ani, cu 650 lei pe lună costuri și o pierdere de valoare de vreo 47.000 lei, te costă în total cam 86.000 lei, adică peste 1.400 lei pe lună."
+    },
+    {
+      "id": "cumparaturi-impuls",
+      "titlu": "Cumpărăturile din impuls",
+      "text": "Cumpărătura din impuls e cea pe care n-ai plănuit-o: reducerea „doar azi”, noul model, „ultimele bucăți”. Magazinele știu că, sub presiunea timpului, decidem cu emoția, nu cu bugetul. O regulă simplă: pentru tot ce n-ai plănuit și trece de o anumită sumă, aștepți 48 de ore; dacă mai vrei, cumperi. Exemplu: 300 lei pe lună în cumpărături din impuls fac 3.600 lei pe an, cam cât o vacanță la mare."
+    },
+    {
+      "id": "asigurare-locuinta",
+      "titlu": "Asigurarea locuinței (PAD și facultativa)",
+      "text": "În România, orice locuință trebuie să aibă PAD, asigurarea obligatorie: costă puțin și acoperă doar cutremurul, inundațiile naturale și alunecările de teren, până la o anumită sumă. Asigurarea facultativă acoperă ce se întâmplă mai des: incendiu, o țeavă spartă la vecini, furt, pagubele pe care le faci altora. Costă de obicei câteva zeci de lei pe lună. Exemplu: o inundație de la vecinul de sus poate costa 12.000 lei; cu asigurare facultativă, plătești doar franciza, de câteva sute de lei."
+    },
+    {
+      "id": "asigurare-viata",
+      "titlu": "Asigurarea de viață",
+      "text": "O asigurare de viață plătește o sumă stabilită dinainte dacă se întâmplă ceva grav: deces (banii merg la familie) sau, cu clauza de boli grave, un diagnostic serios (banii vin la tine). Contează mai ales când alții depind de venitul tău (copii, un credit pe casă). Atenție la produsele care amestecă asigurarea cu investiția: au de obicei comisioane mari. Exemplu: cu o primă de 120 lei pe lună, poți primi 60.000 lei la un diagnostic grav, bani pentru tratament și pentru lunile în care nu poți munci."
+    },
+    {
+      "id": "donatie",
+      "titlu": "Donația",
+      "text": "O donație e un dar: bani sau bunuri date fără nimic în schimb. Banii primiți de la părinți nu se impozitează. Pentru o casă sau un teren e nevoie de un contract de donație la notar. O donație de la părinți pentru avansul unei locuințe e una dintre cele mai obișnuite forme de ajutor între generații. Exemplu: 30.000 lei de la părinți pot fi tot avansul pentru o garsonieră cu credit ipotecar."
+    },
+    {
+      "id": "redirectionare-impozit",
+      "titlu": "Formularul 230: 3,5% din impozit",
+      "text": "Dacă ai salariu, poți cere ca 3,5% din impozitul pe venit să meargă la un ONG ales de tine, prin formularul 230, depus până în primăvară. Pe tine nu te costă nimic: banii oricum s-ar fi dus la stat. Exemplu: la un salariu net de 5.000 lei, impozitul anual e în jur de 6.000 lei; 3,5% înseamnă circa 210 lei pe an pentru o cauză aleasă de tine."
+    },
+    {
+      "id": "mostenire",
+      "titlu": "Moștenirea",
+      "text": "Când cineva moare, bunurile și datoriile lui trec la moștenitori. Moștenirea se dezbate la notar; dacă o faci în primii 2 ani, nu plătești impozit, doar onorariul notarului. Atenție: moștenești și datoriile. Poți renunța la o moștenire cu datorii mari. Exemplu: o garsonieră de 250.000 lei moștenită poate aduce o chirie de circa 1.500 lei pe lună, dar vine cu impozit, întreținere și reparații."
+    },
+    {
+      "id": "mostenire-datorii",
+      "titlu": "Moștenirea cu datorii",
+      "text": "Dacă accepți o moștenire, preiei și datoriile ei, dar răspunzi pentru ele doar cu bunurile moștenite, proporțional cu partea ta (Codul civil, art. 1114), nu cu salariul sau cu economiile tale. Ai trei variante: accepți și plătești datoria din banii tăi ca să păstrezi bunul, accepți și vinzi bunul ca să plătești creditorii, sau renunți la moștenire la notar, în termenul legal (de regulă un an de la deces). Calculul e simplu: merită să păstrezi casa doar dacă valorează mai mult decât datoria. Exemplu: o casă de 70.000 lei cu un credit de 50.000 lei îți lasă cam 20.000 lei; o casă de 60.000 lei cu 90.000 lei datorii nu-ți lasă nimic, dar nici nu-ți ia din buzunar cei 30.000 lei care lipsesc."
+    },
+    {
+      "id": "buget-comun",
+      "titlu": "Bugetul în cuplu",
+      "text": "Când locuiți împreună, unele costuri se împart: chiria, utilitățile, mâncarea, apoi copiii. Variantele obișnuite sunt jumătate-jumătate, proporțional cu venitul sau totul la comun. Ce contează e să vă înțelegeți dinainte și să vorbiți lunar despre bani: cele mai multe certuri în cuplu pornesc de la bani. Exemplu: la o chirie de 2.600 lei cu utilități, fiecare plătește 1.300 lei, mult mai puțin decât o garsonieră pentru fiecare."
+    },
+    {
+      "id": "costul-nuntii",
+      "titlu": "Costul unei nunți",
+      "text": "O nuntă mare în România costă zeci de mii de lei: restaurant, formație, fotograf, rochie, invitații. Darul invitaților acoperă de obicei doar o parte, iar avansurile se plătesc cu luni înainte. Mulți tineri iau un credit pentru diferență și încep căsnicia cu rate. Exemplu: 60.000 lei cost, 40.000 lei dar, 20.000 lei pe un credit de 3 ani, adică vreo 700 lei pe lună."
+    },
+    {
+      "id": "costul-unui-copil",
+      "titlu": "Cât costă un copil",
+      "text": "Un copil înseamnă cheltuieli lunare până la majorat: mâncare, haine, grădiniță sau școală, activități, sănătate. Costul se împarte între părinți și e parțial acoperit de alocația de stat. Înainte de un copil, un fond de urgență mai mare și un buget clar fac diferența. Exemplu: la 1.500 lei pe lună, 18 ani înseamnă peste 320.000 lei la prețurile de azi."
+    },
+    {
+      "id": "alocatia",
+      "titlu": "Alocația de stat pentru copii",
+      "text": "Statul plătește o alocație lunară pentru fiecare copil, până la 18 ani (sau mai mult, dacă e la școală): mai mare până la 2 ani, apoi mai mică. Banii vin pe un card sau într-un cont, pe numele părintelui cu care stă copilul. Nu acoperă costul copilului, dar ajută. Exemplu: 719 lei pe lună până la 2 ani, apoi 292 lei."
+    },
+    {
+      "id": "concediu-crestere",
+      "titlu": "Concediul de creștere a copilului",
+      "text": "După naștere, unul dintre părinți poate sta acasă cu copilul până la 2 ani (3 ani pentru un copil cu dizabilități) și primește o indemnizație de 85% din venitul net mediu din ultimul an, între un minim și un maxim. Ca s-o primești, trebuie să fi avut venituri impozabile (de exemplu, un contract de muncă) înainte. Exemplu: la un salariu net de 6.000 lei, indemnizația e de 5.100 lei pe lună; restul de 900 lei trebuie să iasă din buget."
+    },
+    {
+      "id": "co-debitor",
+      "titlu": "Co-debitorul",
+      "text": "Când luați un credit împreună, banca adună veniturile voastre și vă poate da mai mult. În schimb, fiecare co-debitor răspunde pentru toată datoria, nu doar pentru jumătatea lui. Dacă vă despărțiți, creditul nu se desparte singur: fie vindeți casa, fie unul preia creditul (dacă banca acceptă), fie rămâneți amândoi legați de el. Exemplu: dacă fostul partener nu-și mai plătește jumătatea dintr-o rată de 3.000 lei, banca îți cere ție toți cei 3.000 lei."
+    },
+    {
+      "id": "partaj",
+      "titlu": "Partajul la divorț",
+      "text": "La divorț, bunurile cumpărate în timpul căsătoriei (comunitatea de bunuri) se împart între soți, de obicei pe din două. Ce aveai înainte de căsătorie sau ai moștenit rămâne al tău. Un contract de separație de bunuri, făcut la notar, schimbă regula. Exemplu: un apartament de 450.000 lei cu 300.000 lei credit rămas înseamnă cam 75.000 lei pentru fiecare, după ce se vinde și se închide creditul."
+    },
+    {
+      "id": "pensie-intretinere",
+      "titlu": "Pensia de întreținere",
+      "text": "După despărțire, părintele la care nu stă copilul îi plătește o pensie de întreținere, stabilită de instanță sau prin acord, de obicei până la 18 ani. Codul civil o plafonează: până la un sfert din venitul net pentru un copil, o treime pentru doi, jumătate pentru trei sau mai mulți. E o cheltuială fixă, ca o rată. Exemplu: la un venit net de 6.000 lei și un copil, până la 1.500 lei pe lună."
+    },
+    {
+      "id": "money-mule",
+      "titlu": "„Money mule”: contul tău, banii altora",
+      "text": "Un „money mule” e cineva care își împrumută contul bancar ca să treacă prin el bani furați (din înșelătorii, fraude, phishing), în schimbul unui comision. Rețelele caută tineri pe rețele sociale, cu mesaje de tipul „bani ușori, doar primești și trimiți mai departe”. Pentru lege, tu ești cel care a mutat banii: contul ți se închide, banii se confiscă și urmează un dosar penal pentru spălare de bani. Exemplu: pentru 1.000 de lei comision, poți rămâne fără cont bancar, cu cazier și cu o datorie de zeci de mii de lei față de cei păgubiți."
+    },
+    {
+      "id": "evaziune-fiscala",
+      "titlu": "Evaziunea fiscală",
+      "text": "Evaziunea fiscală înseamnă să ascunzi venituri ca să plătești taxe mai mici. Diferența dintre o greșeală și evaziune e intenția și mărimea sumei. Când e descoperită, se recalculează taxele, se adaugă dobânzi și penalități, iar peste un anumit prejudiciu vine dosarul penal și, uneori, închisoarea. Exemplu: 8.000 lei taxe ascunse pe an, descoperite după trei ani, pot ajunge la peste 70.000 lei de plată."
+    },
+    {
+      "id": "cazier",
+      "titlu": "Cazierul judiciar",
+      "text": "Cazierul judiciar arată condamnările unei persoane. Mulți angajatori îl cer: în poliție, educație, sănătate, justiție, contabilitate sau bănci, cu cazier nu ești angajat. Și băncile țin cont de el când dau credite. Cazierul se șterge prin reabilitare, după un număr de ani fără alte fapte, dar până atunci multe uși rămân închise. Exemplu: un furt de 150 de lei poate însemna ani în care nu poți deveni profesor sau polițist."
+    },
+    {
+      "id": "educatie-investitie",
+      "titlu": "Educația ca investiție",
+      "text": "Un curs sau o facultate costă de două ori: taxa și anii în care câștigi mai puțin pentru că înveți. Se întoarce prin salarii mai mari, ani la rând, și prin joburi care altfel nu ți-ar fi deschise. Ca la orice investiție, contează ce alegi: o calificare căutată se plătește repede, o diplomă într-un domeniu fără joburi poate să nu se plătească niciodată. Exemplu: un curs de electrician de 2.200 lei care îți crește salariul cu 1.000 lei brut pe lună se întoarce în câteva luni."
+    },
+    {
+      "id": "esalonare",
+      "titlu": "Eșalonarea unei datorii",
+      "text": "Eșalonarea e o înțelegere cu cel căruia îi datorezi: plătești datoria în rate lunare, în loc de toată odată. Furnizorii de utilități și firmele de recuperare o acceptă des, mai ales dacă îi suni tu primul și dai o primă plată. Cât timp plătești ratele, nu mai urmează pași mai grei, ca executarea silită. Dacă întârzii din nou, înțelegerea se anulează și toată datoria devine scadentă. Exemplu: 3.000 lei la recuperator devin 300 lei acum și 12 rate de 225 lei."
     }
   ]
 }

@@ -4,8 +4,48 @@ import { bal, clamp, cloneaza, inBani, varstaLa, numeLuna } from './util.js';
 import { creeazaFluxuri } from './rng.js';
 import { CLASE_PIATA, baniDisponibili, contCurent, datorieProdus, facturiLunare, pret, valoareProdus } from './finance.js';
 import { CHEI } from './storage.js';
+import { familieNoua } from './familie.js';
 
-export const VERSIUNE_SALVARE = 1;
+export const VERSIUNE_SALVARE = 6;
+
+// Migrările salvărilor: fiecare pas aduce o salvare de la versiunea `de` la `de + 1`, completând
+// câmpurile noi cu valori neutre. Așa, un joc început pe GitHub Pages merge și după o actualizare.
+const MIGRARI = {
+  1: (s) => {
+    s.timp = { an: Math.floor(s.luna / 12), folosit: 0, activitati: {} };
+    s.rng.actiuni ??= creeazaFluxuri(`${s.seed}`).actiuni;
+  },
+  // Lotul 3: cursurile scurte în desfășurare
+  2: (s) => {
+    s.cursuri ??= [];
+  },
+  // Lotul 4: fluxul RNG al companiilor (prețurile lor se completează la prima lună), DCA, istoricul portofoliului
+  3: (s) => {
+    s.rng.companii ??= creeazaFluxuri(`${s.seed}`).companii;
+    s.dca ??= [];
+    s.istoricPortofoliu ??= [];
+    s.tintaInvestitii ??= null;
+  },
+  // Lotul 8: faptele (de câte ori) și lunile de detenție rămase
+  4: (s) => {
+    s.infractiuni ??= { furt: 0, mule: 0, frauda: 0, evaziune: 0, inchisoare: 0 };
+  },
+  // Lotul 9c: partenerul, copiii, stresul financiar al cuplului
+  5: (s) => {
+    s.familie ??= familieNoua();
+  },
+};
+
+export function migreaza(s) {
+  if (!s || typeof s.versiune !== 'number' || s.versiune > VERSIUNE_SALVARE) return null;
+  while (s.versiune < VERSIUNE_SALVARE) {
+    const pas = MIGRARI[s.versiune];
+    if (!pas) return null;
+    pas(s);
+    s.versiune += 1;
+  }
+  return s;
+}
 
 export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
   const s = { ...bal(ctx, 'start'), stilViata: bal(ctx, 'stilViata.start') };
@@ -29,7 +69,7 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     stilAnterior: null, // nivelul de dinainte de ultima schimbare (pentru rezumatul anului)
     pensie: { luniContributie: 0, pilon2: 0, pilon3: 0 },
     indicePreturi: 1,
-    piete: Object.fromEntries(CLASE_PIATA.map((c) => [c, 100])),
+    piete: Object.fromEntries([...CLASE_PIATA, ...(ctx.investitii?.companii.keys() ?? [])].map((c) => [c, 100])),
 
     flaguri: {},
     urmari: [],
@@ -43,6 +83,14 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     jurnal: [],
     concepte: [],
     contoare: { id: 0, decizii: 0, luniFaliment: 0 },
+    // Bugetul de timp al anului: câte acțiuni mari (activități, cursuri, căutat job) ai folosit.
+    timp: { an: 0, folosit: 0, activitati: {} },
+    cursuri: [], // cursurile scurte în desfășurare: { id, luniRamase, inceputLa }
+    dca: [], // investițiile automate lunare: { clasa, suma }
+    istoricPortofoliu: [], // un punct pe an: investiții, sumă investită, avere netă (pentru grafice)
+    tintaInvestitii: null, // strategia aleasă la ultima rebalansare
+    infractiuni: { furt: 0, mule: 0, frauda: 0, evaziune: 0, inchisoare: 0 }, // fapte comise; luni de detenție rămase
+    familie: familieNoua(), // partenerul, copiii (js/familie.js)
     final: null,
   };
   state.pendinte = {
@@ -199,8 +247,7 @@ export function salveazaJoc(storage, state) {
 }
 
 export function incarcaJoc(storage) {
-  const s = storage.citeste(CHEI.salvare);
-  return s && s.versiune === VERSIUNE_SALVARE ? s : null;
+  return migreaza(storage.citeste(CHEI.salvare));
 }
 
 export function stergeJoc(storage) {
@@ -227,7 +274,7 @@ export function listaCheckpointuri(storage) {
 
 export function incarcaCheckpoint(storage, id) {
   const cp = storage.citeste(CHEI.checkpointuri, []).find((c) => c.id === id);
-  return cp ? cloneaza(cp.stare) : null;
+  return cp ? migreaza(cloneaza(cp.stare)) : null;
 }
 
 // Finalurile descoperite sunt globale (colecția). Întoarce true dacă finalul e nou.

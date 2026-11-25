@@ -5,8 +5,10 @@
 
 import { lantDecizii } from '../events.js';
 import { estimeazaPensie } from '../bilant.js';
+import { bilantEducatie } from '../educatie.js';
 import { ani, h, lei, leiCuAzi } from './dom.js';
 import { blocConcepte } from './concepte.js';
+import { graficAvere } from './grafic.js';
 import { deschideStrat, inchideStrat } from './strat.js';
 import { distribuie } from '../share.js';
 
@@ -31,6 +33,8 @@ export function arataFinalViata(oprire, d) {
         : `${ani(oprire.varsta)} · avere netă ${leiCuAzi(d.avereNeta, state.indicePreturi)} · finaluri descoperite: ${d.colectie.deblocate}/${d.colectie.total}`),
       gameOver ? sectiuneDeclansator(state, d, gata) : d.tipare.pozitive.some((t) => t.id === 'contract') ? null : sectiunePensie(state, ctx),
       gameOver ? null : sectiuneTipare('Ce te-a ajutat', d.tipare.pozitive, ctx, true),
+      sectiuneEducatie(state, ctx),
+      graficAvere(state, gameOver ? 'Averea ta netă și datoriile, an de an (în lei de azi)' : 'Averea ta netă, an de an (în lei de azi)'),
       sectiuneTipare(gameOver ? 'Tiparul' : 'Ce te-a costat', d.tipare.negative, ctx, false),
       h('div', { class: 'rand-butoane' },
         h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => distribuieFinal(oprire, d) }, 'Distribuie'),
@@ -83,6 +87,20 @@ function sectiunePensie(state, ctx) {
     h('h3', {}, 'Pensia ta'),
     h('p', {}, `Pensia de stat estimată: ${lei(p.pilon1)} pe lună, plus ${lei(p.pilon2)} din Pilonii II și III (în lei de azi), după ${ani(p.aniContributie)} de contribuții.`),
     blocConcepte(['pilonii-pensiei'], ctx, { eticheta: null, nou: false }));
+}
+
+// Educația ca investiție: cât ai dat și cât au adus în plus salariile, față de jobul de bază cu doar liceul.
+function sectiuneEducatie(state, ctx) {
+  const e = bilantEducatie(state, ctx);
+  if (!e || !e.aniMunca) return null;
+  const plus = e.castigSalarii >= 0;
+  return h('div', { class: 'sectiune-final' },
+    h('h3', {}, 'Educația ta, ca investiție'),
+    h('p', {}, `Ai dat pe studii și cursuri ${lei(e.cost)}. În ${ani(e.aniMunca)} de muncă cu contract, salariile tale au fost, în total, cu ${lei(Math.abs(e.castigSalarii))} ${plus ? 'peste' : 'sub'} ce ai fi câștigat ca curier, jobul de bază cu doar liceul (în lei de azi).`),
+    h('p', { class: 'mic' }, plus
+      ? 'Nu toată diferența vine din școală (contează și experiența, negocierea, promovările), dar multe joburi bine plătite cer o diplomă sau un certificat.'
+      : 'Studiile nu s-au întors încă în salariu: contează și ce domeniu alegi, și dacă le folosești la job.'),
+    blocConcepte(['educatie-investitie'], ctx, { eticheta: null, nou: false }));
 }
 
 function sectiuneTipare(titlu, tipare, ctx, pozitiv) {

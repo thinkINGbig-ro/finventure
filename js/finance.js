@@ -83,7 +83,8 @@ export function plateste(state, suma, sursa = 'portofel') {
 
 // ---------- Produse ----------
 
-export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate'];
+// „proprietate” = locuința ta; „imobil” = un apartament cumpărat ca să-l dai în chirie.
+export const TIPURI_PRODUSE = ['contCurent', 'contEconomii', 'depozit', 'cardCredit', 'credit', 'investitie', 'poprire', 'contractMunca', 'factura', 'proprietate', 'imobil', 'activitateSecundara', 'afacere', 'bun'];
 export const CATEGORII_FACTURI = ['chirie', 'utilitati', 'telefon'];
 
 // Facturile lunii, în ordinea în care se plătesc când banii nu ajung.
@@ -95,8 +96,18 @@ export function facturiLunare(state, ctx) {
     telefon: pret(state, ctx, 'costTrai.telefon'),
   };
 }
-export const CLASE_INVESTITII = ['etf', 'actiuni', 'crypto', 'aur', 'titluriStat'];
+export const CLASE_INVESTITII = ['etf', 'fondActiv', 'actiuni', 'crypto', 'aur', 'titluriStat'];
 export const CLASE_PIATA = ['etf', 'actiuni', 'crypto', 'aur'];
+
+// Companiile individuale (inventate) au clasa „co-…” și un preț propriu în state.piete.
+export const esteCompanie = (clasa) => typeof clasa === 'string' && clasa.startsWith('co-');
+// Ce preț urmărește o clasă: fondul activ investește ca un ETF (diferă doar comisioanele).
+export const indiceClasa = (clasa) => (clasa === 'fondActiv' ? 'etf' : clasa);
+// Un parametru din config pentru o clasă (companiile folosesc parametrii acțiunilor); lipsă = 0.
+export function paramClasa(ctx, clasa, cheie) {
+  const v = ctx.config.investitii?.[esteCompanie(clasa) ? 'actiuni' : clasa]?.[cheie]?.valoare;
+  return typeof v === 'number' ? v : 0;
+}
 
 // Sumele din spec sunt deja în bani. Cine creează produsul plătește/încasează separat.
 export function creeazaProdus(spec, state, ctx) {
@@ -135,11 +146,12 @@ export function creeazaProdus(spec, state, ctx) {
         rata: rataAnuitate(spec.suma, rLunar, spec.luni),
         restanta: 0, luniRestanta: 0, totalPlatit: 0, dobandaTotala: 0, penalitati: 0,
         laRestanta: spec.laRestanta ?? null, flag: spec.flag ?? null, variabila: !!spec.variabila,
+        coDebitor: !!spec.coDebitor, // luat împreună cu partenerul: răspundeți amândoi
       };
     }
     case 'investitie': {
       const clasa = spec.clasa;
-      const comision = Math.round(spec.suma * cfg(ctx, `investitii.${clasa}.comision`));
+      const comision = Math.round(spec.suma * paramClasa(ctx, clasa, 'comision'));
       const investit = spec.suma - comision;
       if (clasa === 'titluriStat') {
         const luni = spec.luni ?? cfg(ctx, 'investitii.titluriStat.luniMaturitate');
@@ -148,7 +160,7 @@ export function creeazaProdus(spec, state, ctx) {
           dobandaAnuala: spec.dobandaAnuala ?? cfg(ctx, 'investitii.titluriStat.dobandaAnuala'),
         };
       }
-      return { ...baza, clasa, unitati: investit / state.piete[clasa], cost: spec.suma };
+      return { ...baza, clasa, unitati: investit / state.piete[indiceClasa(clasa)], cost: spec.suma, comision };
     }
     case 'poprire':
       return { ...baza, creditor: spec.creditor ?? 'recuperator', datorie: spec.suma, retinutTotal: 0 };
@@ -156,6 +168,14 @@ export function creeazaProdus(spec, state, ctx) {
       return { ...baza, jobId: spec.jobId, contract: spec.contract, brut: spec.brut, luniVechime: 0 };
     case 'proprietate':
       return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime ?? 'apartament' };
+    case 'imobil':
+      return { ...baza, valoare: spec.valoare, pretCumparare: spec.valoare, marime: spec.marime, chirias: false, luniGol: 0, creditId: spec.creditId ?? null, chirieIncasata: 0 };
+    case 'activitateSecundara':
+      return { ...baza, secundarId: spec.secundarId ?? null };
+    case 'afacere':
+      return { ...baza }; // câmpurile se completează la pornire (js/afacere.js)
+    case 'bun':
+      return { ...baza }; // un lucru cumpărat (js/cumparaturi.js): bunId, categorie, valoare
     case 'factura':
       // „furnizor” = categoria, ca selectorul „factura:chirie” să funcționeze ca la credite
       return { ...baza, furnizor: spec.categorie, restanta: 0, luniRestanta: 0, penalitati: 0 };
@@ -190,9 +210,13 @@ export function valoareProdus(p, state) {
     case 'depozit':
       return p.sold;
     case 'proprietate':
+    case 'imobil':
+    case 'bun':
       return p.valoare;
+    case 'afacere':
+      return Math.round(Math.max(0, p.cont ?? 0) * (p.cota ?? 1)); // partea ta din banii firmei
     case 'investitie':
-      return p.clasa === 'titluriStat' ? p.principal : Math.round(p.unitati * state.piete[p.clasa]);
+      return p.clasa === 'titluriStat' ? p.principal : Math.round(p.unitati * (state.piete[indiceClasa(p.clasa)] ?? 0));
     default:
       return 0;
   }
@@ -208,6 +232,8 @@ export function datorieProdus(p) {
       return p.datorie;
     case 'factura':
       return p.restanta;
+    case 'afacere':
+      return p.forma === 'srl' ? 0 : p.datorii ?? 0; // la PFA / II, datoriile firmei sunt ale tale
     case 'contCurent':
       return Math.max(0, -p.sold);
     default:
@@ -314,7 +340,7 @@ export function randamentLunar(clasa, z, ctx, crash) {
 // Vânzarea unei investiții de piață: comision + impozit pe câștig.
 export function valoareVanzare(inv, state, ctx) {
   const brut = valoareProdus(inv, state);
-  const comision = Math.round(brut * cfg(ctx, `investitii.${inv.clasa}.comision`));
+  const comision = Math.round(brut * paramClasa(ctx, inv.clasa, 'comision'));
   const castig = Math.max(0, brut - comision - inv.cost);
   const impozit = Math.round(castig * cfg(ctx, 'taxe.impozitCastiguriInvestitii'));
   return { brut, comision, impozit, net: brut - comision - impozit };

@@ -44,14 +44,25 @@
   "statistici": {
     "baniLuniPentru100": 3,
     "viitorLuniEconomiiPentru60": 12,
-    "viitorStudii": { "liceu": 5, "profesionala": 10, "licenta": 20 },
+    "viitorStudii": { "liceu": 5, "profesionala": 10, "postliceala": 12, "licenta": 20, "master": 24, "doctorat": 26 },
     "viitorPensieMax": 20
   },
 
   "studii": {
     "facultateBuget": { "nivel": "licenta", "skillLaFinal": 15 },
     "facultateTaxa": { "nivel": "licenta", "skillLaFinal": 15 },
-    "scoalaProfesionala": { "nivel": "profesionala", "skillLaFinal": 10 }
+    "scoalaProfesionala": { "nivel": "profesionala", "skillLaFinal": 10 },
+    "postliceala": { "nivel": "postliceala", "skillLaFinal": 10 },
+    "medicina": { "nivel": "licenta", "skillLaFinal": 25, "flagLaFinal": "absolvent_medicina" },
+    "master": { "nivel": "master", "skillLaFinal": 10 },
+    "doctorat": { "nivel": "doctorat", "skillLaFinal": 12 }
+  },
+
+  "educatie": {
+    "_info": "Meniul Educație (condițiile de admitere stau în data/educatie.json). skillBursaMerit = pragul pentru bursa de merit. salariuReferintaLiceu = jobul de bază cu doar liceul, pentru comparația de la final (educația ca investiție).",
+    "skillBursaMerit": 60,
+    "timpProgramLung": 1,
+    "salariuReferintaLiceu": "salarii.curier"
   },
 
   "cardCredit": {
@@ -74,11 +85,11 @@
 
   "cariera": {
     "evenimentCV": "cv-start",
-    "nivelStudii": { "liceu": 0, "profesionala": 1, "licenta": 2 },
+    "nivelStudii": { "liceu": 0, "profesionala": 1, "postliceala": 1, "licenta": 2, "master": 3, "doctorat": 4 },
     "cv": {
       "_info": "Scorul CV-ului = skill + reputație/2 + bonusuri. Decide câte oferte primești și cât de bune sunt.",
       "bonusFlaguri": { "cv_experienta": 12, "cv_proiecte": 10, "cv_voluntariat": 6, "cv_limbi": 8, "cv_umflat": 14, "experienta_munca": 6 },
-      "bonusStudii": { "liceu": 0, "profesionala": 4, "licenta": 10 },
+      "bonusStudii": { "liceu": 0, "profesionala": 4, "postliceala": 6, "licenta": 10, "master": 14, "doctorat": 16 },
       "pragOferte": [25, 45, 65],
       "skillInPlusDacaUmflat": 10
     },
@@ -112,6 +123,20 @@
       "maxPestePiata": 1.3
     },
     "promovare": { "crestereMinima": 0.10 },
+    "ritm": {
+      "_info": "Cât de tare muncești. energie/fericire = în plus pe lună; reputatieAnual/skillAnual = în plus pe an; sansaMarire = se adună la șansa măririi; factorPromovare = înmulțește lunile până la promovare; faimaLunara = la artiști.",
+      "relaxat": { "energie": 2, "fericire": 1, "reputatieAnual": -2, "skillAnual": 0, "sansaMarire": -0.1, "factorPromovare": 1.5, "faimaLunara": -0.2 },
+      "normal": { "energie": 0, "fericire": 0, "reputatieAnual": 0, "skillAnual": 0, "sansaMarire": 0, "factorPromovare": 1, "faimaLunara": 0.15 },
+      "intens": { "energie": -3, "fericire": -1, "reputatieAnual": 3, "skillAnual": 1, "sansaMarire": 0.1, "factorPromovare": 0.75, "faimaLunara": 0.5 }
+    },
+    "artist": {
+      "_info": "Venitul unui artist: salariul de bază din config × (0,5 + faimă/40) × noroc (lognormal cu volatilitatea jobului); uneori o comandă mare; luniVarf = lunile cu concerte (indice în anul de joc, 0 = septembrie).",
+      "faimaStart": 10,
+      "faimaZgomotLunar": 1.5,
+      "multiplicatorLunaVarf": 1.8
+    },
+    "oreSuplimentare": { "energie": -12, "fericire": -2, "reputatie": 2 },
+    "cursFirma": { "luniVechimeMin": 12, "skill": 5, "reputatie": 2, "luniClauza": 24 },
     "luniPentruExperienta": 6
   },
 
@@ -137,6 +162,86 @@
     "varstaMinPentruFond": 22,
     "luniPlataPilon2": 240,
     "tipareMax": 3
+  },
+
+  "timp": {
+    "_info": "Bugetul anual de acțiuni mari (activități, cursuri, căutat job, afacere). Operațiunile bancare sunt nelimitate.",
+    "baza": 6,
+    "jobFullTime": -2,
+    "jobPartTime": -1,
+    "studii": -1,
+    "jobSecundar": -1,
+    "afacere": -1,
+    "minim": 2,
+    "costCautareJob": 1
+  },
+
+  "datorii": {
+    "_info": "Meniul „Datoriile mele”. Opțiunile de durată sunt în luni.",
+    "luniEsalonare": [6, 12, 24],
+    "luniRefinantare": [24, 36, 60],
+    "scorCreditRefinantare": 45,
+    "luniRestanteAnuleazaEsalonarea": 2
+  },
+
+  "afaceri": {
+    "_info": "Afacerea proprie. pregatire = puncte (max ~100) pentru fiecare lucru făcut înainte de pornire; calitatea = calitateBaza + pregătire × calitatePerPunct (cât din venitul potențial atingi: 0,46 la 20 de puncte, 0,7 la 50, ~1 la 85); zgomotLunar = norocul lunii; cotaInvestitor = cât din firmă cedezi investitorului; luniInsolventa = câte luni la rând poate un SRL să nu-și plătească datoriile până intră în insolvență.",
+    "pregatire": { "baza": 20, "plan": 20, "studiuPiata": 15, "curs": 15, "experienta": 20, "skillMax": 10 },
+    "calitateBaza": 0.3,
+    "calitatePerPunct": 0.008,
+    "zgomotLunar": 0.2,
+    "factorAnCuCriza": 0.75,
+    "sansaGrantBaza": 0.15,
+    "cotaInvestitor": 0.3,
+    "timpPornire": 2,
+    "energieLunara": -3,
+    "luniExperienta": 24,
+    "luniInsolventa": 6,
+    "_decizii": "Prețul: volum × preț pe bucată (marfa urmează volumul). Marketingul: creștere de cerere cu randament descrescător (bonusMax la un buget mult peste scalaMarketing × venitul potențial). Fiecare angajat în plus adaugă capacitateAngajat din potențial. Extinderea: × factorPotential la venitul potențial, × factorCosturi la costurile fixe, costă factorInvestitie × investiția inițială.",
+    "pret": {
+      "mic": { "volum": 1.25, "pret": 0.85, "reputatie": 1 },
+      "mediu": { "volum": 1, "pret": 1, "reputatie": 0.5 },
+      "mare": { "volum": 0.75, "pret": 1.2, "reputatie": 0 }
+    },
+    "marketing": { "bonusMax": 0.3, "scalaMarketing": 0.08 },
+    "capacitateBaza": 1.0,
+    "capacitateAngajat": 0.3,
+    "angajatiMax": 4,
+    "extindere": { "factorPotential": 1.4, "factorCosturi": 1.3, "factorInvestitie": 0.5, "nivelMax": 2 },
+    "riscuri": { "sansaClientNeplatitorAnual": 0.15, "sansaConcurentaAnual": 0.12, "sansaControlFiscalAnual": 0.08, "factorConcurenta": 0.85 },
+    "vanzare": { "multiplicatorProfitAnual": 2.5, "luniMinime": 12 }
+  },
+
+  "infractiuni": {
+    "_info": "Șansa de a fi prins = sansaBaza + crestereLaRepetare × faptele anterioare de același fel (max. 0,95). Prinderea vine după luniPanaLaDosar (interval). scorCreditCazier = cât scade scorul de credit când primești cazier. penalizareCV = puncte scăzute din scorul CV-ului cât ai cazier.",
+    "furt": { "sansaBaza": 0.3, "crestereLaRepetare": 0.2 },
+    "mule": { "sansaBaza": 0.75, "crestereLaRepetare": 0.15 },
+    "frauda": { "sansaBaza": 0.45, "crestereLaRepetare": 0.2 },
+    "evaziune": { "sansaBaza": 0.45, "crestereLaRepetare": 0.15 },
+    "_regula": "Pentru fiecare faptă, la prima abatere: câștigul − sansaBaza × amenda trebuie să fie negativ (infracțiunea nu e niciodată rentabilă). Un test verifică.",
+    "luniPanaLaDosar": [2, 12],
+    "scorCreditCazier": 20,
+    "penalizareCV": 25,
+    "fericireLunaraInchisoare": -3,
+    "sansaAchitareCuAvocat": 0.25
+  },
+
+  "imobiliare": {
+    "_info": "Riscurile proprietarului, ca probabilități anuale (folosesc fluxul RNG „actiuni”). sansaGasesteChirias = pe lună, cât timp e gol.",
+    "sansaChiriasPleacaAnual": 0.25,
+    "sansaGasesteChirias": 0.5,
+    "sansaReparatieAnual": 0.15,
+    "sansaChiriasNuPlatesteAnual": 0.05
+  },
+
+  "familie": {
+    "_info": "Riscul de divorț e anual: divortBaza, plus divortLipsuri × (luni cu lipsuri din ultimele 12) / 12, plus divortRestante dacă ai restanțe sau executare. Zarurile folosesc fluxul „actiuni”. sansaFostulNuPlateste = pe lună, cât timp rămâneți amândoi pe credit după divorț.",
+    "divortBaza": 0.012,
+    "divortLipsuri": 0.12,
+    "divortRestante": 0.05,
+    "sansaFostulNuPlateste": 0.02,
+    "luniPartenerFaraVenit": 6,
+    "fericireDivort": -15
   },
 
   "salvare": {

@@ -11,7 +11,8 @@ import { deschideStrat, inchideStrat } from './strat.js';
 // optiuni: { ctx, getState, ruleaza(oprire), randeaza() }
 export function initDebug(optiuni) {
   const buton = h('button', { type: 'button', class: 'btn-debug', 'aria-label': 'Deschide modul debug', onclick: () => deschide(optiuni) }, '🐞');
-  document.querySelector('.antet-sus').append(buton);
+  const antet = document.querySelector('.antet-sus');
+  antet.insertBefore(buton, antet.querySelector('.antet-butoane'));
   document.title = `[debug] ${document.title}`;
   window.finventure = optiuni; // din consolă: finventure.getState(), finventure.ruleaza(oprire)
 }

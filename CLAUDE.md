@@ -1,6 +1,6 @@
 # Finventure — joc web de educație financiară (concurs Banometru)
 
-> **Stare: fazele A–F sunt terminate. Funcționalitățile sunt înghețate:** de acum, doar bug-uri și texte din testarea pe telefon. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
+> **Stare: fazele A–F și EXTINDEREA (loturile 0–9c) sunt terminate și publicate pe `main`. Funcționalitățile sunt din nou ÎNGHEȚATE:** fără funcționalități noi fără decizia echipei; doar reparații, conținut și verificarea valorilor. Orice schimbare se face pe ramura `extindere` și se testează pe preview (https://mihaimpmo.github.io/finventure-preview/) înainte de merge în `main`, doar după confirmarea echipei. `main` trebuie să rămână jucabil în orice moment. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
 
 ## 1. Context
 
@@ -332,7 +332,8 @@ docs/DEZVOLTARE.md  documentația tehnică: rulare locală, GitHub Pages, struct
 5. ✅ **Faza D:** ecranul „Ce s-a întâmplat?”, checkpoint-urile, finalurile, achievements, cardul de distribuit.
 6. ✅ **Faza E:** `tools/validate.html`, modul debug, testare pe mobil, deploy pe GitHub Pages, README.
 7. ✅ **Faza F:** conținutul pentru fazele de viață 4–5, simularea automată, `tools/tree.html`.
-8. **Mai târziu, doar dacă decidem:** clasamentul online.
+8. ✅ **Extinderea (loturile 0–9c):** vezi secțiunea 14, „Extinderea”.
+9. **Mai târziu, doar dacă decidem:** clasamentul online.
 
 **Reguli de lucru:**
 - Commit-uri mici, cu mesaje clare, după fiecare pas funcțional.
@@ -347,13 +348,13 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 
 ### Ce e gata (fazele A–F)
 
-- **Conținut:** 59 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare).
+- **Conținut:** 59 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare). După extindere: 88 de evenimente, 90 de concepte, 53 de joburi, 16 activități, 7 programe de studii și 10 cursuri, 18 bunuri, 9 domenii de afaceri, 4 scenarii de start.
 - **Motor:** an septembrie–august cu simulare lunară; max. 4 opriri pe an (lanțurile imediate cu `dupaLuni: 0`, ca CV-ul, nu se numără); sub-alegeri pe două niveluri; facturi neplătite → somație → deconectare/evacuare → recuperatori → executare → poprire pe salariu, cont, economii și investiții; faliment = insolvență (activele vandabile nu acoperă datoriile); renunțarea cere Fericire 0 trei luni la rând.
 - **Bani și produse:** cont curent, economii (fond de urgență = cont marcat), depozite, card de credit (integral / minim), credite (IFN, bancă, magazin, BNPL, auto, leasing, ipotecă fixă sau variabilă cu IRCC), investiții (ETF, acțiuni, crypto, aur, titluri de stat; crash-uri cu decizia „vinzi sau păstrezi?”), casa ca activ, Pilonii II și III.
 - **Creditorii verifică:** contract (nu la negru), istoricul (restanțe, executări, spirala IFN, recuperatori), scorul de credit, **gradul de îndatorare** (BNR: 40%, 45% pentru prima locuință; se aplică și la IFN) și vârsta la scadența ipotecii.
 - **Carieră:** CV în trei pași, 0–3 oferte după calitatea CV-ului, negociere, mărire (plafonată la 130% din salariul pieței), promovare, concediere, PFA/SRL.
 - **Stil de viață:** Modest / Confortabil / Lux, cu adaptare hedonică.
-- **Locuință:** căminul se eliberează la absolvire; garsonieră sau apartament cu 2 camere (prețuri în config); „Vând investițiile pentru avans”; garsoniera se poate vinde după 40 de ani pentru un apartament (ipoteca are furnizorul `ipoteca`); ~95% dintre prudenți cumpără (vârsta mediană ~32). Limitări asumate: un singur venit, fără Noua Casă, fără credite în valută.
+- **Locuință:** căminul se eliberează la absolvire; garsonieră sau apartament cu 2 camere (prețuri în config); „Vând investițiile pentru avans”; garsoniera se poate vinde după 40 de ani pentru un apartament (ipoteca are furnizorul `ipoteca`); ~95% dintre prudenți cumpără (vârsta mediană ~32). Limitări asumate: fără Noua Casă, fără credite în valută.
 - **Final:** „Ce s-a întâmplat?” (lanțul de decizii + tiparul) sau „Cum a fost viața ta” (ce te-a ajutat / ce te-a costat, pensia estimată); checkpoint-uri (ultimele 5 + cele care au deschis o datorie, max. 10) cu „Încearcă din nou de aici”; colecție de finaluri, clasament local, card de distribuit.
 - **Publicat:** repo `thinkINGbig-ro/finventure`, ramura `main`; GitHub Pages servește din `main` / `(root)`.
 
@@ -364,24 +365,25 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 | Ce | Cum |
 |---|---|
 | Rulezi jocul local | `python -m http.server 8000` și deschizi `http://localhost:8000` |
-| Testele motorului | `node tests/run.js` (39 de teste) sau `/tests/run.html` în browser |
+| Testele motorului | `node tests/run.js` sau `/tests/run.html` în browser |
 | Simularea de echilibru | `node tests/simulare.js --n 500` (4 profiluri: aleator, prudent, frugal, riscant; ~2 min) |
 | Raportul pentru prezentare | `node tests/simulare.js --n 500 --json docs/raport-simulare.json` |
 | Verificarea conținutului | `/tools/validate.html` (schema + flag-uri, evenimente inaccesibile, concepte fără sursă) |
 | Arborele deciziilor | `/tools/tree.html` (`?radacina=urgenta-2000` pentru ramura IFN) |
 | Modul debug | `/?debug=1` (sari la o vârstă, setezi statistici/flag-uri, forțezi un eveniment, simulare) |
 | Formatarea JSON-urilor | `node tools/formateaza-json.js data/events/fisier.json` |
+| Preview-ul de test (ramura `extindere`) | https://mihaimpmo.github.io/finventure-preview/ (repo `mihaimpmo/finventure-preview`; se actualizează singur la câteva minute după push pe `extindere`; commit-ul publicat în `/versiune.txt`; imediat: `gh workflow run preview.yml -R mihaimpmo/finventure-preview`) |
 
-### Echilibrul (ultimul raport, 500 de vieți pe profil)
+### Echilibrul (ultimul raport, 500 de vieți pe profil, după lotul 9c)
 
 | Profil | Pensie sau independență | Faliment |
 |---|---|---|
 | prudent | 100% | 0% |
 | frugal | 100% | 0% |
-| aleator | ~55% | ~45% (incl. ~5% burnout) |
-| riscant | ~24% | ~76% |
+| aleator | ~38% | ~62% (incl. ~8% burnout) |
+| riscant | ~1% | ~99% |
 
-Ținte stabilite: prudent > 80%, aleator 40–60%, riscant rar. **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
+Ținte stabilite: prudent > 80%, aleator 30–60% (coborâtă de la 40–60% după lotul 9b: fiecare lot i-a dat opțiuni riscante; contează diferența mare față de prudent), riscant rar (foarte jos e acceptabil). **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
 
 ### Reguli care s-au stabilit pe parcurs
 
@@ -390,10 +392,75 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 - Fiecare eveniment trebuie să aibă cel puțin o alegere fără „cere” (o verifică analiza și testele).
 - Rulează `node tests/run.js` și simularea după orice modificare de conținut sau de motor; actualizează `docs/raport-simulare.json` și tabelele din `docs/DEZVOLTARE.md` și `README.md` dacă se schimbă cifrele (în README, pe înțelesul publicului: fără termeni tehnici, comenzi sau căi de fișiere).
 - Fără atribuire către Claude în commit-uri (verificare: `git log --format=%B | grep -i -E "co-authored|generated with"` trebuie să nu găsească nimic).
-- Push doar cu acordul explicit al echipei.
+- Push doar cu acordul explicit al echipei (pentru `extindere`: commit-uri locale; merge în `main` doar după confirmare).
+
+### Extinderea (terminată, pe `main` din 2026-11-25)
+
+Funcționalitățile s-au dezghețat pentru extindere și sunt din nou înghețate după ea. Loturile, în ordinea în care s-au făcut:
+
+| Lot | Ce conține | Stare |
+|---|---|---|
+| 0 | Bug-uri: plata restanțelor din Bancă, mesaj la fiecare acțiune din meniu, ecranul „Ce s-a întâmplat” după o decizie urmată de alt card | ✅ pe `main` |
+| 1 | Meniul „Activități” (`data/activitati.json`, `js/activitati.js`): 16 activități cu buget anual de timp (`balans.timp`); Enciclopedia mutată în antet (📖); salvări versiunea 2 cu migrare | ✅ |
+| 2 | Datoriile mele (`js/datorii.js`, panou din Bancă): lista unificată cu costul total rămas, plata restanței, rambursare parțială (scade rata / durata, cu dobânda economisită și comision la dobânda fixă), eșalonare la recuperator (se anulează la 2 luni de întârziere), refinanțare / consolidare (istoric + grad de îndatorare); 4 concepte noi | ✅ |
+| 3 | Educație (`data/educatie.json`, `js/educatie.js`): 6 programe lungi la orice vârstă (buget cu admitere, taxă, profesională, postliceală, master, doctorat cu bursă), credit de studii, bursă de merit, renunțare; 9 cursuri cu certificat (bootcamp IT, contabilitate, marketing, electrician, instalator, engleză, permis, antreprenoriat, educație financiară); certificatele țin loc de diplomă (`jobs.json` → `cerinte.flagInLocDeStudii`); la final, „Educația ta, ca investiție”; salvări versiunea 3 | ✅ |
+| 4a | Investiții (`data/investitii.json`, `js/investitii.js`, `js/ui/grafic.js`): 6 clase (nou: fond activ cu 2% comision anual vs. ETF cu 0,2%, pe același indice), 5 companii inventate cu faliment posibil (flux RNG `companii`), vânzare parțială cu comision și impozit, investiție automată lunară (și în Pilonul III), portofoliu cu alocare, câștig și comisioane plătite, grafic anual, rebalansare pe 3 strategii; selectorul `investitie:piata`; 5 concepte noi; salvări versiunea 4 | ✅ |
+| 4b | Imobiliare de închiriat (`js/imobiliare.js`, produsul `imobil`, separat de locuința ta `proprietate`): cumpărare cash sau cu credit (avans 25%, grad de îndatorare doar pe salariu, istoric curat), chiriași care vin și pleacă, impozit pe chirie 10%, costuri de proprietar, evenimente „S-a stricat centrala” și „Chiriașul nu mai plătește” (`data/events/imobiliare.json`), vânzare cu comision, impozit (3% sub 3 ani, 1% peste) și închiderea creditului; riscurile pe fluxul RNG `actiuni` | ✅ |
+| 5 | Joburi și muncă (`js/munca.js`, `data/jobs.json`): 33 de joburi noi cu scări de promovare (medic, asistent, profesor, polițist, avocat, bucătar, șofer, electrician, instalator, designer, jurnalist, fermier; total 53), `cerinte.flagNecesar` (permis, diplomă de medicină), Facultatea de medicină (6 ani); 3 meserii de artist cu venit variabil și faimă; ritm de muncă relaxat / normal / intens; ore suplimentare cu spor 75%; promovare cerută; curs plătit de firmă cu clauză de fidelitate; demisie; 5 activități „venit în plus” (ia o acțiune de timp pe an); 3 concepte noi | ✅ |
+| 6a | Afacere proprie, pornirea (`data/afaceri.json`, `js/afacere.js`, panou din Carieră): 9 domenii, PFA / II / SRL (răspundere: la PFA / II pierderile ies din banii tăi, la SRL rămân ale firmei, cu excepția creditului garantat), capital din economii + credit (cere plan și pregătire ≥ 50) + investitor (cedezi 30%) + grant (o încercare, șanse după pregătire); pregătirea (plan, studiu de piață, curs, experiență în domeniu, skill) decide calitatea; luna firmei cu sezon, perioadă de creștere, taxe (micro 1% / PFA 25% din profit); dividende cu 20% impozit + CASS; închidere și insolvență (SRL, după 6 luni de datorii); 3 concepte noi | ✅ |
+| 6b | Afacere proprie, funcționarea: preț mic / mediu / mare (volum vs. marjă, reputație), marketing cu randament descrescător, angajați în plus (capacitate; fără ei pierzi clienți), extindere (2 niveluri), credit pentru firmă după 6 luni pe profit; profit vs. cash flow (clienți-firme care plătesc la 1–2 luni, marfă cumpărată înainte; rezerva de pornire crește cu aceste luni); riscuri ca evenimente (`data/events/afaceri.json`: client rău-platnic, concurență, control fiscal; efectul nou `afacere` în alegeri); vânzarea firmei (2,5 × profitul anual, impozit pe câștig); 4 concepte noi | ✅ |
+| 7 | Cumpărături (`data/cumparaturi.json`, `js/cumparaturi.js`): 18 bunuri în 6 categorii (tehnologie, haine, 4 mașini, hobby, câine / pisică cu cost lunar, cadouri), calitate, depreciere lunară, revânzare (animalele nu), plata cash / card / rate (DAE și costul total afișat) / BNPL; „Caut o locuință” deschide decizia de cumpărare; evenimentele-tentație „A ieșit noul model” și „Black Friday” (efectul nou `bunNou`, selectorul `bun:<categorie>`); 3 concepte noi | ✅ |
+| 8 | Infracțiuni și consecințe (`data/events/infractiuni.json`, `js/infractiuni.js`; doar decizii și urmări, fără „cum se face”): 4 tentații (money mule pe Instagram, furt mărunt la sfârșit de lună, decont fals, vânzări nedeclarate la firmă), șansa de a fi prins crește la fiecare repetare, „Dosar penal” (recunoști sau iei avocat), amendă / închisoare (fără job, fără timp, doar operațiuni cu bani), cazier 5 ani (credite refuzate, CV mai slab, 15 joburi închise prin `faraCazier`); test: nicio faptă nu e rentabilă; variabile `"text:…"`; salvări versiunea 5; 3 concepte noi | ✅ |
+| 9a | Scenariile de start (`data/scenarii.json`, `js/scenarii.js`), alese la „Joc nou”: Ca toată lumea, Începi cu 15.000 lei datorii, Fără bac (facultatea și postliceala închise, poliția la fel; cursul „Bacalaureatul, din nou”), Moștenești o garsonieră (de închiriat); graficul averii nete și al datoriilor (butonul 📈 din antet și ecranul de final); `node tests/simulare.js --scenariu <id>`; conceptul „moștenirea” | ✅ |
+| 9b | Asigurări (`js/asigurari.js`, Bancă → Asigurări): locuința (facultativă, peste PAD) și viața cu boli grave, cu prima lunară; evenimente (`data/events/familie-bani.json`): inundație de la vecini, diagnostic grav, moștenire în bani, moștenire cu datorii (după art. 1114 C. civ.: plătești și păstrezi casa, o vinzi și iei diferența, sau renunți), ajutorul pentru părinți, donația părinților pentru avans, formularul 230; 4 concepte noi | ✅ |
+| 9c | Partener și familie (`data/events/familie.json`, `js/familie.js`, Bancă → Familia): partenerul plătește jumătate din locuință, copii și creditul comun (venitul lui nu e al tău); nuntă (mare pe credit, mică, la starea civilă), copii cu cost lunar și alocație, concediu de creștere cu indemnizație (85% din net, plafonată) sau bonă, partenerul fără job; casă cumpărată împreună (co-debitori: banca adună veniturile doar atunci); riscul de divorț crește cu lunile cu lipsuri și cu restanțele; divorț la notar sau la tribunal, pensia de întreținere (art. 529 C. civ.), casa și creditul comun după despărțire (vânzare, preluare sau rămâneți amândoi pe credit, cu riscul ca fostul să nu mai plătească); salvări versiunea 6; 8 concepte noi | ✅ |
+
+Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 500 de vieți pe profil):
+
+| După lotul | prudent | frugal | aleator | riscant |
+|---|---|---|---|---|
+| înainte (faza F) | 100 / 0 | 100 / 0 | ~55 / ~45 | ~24 / ~76 |
+| 1 | 100 / 0 | 100 / 0 | 54,2 / 45,8 | 24 / 76 |
+| 2 | 100 / 0 | 100 / 0 | 51,6 / 48,4 | 15,6 / 84,4 (cauza: riscantul își consolidează cardul pe 60 de luni și îl umple din nou; verificat pe aceleași vieți: 24% fără consolidare) |
+| 3 | 100 / 0 | 100 / 0 | 51,4 / 48,6 | 15,6 / 84,4 |
+| 4a | 100 / 0 | 100 / 0 | 51 / 49 | 23,2 / 76,8 (riscantul pune acum jumătate din surplus pe bursă în loc să-l cheltuie; activele amână insolvența) |
+| 4b | 100 / 0 | 100 / 0 (verificat pe aceleași 500 de vieți: identice cu 4a; frugalul nu cumpără imobile) | 52 / 48 | 23,2 / 76,8 (banca îl refuză la creditul pentru investiție; ~29% dintre prudenți cumpără o garsonieră de închiriat) |
+
+| 5 | 100 / 0 | 100 / 0 | 44,2 / 55,8 (verificat pe aceleași 500 de vieți: fără acțiunile de muncă, 50,2%; burnout 42 vs. 26 de vieți: aleatorul cumulează ore suplimentare, venit în plus și ritm intens fără să se uite la energie) | 19,2 / 80,8 (~2 puncte din ritmul relaxat, verificat; restul probabil din ofertele noi mai prost plătite, neverificat cauzal) |
+
+| 6a | 100 / 0 | 100 / 0 | 41,2 / 58,8 (verificat pe aceleași 500 de vieți: fără acțiunile de afacere, 46,8%; diferența e mai ales burnout, 56 vs. 38: aleatorul ține și jobul, și afacerea) | 19,8 / 80,2 |
+
+| 6b | 100 / 0 | 100 / 0 | 46,4 / 53,6 (urcă: aleatorul poate acum vinde afacerea sau o conduce mai bine) | 19,8 / 80,2 (nu ajunge niciodată să pornească o afacere) |
+
+| 7 | 100 / 0 | 100 / 0 | 45,4 / 54,6 | 8,8 / 91,2 (verificat pe aceleași 500 de vieți: fără cumpărăturile lui, 19,8%; toți iau haine de 2.000 lei pe BNPL la 18 ani fără venit, iar 87% un telefon de top în rate) |
+| 8 | 100 / 0 | 100 / 0 | 42 / 58 (verificat pe aceleași 500 de vieți: când refuză faptele, 48,6%; ~29% dintre vieți comit măcar una, iar cele condamnate cad mai des în faliment) | 10 / 90 (fără fapte, 10,6%) |
+| 9a | 100 / 0 | 100 / 0 | 42,2 / 57,8 | 10 / 90 (jocul de bază neschimbat; pe scenarii, 200 de vieți: „datorii” 100 / 100 / 12 / 0, „fără bac” 100 / 100 / 26,5 / 9,5, „moștenire” 100 / 100 / 87 / 99,5: chiria plătește popririle, iar executarea nu poate vinde un imobil, limitare de discutat) |
+| 9b | 100 / 0 | 100 / 0 | 33,8 / 66,2 (sub țintă; verificat pe aceleași 300 de vieți: fără cele 7 evenimente noi, 38,7%; fără „Casa unchiului”, 38%; fără „Un diagnostic greu”, 36,3%: aleatorul preia jumătate din timp datoria de 30.000 lei sau ia credit de 40.000 lei pentru clinică) | 1,4 / 98,6 (fără cele 7, 10%; fără „Casa unchiului”, 6%; fără diagnostic, 4%) |
+| 9b, reparat | 100 / 0 | 100 / 0 | 37,4 / 62,6 (în ținta nouă de 30–60%) | 4,8 / 95,2 |
+| 9c | 100 / 0 | 100 / 0 | 37,8 / 62,2 (verificat pe aceleași 300 de vieți: fără evenimentele de familie, 36,3% vs. 36%; neutru) | 1,4 / 98,6 (fără familie, 4%: nunta mare pe credit e urmată de faliment în același an la vieți ca 102, 114, 118; lecție, rămâne) |
+
+**Reparat după lotul 9b (decizia echipei):** „Casa unchiului” respectă acum Codul civil (art. 1114 alin. 2): moștenitorul răspunde pentru datorii doar cu bunurile moștenite. Variante: plătești datoria din banii tăi și păstrezi casa, o vinzi și îți rămâne diferența, sau renunți în termenul legal (`config.mostenire.termenOptiuneLuni`). „Un diagnostic greu” rămâne: varianta la stat e disponibilă oricui e asigurat (93 din 106 apariții la aleator); creditul pentru clinica privată e o lecție. O primă de asigurare neplătită reziliază acum polița, în loc să conteze ca lipsă de bani; restul asigurărilor aleatorului sunt o lecție („asigurarea potrivită, nu toate asigurările”).
+
+Atenție la citirea raportului de simulare: reușita = coloana „pensie” + coloana „independenta”.
+Aleatorul a coborât de la ~55% la ~37% pe parcursul extinderii: fiecare lot îi dă mai multe opțiuni riscante din care alege la întâmplare. Ținta lui a devenit 30–60%.
+
+Reguli pentru extindere:
+- Fiecare lot: teste noi (`tests/loturi.js`), analiza conținutului fără erori, simularea cu cele 4 profiluri (`--n 200` intermediar, `--n 500` la final de lot; profilurile folosesc și opțiunile noi), UI verificat la 360 px, commit separat per lot / sub-lot.
+- Operațiunile bancare (depune, retrage, plătește) sunt nelimitate; în bugetul anual de acțiuni mari intră doar ce consumă timp (cursuri, activități, căutare de job, afacere, vacanțe).
+- Fiecare acțiune din meniu întoarce `{ ok, mesaj }` (lista în `ACTIUNI`, `js/engine.js`); un test verifică toate.
+- Starea are câmpul `versiune`; orice schimbare de format vine cu o migrare în `js/state.js`, ca salvările de pe GitHub Pages să meargă mai departe.
+- Fișierele se scriu cu tool-ul de editare, nu prin bash.
+- Merge în `main` doar după confirmarea echipei.
+
+### Mediul de test și salvările
+
+- **Preview:** ramura `extindere` rămâne mediul de test: orice reparație se face acolo, se urcă (push), se verifică pe https://mihaimpmo.github.io/finventure-preview/ și ajunge pe `main` doar după confirmarea echipei. `thinkINGbig-ro` e un cont personal, iar colaboratorii nu pot schimba setările de Pages; de aceea preview-ul e pe contul `mihaimpmo`.
+- **Salvările:** `js/storage.js` `prefixPentru`: doar site-ul principal folosește cheile `finventure.*`; orice altă adresă (preview, localhost) folosește `finventure-preview.*`.
+- **Cache-ul:** `index.html` verifică modulele la pornire și repară un amestec de fișiere vechi și noi; versiunea paginii e în `<meta name="finventure-cod">` și în `js/versiune.js` (detalii în `docs/DEZVOLTARE.md`).
+- **Chirie vs. cumpărare:** după lotul 4a, casa iese mai bine în ~80% din vieți (era ~51%), din cauza rebalansării prudentului pe strategia echilibrată; fără rebalansare, ~59%. Detalii în `docs/DEZVOLTARE.md`.
 
 ### Ce urmează
 
-- Testare pe telefon (GitHub Pages) și corecturi.
+- Funcționalitățile sunt înghețate; doar reparații din testare, pe `extindere` → preview → `main`.
 - Verificarea valorilor din `data/config.json` cu un specialist (completat `sursa`, `deVerificat: false`).
 - Mai târziu, doar dacă decidem: clasamentul online (stratul `js/storage.js` e pregătit).

@@ -1,0 +1,40 @@
+{
+  "_info": "Scenariile de start, alese la „Joc nou” (prima viață pornește mereu cu „obisnuit”). Câmpuri: datorie (credit cu suma, dae, luni; banii au fost deja cheltuiți), flaguri, imobil (o locuință moștenită, de dat în chirie sau de vândut: garsoniera / apartament), economii (lei în contul de economii), efecte (statistici ascunse sau vizibile), jurnal, concepte.",
+  "scenarii": [
+    {
+      "id": "obisnuit",
+      "titlu": "Ca toată lumea",
+      "emoji": "🎒",
+      "descriere": "Ai terminat liceul cu bacul luat. Fără datorii, fără avere, cu părinții care te mai ajută puțin.",
+      "jurnal": "Ai terminat liceul. Urmează prima decizie mare."
+    },
+    {
+      "id": "datorii",
+      "titlu": "Începi cu 15.000 lei datorii",
+      "emoji": "💳",
+      "descriere": "La 18 ani ai semnat un credit pentru un telefon, haine și o vacanță. Banii s-au dus, rata a rămas.",
+      "datorie": { "suma": 15000, "dae": "config:creditNevoiPersonale.dae", "luni": 48 },
+      "efecte": { "fericire": -5 },
+      "jurnal": "Ai terminat liceul cu un credit de 15.000 lei de plătit. Rata vine în fiecare lună.",
+      "concepte": ["dae"]
+    },
+    {
+      "id": "fara-bac",
+      "titlu": "Fără bac",
+      "emoji": "📝",
+      "descriere": "Ai picat bacalaureatul. Facultatea și postliceala sunt închise până îl iei (îl poți da din nou, din Educație).",
+      "flaguri": ["fara_bac"],
+      "efecte": { "skill": -5, "fericire": -5 },
+      "jurnal": "Ai terminat liceul, dar ai picat bacul. Poți să-l dai din nou oricând."
+    },
+    {
+      "id": "mostenire",
+      "titlu": "Moștenești o garsonieră",
+      "emoji": "🏠",
+      "descriere": "Bunica ți-a lăsat o garsonieră. O poți da în chirie sau vinde (din Investiții → Imobiliare). Vine cu costuri de proprietar.",
+      "imobil": "garsoniera",
+      "jurnal": "Ai terminat liceul și ai moștenit garsoniera bunicii.",
+      "concepte": ["mostenire", "randament-chirie"]
+    }
+  ]
+}

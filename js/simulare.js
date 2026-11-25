@@ -8,7 +8,11 @@ import { baniDisponibili, contCurent, fluturas, fondUrgenta, pret } from './fina
 import { hashSeed } from './rng.js';
 import { areFlag, avereNeta, cheltuieliLunare, multiplicatorStil } from './state.js';
 import { areJobFullTime, contractCurent } from './cariera.js';
-import { cfg, inLei, varstaLa } from './util.js';
+import { bal, cfg, inLei, varstaLa } from './util.js';
+import { timpRamas } from './activitati.js';
+import { consolidabile } from './datorii.js';
+import { simuleazaCumparare } from './imobiliare.js';
+import { afacereActiva, simuleazaPornire } from './afacere.js';
 import { rezumatViata } from './bilant.js';
 import { alegeFinal } from './finaluri.js';
 
@@ -100,6 +104,16 @@ function asiguraCont(state, ctx) {
   if (cont && state.numerar > 0) actiune(state, ctx, 'depune', { id: cont.id, suma: lei(state.numerar) });
 }
 
+// Activitățile din meniu, în ordinea preferată a profilului, cât mai e timp în an.
+// Păstrează o acțiune de timp pentru căutatul unui job, dacă profilul o să caute.
+function faActivitati(state, ctx, ids) {
+  const rezerva = !areJobFullTime(state, ctx) && !state.situatie.studii && !areFlag(state, 'cautare_job') ? bal(ctx, 'timp.costCautareJob') : 0;
+  for (const id of ids) {
+    if (timpRamas(state, ctx) - (ctx.activitati.get(id)?.timp ?? 1) < rezerva) break;
+    actiune(state, ctx, 'activitate', { activitate: id });
+  }
+}
+
 function cautaJobDacaTrebuie(state, ctx) {
   if (areJobFullTime(state, ctx) || state.situatie.studii || areFlag(state, 'cautare_job')) return null;
   const r = actiune(state, ctx, 'cautaJob');
@@ -124,6 +138,90 @@ function inchideRestanteDinEconomii(state, ctx) {
   }
 }
 
+// Datoriile, ca un jucător atent: eșalonează ce a ajuns la recuperatori (dacă n-o poate plăti tot)
+// și dă banii în plus pe datoria cu cea mai mare DAE (avalanșă), înainte să investească.
+function gestioneazaDatoriiAtent(state, ctx, rezerva) {
+  for (const c of gasesteProduse(state, 'credit').filter((p) => p.stadiu === 'cesionat')) {
+    if (baniDisponibili(state) >= c.restanta) actiune(state, ctx, 'ramburseaza', { id: c.id });
+    else actiune(state, ctx, 'esaloneaza', { id: c.id, luni: 12 });
+  }
+  const scumpe = gasesteProduse(state, 'credit')
+    .filter((p) => p.stadiu === 'activ' && p.furnizor !== 'ipoteca' && p.dae > 0.08 && p.rest > 0)
+    .sort((x, y) => y.dae - x.dae);
+  for (const c of scumpe) {
+    const surplus = baniDisponibili(state) - rezerva;
+    if (surplus < 20000) break;
+    actiune(state, ctx, 'ramburseazaPartial', { id: c.id, suma: lei(Math.min(surplus, c.rest)), mod: 'durata' });
+  }
+}
+
+// Cursurile unui jucător atent: cele gratuite oricând; cele plătite doar cu fondul de urgență complet.
+function cursuriAtent(state, ctx, ids, fondComplet) {
+  for (const id of ids) {
+    const c = ctx.educatie.cursuri.get(id);
+    if (!c || state.flaguri[c.flag]) continue;
+    if (pret(state, ctx, c.pret.replace(/^pret:/, '')) > 0 && !fondComplet) continue;
+    actiune(state, ctx, 'inscrieCurs', { curs: id });
+  }
+}
+
+// Munca unui jucător atent: cere promovarea când e cazul, cursul plătit de firmă, iar cât fondul
+// de urgență nu e complet, un venit în plus și ore suplimentare (doar cu energie destulă).
+function muncaAtent(state, ctx, fondComplet, { pastreazaSecundarul = false } = {}) {
+  const c = contractCurent(state);
+  if (c) {
+    actiune(state, ctx, 'cerePromovare');
+    actiune(state, ctx, 'cursFirma');
+  }
+  const sec = state.produse.find((p) => p.tip === 'activitateSecundara');
+  const energie = state.stat.energie;
+  if (sec && (energie < 45 || (fondComplet && !pastreazaSecundarul))) actiune(state, ctx, 'opresteSecundar');
+  if (!sec && !fondComplet && energie > 60 && c) {
+    actiune(state, ctx, 'incepeSecundar', { secundar: state.ascunse.skill >= 50 ? 'meditatii' : 'livrari-weekend' });
+  }
+  if (!fondComplet && energie > 55) actiune(state, ctx, 'oreSuplimentare');
+}
+
+// Afacerea, ca un jucător atent: doar într-un domeniu în care are experiență, după plan, curs și
+// studiu de piață, ca SRL, cu rezerva de fond păstrată; scoate surplusul anual; închide dacă pierde un an.
+function afacereAtent(state, ctx, fondComplet, lunar) {
+  const af = afacereActiva(state);
+  if (af) {
+    const d = ctx.afaceri.domenii.get(af.domeniu);
+    const ultimul = af.istoric.slice(-12);
+    if (af.luniActiva > d.luniMaturitate + 6 && ultimul.reduce((s, x) => s + x.profit, 0) < 0) return actiune(state, ctx, 'inchideAfacere');
+    // un marketing modest de la început; oameni în plus doar dacă pierde clienți și e pe profit
+    if (af.marketing == null) actiune(state, ctx, 'seteazaAfacere', { marketing: Math.round(lei(pret(state, ctx, `afaceri.${d.id}.venitPotential`)) * 0.03) });
+    if (af.clientiPierduti > 0 && ultimul.reduce((s, x) => s + x.profit, 0) > 0 && (af.angajatiExtra ?? 0) < 2) {
+      actiune(state, ctx, 'seteazaAfacere', { angajatiExtra: (af.angajatiExtra ?? 0) + 1 });
+    }
+    const rezerva = 6 * (pret(state, ctx, `afaceri.${d.id}.costuriFixe`));
+    if (af.cont > rezerva && !af.datorii) actiune(state, ctx, 'retrageDinFirma', { suma: lei(af.cont - rezerva) });
+    return null;
+  }
+  const varsta = varstaLa(state.luna);
+  if (!fondComplet || varsta < 28 || varsta > 45) return null;
+  const domeniu = [...ctx.afaceri.domenii.values()].find((d) => d.experienta.some((x) => areFlag(state, `experienta_${x}`)));
+  if (!domeniu) return null;
+  actiune(state, ctx, 'faPlanAfaceri');
+  actiune(state, ctx, 'inscrieCurs', { curs: 'antreprenoriat' });
+  actiune(state, ctx, 'faStudiuPiata', { domeniu: domeniu.id });
+  const sim = simuleazaPornire(state, ctx, domeniu.id, 'srl', {});
+  if (sim.ok && sim.pregatire.total >= 75 && baniDisponibili(state) - sim.dinEconomii >= 3 * lunar) {
+    return actiune(state, ctx, 'pornesteAfacere', { domeniu: domeniu.id, forma: 'srl' });
+  }
+  return null;
+}
+
+// Cumpărăturile mari ale unui jucător atent: doar cash, doar cu fondul complet și cu bani peste el.
+function cumparaAtent(state, ctx, ids, rezerva) {
+  for (const id of ids) {
+    const b = ctx.cumparaturi.bunuri.get(id);
+    if (!b || state.produse.some((p) => p.tip === 'bun' && (p.bunId === id || (b.categorie === 'masini' && p.categorie === 'masini')))) continue;
+    if (baniDisponibili(state) - pret(state, ctx, b.pret) >= rezerva) actiune(state, ctx, 'cumparaBun', { bun: id, plata: 'cash' });
+  }
+}
+
 // Frugal: modest toată viața, fond de 6 luni, aproape tot restul investit în ETF.
 function meniuFrugal(state, ctx) {
   asiguraCont(state, ctx);
@@ -140,12 +238,29 @@ function meniuFrugal(state, ctx) {
     const pentruFond = Math.min(surplus, Math.max(0, 6 * lunar - fondUrgenta(state)));
     if (pentruFond > 100) actiune(state, ctx, 'depune', { id: fond.id, suma: lei(pentruFond) });
   }
+  gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
   const deInvestit = baniDisponibili(state) - 3 * lunar;
   if (fondUrgenta(state) >= 6 * lunar && deInvestit > 50000) {
     actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(Math.round(deInvestit * 0.7)) });
   }
+  // Frugalul investește și lunar, automat, 10% din salariu (o dată ce are fondul).
+  const cFrugal = contractCurent(state);
+  if (cFrugal && fondUrgenta(state) >= 6 * lunar && !(state.dca ?? []).length) {
+    actiune(state, ctx, 'seteazaDCA', { clasa: 'etf', suma: Math.round(lei(fluturas(cFrugal.brut, cFrugal.contract, ctx).net) * 0.1) });
+  }
   if (state.stilViata !== 'modest' && fondUrgenta(state) < 6 * lunar) actiune(state, ctx, 'stilViata', { nivel: 'modest' });
+  asigurariAtent(state, ctx, { viata: false });
   cereMarireAnual(state, ctx);
+  // Frugalul păstrează venitul în plus cât are energie: toți banii în plus merg la investiții.
+  muncaAtent(state, ctx, fondUrgenta(state) >= 6 * lunar, { pastreazaSecundarul: true });
+  if (fondUrgenta(state) >= 6 * lunar) cumparaAtent(state, ctx, ['telefon-buget', 'bicicleta'], 2 * lunar);
+  cursuriAtent(state, ctx, ['educatie-financiara', 'engleza'], fondUrgenta(state) >= 6 * lunar);
+  // Frugalul face doar ce e gratis: CV mai bun, odihnă, familie.
+  faActivitati(state, ctx, [
+    ...(!areFlag(state, 'cv_voluntariat') ? ['voluntariat'] : []),
+    ...(!areFlag(state, 'cv_proiecte') && !state.situatie.studii ? ['proiect-personal'] : []),
+    ...(state.stat.energie < 50 ? ['odihna'] : []), 'alergare', 'vizita-parinti', 'citesti-bani',
+  ]);
   return cautaJobDacaTrebuie(state, ctx);
 }
 
@@ -168,6 +283,7 @@ function meniuPrudent(state, ctx) {
   const fond = asiguraFond(state, ctx);
   const c = contractCurent(state);
   const netLunar = c ? fluturas(c.brut, c.contract, ctx).net : 0;
+  asigurariAtent(state, ctx, { viata: true });
 
   const surplus = baniDisponibili(state) - lunar;
   if (fond && surplus > 0) {
@@ -175,10 +291,29 @@ function meniuPrudent(state, ctx) {
     if (pentruFond > 100) actiune(state, ctx, 'depune', { id: fond.id, suma: lei(pentruFond) });
   }
   const fondComplet = fondUrgenta(state) >= 6 * lunar;
+  gestioneazaDatoriiAtent(state, ctx, 3 * lunar);
+  muncaAtent(state, ctx, fondComplet);
+  afacereAtent(state, ctx, fondComplet, lunar);
+  // telefon bun și, după 30 de ani, o mașină la mâna a doua; telefonul se schimbă când a pierdut 80% din valoare
+  const tel = state.produse.find((p) => p.tip === 'bun' && p.bunId === 'telefon-mediu');
+  if (tel && tel.valoare < tel.pretCumparare * 0.2) actiune(state, ctx, 'vindeBun', { id: tel.id });
+  if (fondComplet) cumparaAtent(state, ctx, ['telefon-mediu', ...(varstaLa(state.luna) >= 30 ? ['masina-sh'] : [])], 3 * lunar);
+  // Prudentul își crește valoarea pe piață: limbă străină și, fără facultate, o calificare căutată.
+  cursuriAtent(state, ctx, ['educatie-financiara', 'engleza',
+    ...(['liceu', 'profesionala'].includes(state.situatie.nivelStudii) && !state.situatie.studii ? ['contabilitate'] : [])], fondComplet);
   if (fondComplet && netLunar) {
     // 20%: investiții (pentru casă, prudentul le vinde la nevoie: „Vând investițiile pentru avans”)
     const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
     if (deInvestit > 50000) actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(deInvestit) });
+    // de la 30 de ani, o pensie privată lunară mică; la 5 ani, rebalansare pe strategia echilibrată
+    const varsta = varstaLa(state.luna);
+    if (varsta >= 30 && !(state.dca ?? []).some((d) => d.clasa === 'pilon3')) actiune(state, ctx, 'seteazaDCA', { clasa: 'pilon3', suma: Math.round(lei(netLunar) * 0.03) });
+    if (varsta % 5 === 0) actiune(state, ctx, 'rebalanseaza', { strategie: 'echilibrata' });
+    // Cu casa lui și fondul complet, o garsonieră de închiriat, cu credit, dacă avansul nu atinge fondul.
+    if (varsta >= 35 && state.produse.some((p) => p.tip === 'proprietate') && !state.produse.some((p) => p.tip === 'imobil')) {
+      const sim = simuleazaCumparare(state, ctx, 'garsoniera', 'credit');
+      if (sim.ok && baniDisponibili(state) - sim.dePlatit >= 3 * lunar) actiune(state, ctx, 'cumparaImobil', { marime: 'garsoniera', finantare: 'credit' });
+    }
     // 30%: dorințe — stil Confortabil dacă cheltuielile de bază rămân sub 80% din net
     if (state.stilViata === 'modest') {
       const mancare = pret(state, ctx, 'costTrai.mancareTransport');
@@ -186,9 +321,18 @@ function meniuPrudent(state, ctx) {
       if (laConfortabil <= 0.8 * netLunar) actiune(state, ctx, 'stilViata', { nivel: 'confortabil' });
     }
     // ce mai rămâne peste două luni de cheltuieli se duce pe dorințe, până la 30% din venitul anual
-    const peDorinte = Math.min(Math.round(0.3 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
-    if (peDorinte > 50000) actiune(state, ctx, 'cumpara', { suma: lei(peDorinte), fericire: 3 });
+    // dorințele încep cu o vacanță (dacă bugetul de dorințe o acoperă), iar ce rămâne merge pe cumpărături
+    let buget = Math.min(Math.round(0.3 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
+    const costVacanta = pret(state, ctx, 'activitati.vacantaMare');
+    if (buget >= costVacanta && actiune(state, ctx, 'activitate', { activitate: 'vacanta-mare' }).ok) buget -= costVacanta;
+    if (buget > 50000) actiune(state, ctx, 'cumpara', { suma: lei(buget), fericire: 3 });
   }
+  faActivitati(state, ctx, [
+    ...(!areFlag(state, 'cv_voluntariat') ? ['voluntariat'] : []),
+    ...(!areFlag(state, 'cv_proiecte') && !state.situatie.studii ? ['proiect-personal'] : []),
+    ...(state.stat.energie < 50 ? ['odihna'] : []),
+    ...(areJobFullTime(state, ctx) ? ['networking', 'control-medical'] : []), 'alergare', 'iesire-prieteni', 'citesti-bani',
+  ]);
   // Bugetul: dacă cheltuielile trec de 85% din venitul net sau fondul scade sub 3 luni, coboară stilul.
   if (state.stilViata !== 'modest' && (fondUrgenta(state) < 3 * lunar || (netLunar && lunar > 0.85 * netLunar))) {
     actiune(state, ctx, 'stilViata', { nivel: state.stilViata === 'lux' ? 'confortabil' : 'modest' });
@@ -200,6 +344,7 @@ function meniuPrudent(state, ctx) {
 // Riscant: card de credit pe minim cu cumpărăturile pe el, cheltuie aproape tot, nu economisește.
 function meniuRiscant(state, ctx, rnd) {
   asiguraCont(state, ctx);
+  actiune(state, ctx, 'seteazaRitm', { ritm: 'relaxat' }); // „lucrez cât să nu mă dea afară”
   if (areJobFullTime(state, ctx)) actiune(state, ctx, 'stilViata', { nivel: 'lux' });
   let card = gasesteProduse(state, 'cardCredit')[0];
   if (!card) {
@@ -214,12 +359,36 @@ function meniuRiscant(state, ctx, rnd) {
     const peCard = Math.round(card.limita * 0.3);
     actiune(state, ctx, 'cumpara', { suma: lei(peCard), fericire: 3, peCard: true });
   }
+  // Riscantul pariază pe companii „de viitor” și crypto, cu ce-i rămâne după cheltuieli.
+  const peBursa = baniDisponibili(state) - lunar;
+  if (peBursa > 20000) {
+    const tinta = ['co-zborapid', 'co-pixelnord', 'crypto'][Math.floor(rnd() * 3)];
+    actiune(state, ctx, 'investeste', { clasa: tinta, suma: lei(Math.round(peBursa * 0.5)) });
+  }
+  // „Îmi deschid ceva al meu”: o cafenea ca PFA, fără pregătire, de cum are banii; scoate tot ce intră.
+  const af = afacereActiva(state);
+  if (af) {
+    if (af.pret !== 'mic') actiune(state, ctx, 'seteazaAfacere', { pret: 'mic', marketing: 2000 }); // „volum, volum”
+    if (af.cont > 0) actiune(state, ctx, 'retrageDinFirma', { suma: lei(af.cont) });
+  } else actiune(state, ctx, 'pornesteAfacere', { domeniu: rnd() < 0.5 ? 'cafenea' : 'magazinOnline', forma: 'pfa' });
+  // Ce e mai nou și mai scump, în rate sau „mai târziu”.
+  for (const [id, plata] of [['telefon-premium', 'rate'], ['masina-suv', 'rate'], ['haine-brand', 'bnpl']]) {
+    if (!state.produse.some((p) => p.tip === 'bun' && p.bunId === id)) actiune(state, ctx, 'cumparaBun', { bun: id, plata });
+  }
+  // „Imobiliarele nu pierd niciodată”: un apartament cu credit, de îndată ce banca zice da.
+  if (!state.produse.some((p) => p.tip === 'imobil')) actiune(state, ctx, 'cumparaImobil', { marime: 'apartament', finantare: 'credit' });
+  // Riscantul întinde datoriile pe cât mai mulți ani, ca să scadă rata (și să poată cheltui mai mult).
+  const deStrans = consolidabile(state).map((p) => p.id);
+  if (deStrans.length) actiune(state, ctx, 'consolideaza', { ids: deStrans, luni: 60 });
+  // Riscantul își face timp de distracție, cât îl țin banii.
+  faActivitati(state, ctx, ['vacanta-strainatate', 'city-break', 'iesire-prieteni', 'iesire-prieteni']);
   return cautaJobDacaTrebuie(state, ctx);
 }
 
 // Aleator: în fiecare an, 0–3 acțiuni de meniu luate la întâmplare, bune sau proaste.
 const ACTIUNI_ALEATOARE = [
   (state, ctx) => actiune(state, ctx, 'deschide', { tip: 'contCurent', pachet: varstaLa(state.luna) <= 25 ? 'tineri' : 'standard' }),
+  (state, ctx, rnd) => actiune(state, ctx, 'asigurare', { tip: rnd() < 0.5 ? 'locuinta' : 'viata', activ: rnd() < 0.7 }),
   (state, ctx, rnd) => actiune(state, ctx, 'stilViata', { nivel: ['modest', 'confortabil', 'lux'][Math.floor(rnd() * 3)] }),
   (state, ctx, rnd) => {
     let e = gasesteProduse(state, 'contEconomii')[0];
@@ -250,6 +419,95 @@ const ACTIUNI_ALEATOARE = [
   (state, ctx, rnd) => actiune(state, ctx, 'cumpara', { suma: lei(Math.round(baniDisponibili(state) * (0.1 + rnd() * 0.5))), fericire: 4 }),
   (state, ctx) => actiune(state, ctx, 'cereMarire'),
   (state, ctx) => actiune(state, ctx, 'cautaJob'),
+  // investițiile: orice clasă sau companie, DCA, vânzare, rebalansare
+  (state, ctx, rnd) => {
+    const ids = [...ctx.investitii.clase.keys(), ...ctx.investitii.companii.keys()];
+    return actiune(state, ctx, 'investeste', { clasa: ids[Math.floor(rnd() * ids.length)], suma: lei(Math.round(baniDisponibili(state) * (0.05 + rnd() * 0.3))) });
+  },
+  (state, ctx, rnd) => {
+    const ids = ['etf', 'pilon3', 'crypto', 'fondActiv'];
+    return actiune(state, ctx, 'seteazaDCA', { clasa: ids[Math.floor(rnd() * ids.length)], suma: rnd() < 0.3 ? 0 : Math.round(50 + rnd() * 400) });
+  },
+  (state, ctx, rnd) => {
+    const clase = [...new Set(gasesteProduse(state, 'investitie').map((p) => p.clasa))];
+    return clase.length ? actiune(state, ctx, 'vinde', { clasa: clase[Math.floor(rnd() * clase.length)] }) : null;
+  },
+  (state, ctx, rnd) => actiune(state, ctx, 'rebalanseaza', { strategie: ['prudenta', 'echilibrata', 'dinamica'][Math.floor(rnd() * 3)] }),
+  // imobiliare: cumpără (cash sau credit) sau vinde
+  (state, ctx, rnd) => {
+    const im = state.produse.find((p) => p.tip === 'imobil');
+    if (im && rnd() < 0.3) return actiune(state, ctx, 'vindeImobil', { id: im.id });
+    return actiune(state, ctx, 'cumparaImobil', { marime: rnd() < 0.5 ? 'garsoniera' : 'apartament', finantare: rnd() < 0.6 ? 'credit' : 'cash' });
+  },
+  // cumpărături: orice din catalog, plătit oricum; uneori vinde ceva
+  (state, ctx, rnd) => {
+    const bunuri = state.produse.filter((p) => p.tip === 'bun');
+    if (bunuri.length && rnd() < 0.25) return actiune(state, ctx, 'vindeBun', { id: bunuri[Math.floor(rnd() * bunuri.length)].id });
+    const ids = [...ctx.cumparaturi.bunuri.keys()];
+    return actiune(state, ctx, 'cumparaBun', { bun: ids[Math.floor(rnd() * ids.length)], plata: ['cash', 'card', 'rate', 'bnpl'][Math.floor(rnd() * 4)] });
+  },
+  // afacerea: pregătire, grant, pornire (domeniu, formă, finanțare la întâmplare), bani scoși, închidere
+  (state, ctx, rnd) => actiune(state, ctx, ['faPlanAfaceri', 'aplicaGrant'][Math.floor(rnd() * 2)]),
+  (state, ctx, rnd) => {
+    const ids = [...ctx.afaceri.domenii.keys()];
+    const domeniu = ids[Math.floor(rnd() * ids.length)];
+    if (rnd() < 0.4) return actiune(state, ctx, 'faStudiuPiata', { domeniu });
+    return actiune(state, ctx, 'pornesteAfacere', { domeniu, forma: ['pfa', 'ii', 'srl'][Math.floor(rnd() * 3)], credit: rnd() < 0.4, investitor: rnd() < 0.3 });
+  },
+  (state, ctx, rnd) => {
+    if (!afacereActiva(state)) return null;
+    const x = rnd();
+    if (x < 0.3) return actiune(state, ctx, 'seteazaAfacere', { pret: ['mic', 'mediu', 'mare'][Math.floor(rnd() * 3)] });
+    if (x < 0.5) return actiune(state, ctx, 'seteazaAfacere', { marketing: Math.round(rnd() * 5000), angajatiExtra: Math.floor(rnd() * 3) });
+    if (x < 0.65) return actiune(state, ctx, 'extindeAfacerea');
+    if (x < 0.8) return actiune(state, ctx, 'vindeAfacerea');
+    return actiune(state, ctx, 'imprumutFirma', { suma: Math.round(5000 + rnd() * 50000) });
+  },
+  (state, ctx, rnd) => {
+    const af = afacereActiva(state);
+    if (!af) return null;
+    if (rnd() < 0.2) return actiune(state, ctx, 'inchideAfacere');
+    return actiune(state, ctx, 'retrageDinFirma', { suma: lei(Math.round(Math.max(0, af.cont) * rnd())) });
+  },
+  // munca: ritm, ore suplimentare, promovare, curs de firmă, venit în plus, artist, (rar) demisie
+  (state, ctx, rnd) => actiune(state, ctx, 'seteazaRitm', { ritm: ['relaxat', 'normal', 'intens'][Math.floor(rnd() * 3)] }),
+  (state, ctx) => actiune(state, ctx, 'oreSuplimentare'),
+  (state, ctx) => actiune(state, ctx, 'cerePromovare'),
+  (state, ctx) => actiune(state, ctx, 'cursFirma'),
+  (state, ctx, rnd) => {
+    if (state.produse.some((p) => p.tip === 'activitateSecundara')) return actiune(state, ctx, 'opresteSecundar');
+    const ids = [...ctx.secundare.keys()];
+    return actiune(state, ctx, 'incepeSecundar', { secundar: ids[Math.floor(rnd() * ids.length)] });
+  },
+  (state, ctx, rnd) => actiune(state, ctx, 'devinoArtist', { job: ['pictor', 'muzician', 'ilustrator'][Math.floor(rnd() * 3)] }),
+  (state, ctx, rnd) => (rnd() < 0.15 ? actiune(state, ctx, 'demisie') : null),
+  // educația: un program lung (uneori cu credit), un curs sau renunțarea la studii
+  (state, ctx, rnd) => {
+    const ids = [...ctx.educatie.programe.keys()];
+    return actiune(state, ctx, 'inscrieProgram', { program: ids[Math.floor(rnd() * ids.length)], credit: rnd() < 0.5 });
+  },
+  (state, ctx, rnd) => {
+    const ids = [...ctx.educatie.cursuri.keys()];
+    return actiune(state, ctx, 'inscrieCurs', { curs: ids[Math.floor(rnd() * ids.length)] });
+  },
+  (state, ctx, rnd) => (state.situatie.studii && rnd() < 0.3 ? actiune(state, ctx, 'renuntaStudii') : null),
+  // datoriile: rambursare parțială, eșalonare, consolidare, la întâmplare
+  (state, ctx, rnd) => {
+    const credite = gasesteProduse(state, 'credit');
+    if (!credite.length) return null;
+    const c = credite[Math.floor(rnd() * credite.length)];
+    if (c.stadiu === 'cesionat') return actiune(state, ctx, 'esaloneaza', { id: c.id, luni: [6, 12, 24][Math.floor(rnd() * 3)] });
+    return actiune(state, ctx, 'ramburseazaPartial', { id: c.id, suma: lei(Math.round(baniDisponibili(state) * rnd() * 0.5)), mod: rnd() < 0.5 ? 'rata' : 'durata' });
+  },
+  (state, ctx, rnd) => {
+    const ids = consolidabile(state).filter(() => rnd() < 0.7).map((p) => p.id);
+    return ids.length ? actiune(state, ctx, 'consolideaza', { ids, luni: [24, 36, 60][Math.floor(rnd() * 3)] }) : null;
+  },
+  // o activitate la întâmplare din meniu (de două ori mai probabil: e meniul cel mai des folosit)
+  ...Array(2).fill((state, ctx, rnd) => {
+    const ids = [...ctx.activitati.keys()];
+    return actiune(state, ctx, 'activitate', { activitate: ids[Math.floor(rnd() * ids.length)] });
+  }),
 ];
 
 function meniuAleator(state, ctx, rnd) {
@@ -270,13 +528,26 @@ function alegeAleator(oprire, state, ctx, rnd) {
   return sub[Math.floor(rnd() * sub.length)].cale;
 }
 
+// Jucătorii atenți: cu rate de plătit și fără un venit din muncă, întâi muncesc, apoi studiază
+// (ex. scenariul de start „Începi cu datorii”).
+const rateFaraVenit = (state) => !state.produse.some((p) => p.tip === 'contractMunca')
+  && state.produse.some((p) => p.tip === 'credit' && p.stadiu === 'activ' && p.rata > 0);
+
+// Asigurările jucătorilor atenți: locuința, de cum au una; viața (doar prudentul), de la 30 de ani, cu venit.
+function asigurariAtent(state, ctx, { viata }) {
+  if (!state.flaguri.asigurare_locuinta && state.produse.some((p) => p.tip === 'proprietate' || p.tip === 'imobil')) actiune(state, ctx, 'asigurare', { tip: 'locuinta' });
+  if (viata && !state.flaguri.asigurare_viata && varstaLa(state.luna) >= 30) actiune(state, ctx, 'asigurare', { tip: 'viata' });
+}
+
 // Ponderile comune ale jucătorilor atenți la bani (prudent și frugal).
 const PONDERI_ATENT = {
   ifn: -10, credit: -3, negru: -8, cim: 5, pfa: 2, oferta: 3, cardMinim: -6, cardIntegral: 5, ramburseaza: 5,
   fond: 6, lichideaza: 2, card: -3, studii: 4, minciuna: -6, marire: 4, promovare: 5, cautaJob: 3, ignora: -5, demisie: -5,
   viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15, inselatorie: -15, pariu: -6,
   panica: -8, pastreaza: 4, asigurare: 2, faraAsigurare: -2, venitExtra: 2, economisire: 3, ignoraTaxe: -6, afacere: 0,
-  amanaTratament: -6,
+  amanaTratament: -6, infractiune: -20,
+  // familia (lotul 9c): un partener ajută la costuri; după despărțire, nu rămân legați de fostul pe credit
+  partener: 2, creditComun: 1, ramanPeCreditComun: -4, preiauCreditul: 2, vandCasa: 1,
 };
 
 export const PROFILURI = {
@@ -296,6 +567,8 @@ export const PROFILURI = {
       const accesibila = (loc) => (net && costLocuinta(loc) <= 0.35 * net ? 2 : -12);
       return {
         ...PONDERI_ATENT,
+        studii: rateFaraVenit(state) ? -4 : PONDERI_ATENT.studii,
+        copil: fondComplet ? 3 : -3, // un copil doar cu fondul de urgență plin
         'locuinta:chirieSingur': accesibila('chirieSingur'), 'locuinta:chirieColegi': accesibila('chirieColegi'),
         vandPentruAvans: fondComplet ? 4 : -4, casaMare: 1, upgradeCasa: fondComplet ? 2 : -3,
         negociaza: areJobFullTime(state, ctx) ? 4 : -1,
@@ -313,6 +586,8 @@ export const PROFILURI = {
     descriere: 'modest toată viața, fond de 6 luni, investește aproape tot restul',
     alege: alegePrinScor((state, ctx) => ({
       ...PONDERI_ATENT,
+      studii: rateFaraVenit(state) ? -4 : PONDERI_ATENT.studii,
+      copil: fondUrgenta(state) >= 5 * cheltuieliLunare(state, ctx) ? 2 : -3,
       negociaza: areJobFullTime(state, ctx) ? 4 : -1,
       stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
       cumparaCasa: -1, dobandaVariabila: -2, amanaCumpararea: 2,
@@ -327,6 +602,8 @@ export const PROFILURI = {
       minciuna: 5, marire: -1, cautaJob: 1, ignora: 4, fericire: 0.4, viitor: -0.3, energie: 0.1,
       inselatorie: 3, pariu: 6, stilSus: 6, stilJos: -4, rate: 5, investitieRiscanta: 6, chirieScumpa: 3, panica: 5,
       cumparaCasa: 3, casaMare: 3, upgradeCasa: 3, dobandaVariabila: 3, asigurare: -2, faraAsigurare: 2, ignoraTaxe: 4, afacere: 3, economisire: -2,
+      infractiune: 1, // „bani ușori”: nu caută faptele, dar nici nu le refuză mereu
+      partener: 2, copil: 2, ramanPeCreditComun: 2,
     }),
     meniu: meniuRiscant,
   },
@@ -340,8 +617,8 @@ export function strategieAleatoare(seed) {
 
 // ---------- O viață / multe vieți ----------
 
-export function simuleazaViata(ctx, seed, profil = PROFILURI.aleator, { aniMax = 60, laSfarsitDeAn } = {}) {
-  const state = jocNou(ctx, { seed });
+export function simuleazaViata(ctx, seed, profil = PROFILURI.aleator, { aniMax = 60, laSfarsitDeAn, scenariu } = {}) {
+  const state = jocNou(ctx, { seed, scenariu });
   const rnd = creeazaRnd(`${profil.nume}/${seed}`);
   const alese = [];
   const consuma = (oprire) => {
@@ -370,7 +647,7 @@ export function simuleazaViata(ctx, seed, profil = PROFILURI.aleator, { aniMax =
   return { state, alese, primulSalariu };
 }
 
-export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator', aniMax = 60, laSfarsitDeAn } = {}) {
+export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator', aniMax = 60, laSfarsitDeAn, scenariu } = {}) {
   const p = typeof profil === 'string' ? PROFILURI[profil] : profil;
   const finaluri = {};
   const cauze = {};
@@ -385,7 +662,7 @@ export function simuleazaVieti(ctx, { n = 1000, seed = 'sim', profil = 'aleator'
   const locuinta = { cumparat: [], chirie: [], varstaCumparare: [], salariuCumparat: [], salariuChirie: [], garsoniera: 0, apartament: 0, upgrade: 0 };
 
   for (let i = 0; i < n; i++) {
-    const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn });
+    const { state, alese, primulSalariu } = simuleazaViata(ctx, `${seed}-${i}`, p, { aniMax, laSfarsitDeAn, scenariu });
     const ani = state.luna / 12;
     if (ani >= 5) {
       medii.inflatie.push(Math.pow(state.indicePreturi, 1 / ani) - 1);

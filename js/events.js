@@ -8,23 +8,31 @@ import {
 } from './finance.js';
 import { actualizeazaDerivate, adaugaJurnal, areFlag, cheltuieliLunare, schimbaStil, seteazaFlag } from './state.js';
 import { estimeazaPensie, inregistreazaDecizie, venitPasivLunar } from './bilant.js';
+import { adaugaBun } from './cumparaturi.js';
+import { aplicaPedeapsa, comiteFapta } from './infractiuni.js';
+import { aplicaFamilie, venitPartener } from './familie.js';
 import {
   areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
 } from './cariera.js';
 
 // ---------- Produse după selector ----------
-// Selector: „cardCredit”, „credit:ifn” (tip:furnizor), „contCurent:tineri” (tip:pachet), „investitie:etf” (tip:clasa)
+// Selector: „cardCredit”, „credit:ifn” (tip:furnizor), „contCurent:tineri” (tip:pachet), „investitie:etf” (tip:clasa),
+// „investitie:piata” (orice investiție vandabilă pe loc)
 
 export function potrivesteProdus(p, selector) {
   const [tip, detaliu] = selector.split(':');
   if (p.tip !== tip) return false;
-  return !detaliu || p.furnizor === detaliu || p.pachet === detaliu || p.clasa === detaliu;
+  // „investitie:piata” = orice investiție care se poate vinde pe loc (tot în afară de titlurile de stat)
+  if (detaliu === 'piata') return p.tip === 'investitie' && p.clasa !== 'titluriStat';
+  return !detaliu || p.furnizor === detaliu || p.pachet === detaliu || p.clasa === detaliu || p.categorie === detaliu;
 }
 
 // Asigurat medical: contract de muncă sau PFA (plătești CASS), student, sau imediat după concediere (șomaj).
-export function gradIndatorare(state, ctx, { suma, luni, dae }) {
+export function gradIndatorare(state, ctx, { suma, luni, dae, coDebitor = false }) {
   const c = state.produse.find((p) => p.tip === 'contractMunca');
-  const net = c && c.contract !== 'negru' ? fluturas(c.brut, c.contract, ctx).net : 0;
+  const netTau = c && c.contract !== 'negru' ? fluturas(c.brut, c.contract, ctx).net : 0;
+  // Co-debitorii: banca adună veniturile, dar doar dacă luați creditul împreună.
+  const net = netTau + (coDebitor && netTau ? venitPartener(state, ctx) : 0);
   const daeEfectiv = dae ?? cfg(ctx, 'ipotecar.marjaVariabila') + ircc(state, ctx);
   const rataNoua = rataAnuitate(suma, rataLunara(daeEfectiv), luniCreditDupaVarsta(state, ctx, luni));
   // Ratele existente: toate creditele (și IFN-urile, banca le vede la Biroul de Credit) și plata minimă la card.
@@ -86,6 +94,8 @@ export function rezolvaVariabile(ev, state, ctx, suprascrieri = {}) {
     if (nume in suprascrieri) continue;
     if (typeof def === 'number') {
       vars[nume] = rotunjeste10(def * state.indicePreturi);
+    } else if (def.startsWith('text:')) {
+      vars[nume] = def.slice(5);
     } else if (def.startsWith('pret:')) {
       // „pret:cale” sau „pret:cale*0.15”: valoare din config.json, la prețurile de azi din joc (cu inflația)
       const [cale, factor] = def.slice(5).split('*');
@@ -136,6 +146,9 @@ const MOTIVE_STAT = {
 const lei = (x) => `${formateazaLei(x)} lei`;
 
 // Întoarce null dacă e îndeplinită, altfel motivul (text pentru jucător).
+// Scenariul „Fără bac”: mesajul lui are prioritate față de „motiv” din JSON.
+const MOTIV_BAC = 'Fără diplomă de bacalaureat nu poți intra. O poți lua din Educație → „Bacalaureatul, din nou”.';
+
 export function motivNeindeplinire(cond, state, ctx, vars = {}) {
   if (!cond) return null;
   const val = (v) => rezolvaValoare(v, vars, ctx);
@@ -146,7 +159,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     varstaMax: (n) => varsta <= n || `Doar până la ${n} ani.`,
     faza: (lista) => lista.includes(state.faza) || 'Nu e momentul potrivit.',
     flag: (lista) => lista.every((f) => areFlag(state, f)) || 'Nu e cazul acum.',
-    lipsaFlag: (lista) => lista.every((f) => !areFlag(state, f)) || 'Nu e cazul acum.',
+    lipsaFlag: (lista) => lista.every((f) => !areFlag(state, f)) || (lista.includes('fara_bac') && areFlag(state, 'fara_bac') ? MOTIV_BAC : 'Nu e cazul acum.'),
     stat: (praguri) => verificaPraguri(praguri, state.stat),
     ascunse: (praguri) => verificaPraguri(praguri, state.ascunse),
     areProdus: (lista) => {
@@ -196,12 +209,13 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     inStudii: (da) => !!state.situatie.studii === da || (da ? 'Nu ești la studii.' : 'Încă ești la studii.'),
     // Gradul de îndatorare: (ratele existente + rata creditului nou) / venitul net din salariu.
     indatorare: (spec) => {
-      const r = gradIndatorare(state, ctx, { suma: inBani(val(spec.suma)), luni: spec.luni, dae: spec.variabila ? null : val(spec.dae) });
+      if (areFlag(state, 'cazier')) return 'Banca refuză: ai cazier.';
+      const r = gradIndatorare(state, ctx, { suma: inBani(val(spec.suma)), luni: spec.luni, dae: spec.variabila ? null : val(spec.dae), coDebitor: !!spec.coDebitor });
       if (r.net === 0) return 'Creditorul te refuză: n-ai un venit din salariu pe care să-l poată verifica.';
       // Prima locuință: limită mai mare, dacă n-ai și n-ai avut altă locuință (BNR: 40% + 5 puncte).
       const primaLocuinta = spec.primaLocuinta && !areFlag(state, 'are_locuinta') && !state.produse.some((p) => p.tip === 'proprietate');
       const max = cfg(ctx, primaLocuinta ? 'indatorare.gradMaximPrimaLocuinta' : 'indatorare.gradMaxim');
-      return r.grad <= max || `Creditorul te refuză: rata ar fi ${lei(Math.round(inLei(r.rataNoua)))}, iar toate ratele ar lua ${Math.round(r.grad * 100)}% din venitul tău net (maximul e ${Math.round(max * 100)}%).`;
+      return r.grad <= max || `Creditorul te refuză: rata ar fi ${lei(Math.round(inLei(r.rataNoua)))}, iar toate ratele ar lua ${Math.round(r.grad * 100)}% din ${spec.coDebitor ? 'venitul vostru net' : 'venitul tău net'} (maximul e ${Math.round(max * 100)}%).`;
     },
     asigurat: (da) => esteAsigurat(state, ctx) === da || (da ? 'Nu ești asigurat medical: lucrezi fără contract.' : 'Ești asigurat medical.'),
     stilViata: (lista) => lista.includes(state.stilViata) || 'Nu se potrivește cu stilul tău de viață.',
@@ -212,7 +226,7 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     if (cheie === 'motiv') continue;
     const r = verificari[cheie](valoare);
     // Îndatorarea are mereu mesajul ei, cu cifre; „motiv” din JSON acoperă doar celelalte condiții.
-    if (r !== true) return cond.motiv && cheie !== 'indatorare' ? textCuVariabile(cond.motiv, vars) : r;
+    if (r !== true) return cond.motiv && cheie !== 'indatorare' && r !== MOTIV_BAC ? textCuVariabile(cond.motiv, vars) : r;
   }
   return null;
 }
@@ -230,6 +244,7 @@ export const conditiiIndeplinite = (cond, state, ctx, vars) => motivNeindeplinir
 
 export function eEligibil(ev, state, ctx) {
   if (ev.doarUrmare || !ev.faza.includes(state.faza)) return false;
+  if ((state.infractiuni?.inchisoare ?? 0) > 0) return false; // în detenție vin doar urmările deja programate
   const istoric = state.istoricEvenimente[ev.id] ?? [];
   if (ev.maxAparitii != null && istoric.length >= ev.maxAparitii) return false;
   const cooldown = ev.cooldownLuni ?? bal(ctx, 'evenimente.cooldownImplicitLuni');
@@ -328,7 +343,8 @@ export function areUrmareScadenta(state) {
 
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
-  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere'];
+  'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou',
+  'infractiune', 'pedeapsa', 'familie'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -371,7 +387,8 @@ export function textRezultat({ decizie, jurnal }) {
   return decizie?.eticheta ? `Ai ales: ${decizie.eticheta}.` : null;
 }
 
-function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
+// Aplică efectele unei alegeri (sau ale unei activități din meniu, cu idDecizie = null).
+export function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   const val = (v) => rezolvaValoare(v, vars, ctx);
   const rezultat = { lectie: null, concepteNoi: [], jurnal: null, neplatit: 0 };
 
@@ -409,6 +426,21 @@ function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   for (const k of ['skill', 'scorCredit', 'retea', 'reputatie']) if (e[k]) state.ascunse[k] = clamp(state.ascunse[k] + val(e[k]), 0, 100);
   if (e.viitor) state.viitorAjustare += val(e.viitor);
 
+  // Efecte asupra afacerii proprii: bani în / din contul firmei, reputația ei, prețul.
+  if (p.afacere) {
+    const firma = state.produse.find((x) => x.tip === 'afacere');
+    if (firma) {
+      // „cont” poate fi o sumă sau o listă de sume care se adună (ex. ["{suma}", "-{avocat}"]).
+      if (p.afacere.cont !== undefined) for (const v of [p.afacere.cont].flat()) firma.cont += inBani(val(v));
+      if (p.afacere.reputatie !== undefined) firma.reputatie = clamp((firma.reputatie ?? 30) + val(p.afacere.reputatie), 0, 100);
+      if (p.afacere.pret !== undefined) firma.pret = p.afacere.pret;
+    }
+  }
+  if (p.bunNou) adaugaBun(state, ctx, p.bunNou); // un lucru din catalogul de cumpărături (plata e în „efecte” / „produsNou”)
+  // Infracțiuni: fapta (riscul vine mai târziu, ca dosar penal) și pedeapsa aleasă în dosar.
+  if (p.infractiune) comiteFapta(state, ctx, p.infractiune.tip, val(p.infractiune.castig ?? 0), idDecizie);
+  if (p.pedeapsa) aplicaPedeapsa(state, ctx, p.pedeapsa, vars);
+  for (const a of [p.familie ?? []].flat()) aplicaFamilie(state, ctx, a); // partener, nuntă, copil, divorț, casa comună
   for (const [sel, campuri] of Object.entries(p.seteazaProdus ?? {})) {
     for (const prod of gasesteProduse(state, sel)) Object.assign(prod, campuri);
   }
@@ -501,6 +533,7 @@ export function deschideProdus(state, ctx, spec, cauza = null) {
   if (sePlateste && baniDisponibili(state) < spec.suma) return null;
   const prod = creeazaProdus({ ...spec, cauza }, state, ctx);
   if (sePlateste) plateste(state, spec.suma);
+  if (prod.tip === 'imobil') prod.cumparatLa = state.luna;
   if (prod.tip === 'credit') {
     incaseaza(state, prod.sumaInitiala);
     if (prod.flag) seteazaFlag(state, prod.flag);

@@ -74,7 +74,7 @@ function verificaInvarianti(state) {
 
 // ---------- Teste ----------
 
-function teste(ctxBaza, incarcare) {
+function teste(ctxBaza, incarcare, citeste) {
   const ctxNou = (extra = {}) => ({ ...ctxBaza, ...extra });
   const joc = (seed = 'test', extra) => {
     const ctx = ctxNou(extra);
@@ -690,7 +690,7 @@ function teste(ctxBaza, incarcare) {
 
     // Testele loturilor din extindere (tests/loturi.js), cu aceleași ajutoare.
     ...testeLoturi(ctxBaza, {
-      ok, egal, ctxNou, joc, jocCuJob, jocFaraVenit, consuma, ruleazaAni, primaDisponibila, strategieDin, alegerePeCale, verificaInvarianti,
+      ok, egal, ctxNou, joc, jocCuJob, jocFaraVenit, consuma, ruleazaAni, primaDisponibila, strategieDin, alegerePeCale, verificaInvarianti, citeste,
     }),
   };
 }
@@ -698,7 +698,7 @@ function teste(ctxBaza, incarcare) {
 export async function ruleazaTeste(citeste, log = console.log) {
   const incarcare = await incarcaContinut(citeste);
   for (const a of incarcare.avertismente) log(`  ⚠ ${formateazaEroare(a)}`);
-  const toate = teste(incarcare.ctx, incarcare);
+  const toate = teste(incarcare.ctx, incarcare, citeste);
   let trecute = 0;
   const picate = [];
   for (const [nume, fn] of Object.entries(toate)) {

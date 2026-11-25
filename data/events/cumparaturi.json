@@ -1,0 +1,105 @@
+{
+  "evenimente": [
+    {
+      "id": "tentatie-telefon-nou",
+      "titlu": "A ieșit noul model",
+      "faza": [2, 3, 4, 5],
+      "conditii": { "areProdus": ["bun:tehnologie"], "varstaMin": 19 },
+      "pondere": 2,
+      "cooldownLuni": 24,
+      "variabile": { "pret": "pret:cumparaturi.telefonPremium" },
+      "text": "Toată lumea vorbește de noul telefon de top: cameră mai bună, ecran mai mare. Costă {pret} lei. Al tău merge, dar parcă e cam vechi acum.",
+      "alegeri": [
+        {
+          "id": "rate",
+          "eticheta": "Îl iau în rate",
+          "cere": {
+            "lipsaFlag": ["istoric_restante", "executare_silita"],
+            "jobProgram": ["full-time", "part-time"],
+            "motiv": "Magazinul nu-ți aprobă ratele."
+          },
+          "produsNou": { "tip": "credit", "furnizor": "magazin", "suma": "{pret}", "dae": "config:cumparaturi.daeRate", "luni": 12 },
+          "efecte": { "numerar": "-{pret}" },
+          "bunNou": "telefon-premium",
+          "etichete": ["rate", "stilSus"],
+          "concepte": ["cumparaturi-impuls", "cost-total-credit"],
+          "lectie": "Rata de un an pentru un telefon care pierde o treime din valoare pe an. Telefonul nou se învechește înainte să-l termini de plătit.",
+          "jurnal": "Ți-ai luat noul telefon de top, în rate."
+        },
+        {
+          "id": "cash",
+          "eticheta": "Îl iau cash",
+          "cere": { "baniMin": "{pret}" },
+          "efecte": { "numerar": "-{pret}" },
+          "bunNou": "telefon-premium",
+          "etichete": ["stilSus"],
+          "concepte": ["cumparaturi-impuls", "depreciere"],
+          "lectie": "Măcar nu plătești dobândă. Dar întreabă-te ce ai fi făcut cu banii ăștia în altă parte.",
+          "jurnal": "Ți-ai luat noul telefon de top, cash."
+        },
+        {
+          "id": "astept",
+          "eticheta": "Aștept să se ieftinească",
+          "efecte": { "fericire": -1 },
+          "concepte": ["depreciere"],
+          "lectie": "Peste un an, același telefon costă cam cu o treime mai puțin. Răbdarea e cea mai simplă reducere.",
+          "jurnal": "Ai rezistat tentației unui telefon nou."
+        },
+        {
+          "id": "nu",
+          "eticheta": "Al meu merge foarte bine",
+          "efecte": { "viitor": 1 },
+          "lectie": "Un lucru care își face treaba nu trebuie schimbat doar pentru că a apărut altul.",
+          "jurnal": "Ți-ai păstrat telefonul vechi."
+        }
+      ]
+    },
+    {
+      "id": "black-friday",
+      "titlu": "Black Friday",
+      "faza": [2, 3, 4, 5],
+      "conditii": { "varstaMin": 18 },
+      "pondere": 2,
+      "cooldownLuni": 12,
+      "variabile": { "cos": 1500, "lista": 400 },
+      "text": "Peste tot „-70%”, cronometre care numără invers și „ultimele bucăți”. În coș ai deja lucruri de {cos} lei, deși plănuiseși să iei doar ceva de {lista} lei.",
+      "alegeri": [
+        {
+          "id": "tot",
+          "eticheta": "Iau tot coșul ({cos} lei)",
+          "efecte": { "numerar": "-{cos}", "fericire": 4 },
+          "etichete": ["stilSus"],
+          "concepte": ["cumparaturi-impuls"],
+          "lectie": "O reducere la ceva de care n-aveai nevoie nu e economie, e cheltuială.",
+          "jurnal": "Ai cumpărat de {cos} lei de Black Friday."
+        },
+        {
+          "id": "bnpl",
+          "eticheta": "Iau tot, cu „plătește mai târziu”",
+          "cere": { "lipsaFlag": ["executare_silita"] },
+          "produsNou": { "tip": "credit", "furnizor": "bnpl", "suma": "{cos}", "dae": "config:bnpl.dae", "luni": 4 },
+          "efecte": { "numerar": "-{cos}", "fericire": 4 },
+          "etichete": ["rate", "stilSus"],
+          "concepte": ["cumparaturi-impuls", "bnpl"],
+          "lectie": "„Plătește mai târziu” face ca suma să pară mică azi. Luna viitoare vin ratele, plus tot ce mai cumperi.",
+          "jurnal": "Ai cumpărat de {cos} lei de Black Friday, cu plata în rate."
+        },
+        {
+          "id": "lista",
+          "eticheta": "Iau doar ce era pe listă ({lista} lei)",
+          "efecte": { "numerar": "-{lista}", "fericire": 1 },
+          "concepte": ["buget"],
+          "lectie": "O listă făcută înainte e cea mai bună apărare împotriva reducerilor.",
+          "jurnal": "De Black Friday ai cumpărat doar ce plănuiseși."
+        },
+        {
+          "id": "nimic",
+          "eticheta": "Închid site-urile",
+          "efecte": { "fericire": -1, "viitor": 1 },
+          "lectie": "Cronometrele și „ultimele bucăți” sunt făcute să te grăbească. Fără grabă, cumperi mai puțin.",
+          "jurnal": "Ai ignorat Black Friday."
+        }
+      ]
+    }
+  ]
+}

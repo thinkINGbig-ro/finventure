@@ -8,6 +8,10 @@ import { creeazaProdus, pret } from './finance.js';
 const R = 'evenimente'; // fluxul RNG folosit (deciziile jucătorului, nu piețele)
 
 export const contractCurent = (state) => state.produse.find((p) => p.tip === 'contractMunca');
+const areFlagActiv = (state, nume) => {
+  const f = state.flaguri[nume];
+  return !!f && (f.expiraLa == null || state.luna < f.expiraLa);
+};
 export const jobCurent = (state, ctx) => ctx.joburi.get(contractCurent(state)?.jobId);
 export const areJobFullTime = (state, ctx) => jobCurent(state, ctx)?.program === 'full-time';
 
@@ -15,10 +19,15 @@ export function nivelStudii(state, ctx) {
   return bal(ctx, 'cariera.nivelStudii')[state.situatie.nivelStudii] ?? 0;
 }
 
-function indeplinesteCerinte(job, state, ctx, { skillInPlus = 0 } = {}) {
+export function indeplinesteCerinte(job, state, ctx, { skillInPlus = 0 } = {}) {
   const c = job.cerinte ?? {};
   const nivele = bal(ctx, 'cariera.nivelStudii');
-  if (c.studiiMin && nivelStudii(state, ctx) < nivele[c.studiiMin]) return false;
+  // Un certificat (ex. bootcamp de programare) poate ține loc de diplomă la unele joburi.
+  const certificat = c.flagInLocDeStudii && state.flaguri[c.flagInLocDeStudii];
+  if (c.studiiMin && !certificat && nivelStudii(state, ctx) < nivele[c.studiiMin]) return false;
+  if (c.flagNecesar && !state.flaguri[c.flagNecesar]) return false; // ex. permis, diploma de medicină
+  if (job.cereBac && areFlagActiv(state, 'fara_bac')) return false; // școala de agenți cere bacalaureat
+  if ((c.faraCazier || job.faraCazier) && areFlagActiv(state, 'cazier')) return false; // polițist, avocat, profesor, medic, contabil
   if (c.skillMin && state.ascunse.skill + skillInPlus < c.skillMin) return false;
   return true;
 }
@@ -45,6 +54,8 @@ export function scorCV(state, ctx) {
     const f = state.flaguri[flag];
     if (f && (f.expiraLa == null || state.luna < f.expiraLa)) scor += bonus;
   }
+  // Cu cazier, angajatorii care verifică trecutul spun nu: mai puține oferte.
+  if (areFlagActiv(state, 'cazier')) scor -= bal(ctx, 'infractiuni.penalizareCV');
   return Math.round(scor);
 }
 
@@ -115,7 +126,23 @@ export function sansaMarire(state, ctx) {
   const c = contractCurent(state);
   if (!c) return 0;
   const vechime = Math.min(36, c.luniDeLaMarire ?? 0);
-  return clamp(sansa(p, state) + vechime * p.pondereLuniDeLaMarire - 12 * p.pondereLuniDeLaMarire, p.sansaMin, p.sansaMax);
+  return clamp(sansa(p, state) + vechime * p.pondereLuniDeLaMarire - 12 * p.pondereLuniDeLaMarire + ritm(ctx, c).sansaMarire, p.sansaMin, p.sansaMax);
+}
+
+// ---------- Ritmul de muncă ----------
+
+export const RITMURI = ['relaxat', 'normal', 'intens'];
+// Efectele ritmului (balans.cariera.ritm): energie/fericire lunar, reputație/skill anual, șanse de mărire, promovare, faimă.
+export function ritm(ctx, contract) {
+  return bal(ctx, `cariera.ritm.${contract?.ritm ?? 'normal'}`);
+}
+
+// Luni până la promovare, după ritm (cine trage tare e promovat mai repede).
+export function luniPanaLaPromovare(state, ctx) {
+  const c = contractCurent(state);
+  const job = c && ctx.joburi.get(c.jobId);
+  if (!job?.urmator) return null;
+  return Math.max(0, Math.round((job.luniPanaLaPromovare ?? 36) * ritm(ctx, c).factorPromovare) - c.luniVechime);
 }
 
 // Întoarce { succes, brutVechi, brutNou, text }
@@ -123,6 +150,7 @@ export function cereMarire(state, ctx) {
   const p = bal(ctx, 'cariera.marire');
   const c = contractCurent(state);
   if (!c) return { succes: false, text: 'N-ai de la cine să ceri o mărire: n-ai job.' };
+  if (ctx.joburi.get(c.jobId)?.artist) return { succes: false, text: 'Ca artist n-ai un șef de la care să ceri mărire: câștigi mai mult când crește faima.', preaDevreme: true };
   if ((c.luniDeLaMarire ?? 0) < p.luniMinimeIntreMariri) return { succes: false, text: 'Ai cerut o mărire de curând. Mai așteaptă.', preaDevreme: true };
   const brutVechi = c.brut;
   // Peste un anumit nivel față de piață, firma nu mai dă măriri: crești doar prin promovare sau alt job.
@@ -152,7 +180,7 @@ export function promovareDisponibila(state, ctx) {
   const c = contractCurent(state);
   const job = c && ctx.joburi.get(c.jobId);
   const urm = job?.urmator && ctx.joburi.get(job.urmator);
-  return !!urm && c.contract !== 'negru' && c.luniVechime >= (job.luniPanaLaPromovare ?? 36) && indeplinesteCerinte(urm, state, ctx);
+  return !!urm && c.contract !== 'negru' && luniPanaLaPromovare(state, ctx) === 0 && indeplinesteCerinte(urm, state, ctx);
 }
 
 export function promoveaza(state, ctx, cauza) {
@@ -162,6 +190,7 @@ export function promoveaza(state, ctx, cauza) {
   const brut = Math.max(pret(state, ctx, urm.salariu), Math.round(c.brut * (1 + bal(ctx, 'cariera.promovare.crestereMinima'))));
   const nou = schimbaJob(state, ctx, { id: urm.id, contract: urm.contracte.includes(c.contract) ? c.contract : 'cim', brut }, cauza);
   nou.plusNegociat = c.plusNegociat ?? 0;
+  nou.ritm = c.ritm;
   return { job: urm, brutVechi: c.brut, brutNou: nou.brut, text: `Ai fost promovat: acum ești ${urm.titlu}, cu ${lei(nou.brut)} lei brut.` };
 }
 

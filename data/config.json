@@ -14,6 +14,19 @@
     "procentRetineri": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "simplificare: impozit + CAS + CASS ca procent din venitul lunar" }
   },
 
+  "munca": {
+    "sporOreSuplimentare": { "valoare": 0.75, "deVerificat": true, "sursa": "Codul muncii (spor minim 75% dacă nu se compensează cu timp liber)" },
+    "oreSuplimentarePerTura": { "valoare": 80, "deVerificat": true, "sursa": "", "nota": "o „tură” de ore suplimentare în joc: cam 80 de ore în câteva luni" },
+    "oreLunareNormale": { "valoare": 168, "deVerificat": true, "sursa": "" },
+    "costCursFirma": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "cât returnezi dacă pleci înainte de termenul din clauza de fidelitate" },
+    "retineriVenitSecundar": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "simplificare: impozit pe venituri mici din activități independente / drepturi de autor; CASS apare peste anumite plafoane" },
+    "livrariWeekend": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "venit brut lunar din livrări în weekend" },
+    "meditatii": { "valoare": 1500, "deVerificat": true, "sursa": "", "nota": "câteva meditații pe săptămână" },
+    "freelancingIT": { "valoare": 3500, "deVerificat": true, "sursa": "" },
+    "vanzariOnline": { "valoare": 700, "deVerificat": true, "sursa": "", "nota": "revânzare / produse handmade, venit mediu lunar" },
+    "ilustratiiComanda": { "valoare": 1000, "deVerificat": true, "sursa": "" }
+  },
+
   "muncaLaNegru": {
     "procentNetDinBrut": { "valoare": 0.75, "deVerificat": true, "sursa": "", "nota": "cât primești în mână față de brutul unui job echivalent cu contract" }
   },
@@ -45,6 +58,37 @@
     "programatorJunior": { "valoare": 7500, "deVerificat": true, "sursa": "" },
     "programator": { "valoare": 11500, "deVerificat": true, "sursa": "" },
     "programatorSenior": { "valoare": 16500, "deVerificat": true, "sursa": "" },
+    "medicRezident": { "valoare": 7500, "deVerificat": true, "sursa": "" },
+    "medicSpecialist": { "valoare": 14000, "deVerificat": true, "sursa": "" },
+    "medicPrimar": { "valoare": 20000, "deVerificat": true, "sursa": "" },
+    "asistentMedical": { "valoare": 5500, "deVerificat": true, "sursa": "" },
+    "asistentPrincipal": { "valoare": 7000, "deVerificat": true, "sursa": "" },
+    "profesorDebutant": { "valoare": 4800, "deVerificat": true, "sursa": "" },
+    "profesorTitular": { "valoare": 6500, "deVerificat": true, "sursa": "" },
+    "profesorGradI": { "valoare": 8000, "deVerificat": true, "sursa": "" },
+    "agentPolitie": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "agentPrincipal": { "valoare": 7500, "deVerificat": true, "sursa": "" },
+    "ofiterPolitie": { "valoare": 10000, "deVerificat": true, "sursa": "" },
+    "avocatStagiar": { "valoare": 4500, "deVerificat": true, "sursa": "" },
+    "avocatDefinitiv": { "valoare": 9000, "deVerificat": true, "sursa": "" },
+    "avocatPartener": { "valoare": 18000, "deVerificat": true, "sursa": "" },
+    "bucatar": { "valoare": 4300, "deVerificat": true, "sursa": "" },
+    "bucatarSefPartida": { "valoare": 5500, "deVerificat": true, "sursa": "" },
+    "bucatarSef": { "valoare": 8000, "deVerificat": true, "sursa": "" },
+    "sofer": { "valoare": 5000, "deVerificat": true, "sursa": "" },
+    "soferTir": { "valoare": 8500, "deVerificat": true, "sursa": "", "nota": "inclusiv diurna" },
+    "electrician": { "valoare": 5500, "deVerificat": true, "sursa": "" },
+    "electricianAutorizat": { "valoare": 7500, "deVerificat": true, "sursa": "", "nota": "autorizat ANRE" },
+    "instalator": { "valoare": 5200, "deVerificat": true, "sursa": "" },
+    "instalatorAutorizat": { "valoare": 7000, "deVerificat": true, "sursa": "" },
+    "designerJunior": { "valoare": 5000, "deVerificat": true, "sursa": "" },
+    "designer": { "valoare": 7500, "deVerificat": true, "sursa": "" },
+    "artDirector": { "valoare": 12000, "deVerificat": true, "sursa": "" },
+    "agricultor": { "valoare": 3800, "deVerificat": true, "sursa": "", "nota": "lucrător agricol / fermier mic, venit mediu lunar" },
+    "jurnalist": { "valoare": 4500, "deVerificat": true, "sursa": "" },
+    "redactor": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "editor": { "valoare": 9000, "deVerificat": true, "sursa": "" },
+    "artistBaza": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "venitul brut lunar MEDIU al unui artist la început (pictor, muzician, ilustrator); de la o lună la alta variază mult" },
     "cresterePrinInflatie": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "fără negociere, salariul crește anual cu această fracție din inflație" }
   },
 
@@ -106,7 +150,44 @@
     "scoalaProfesionala": {
       "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "" },
       "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    },
+    "medicina": {
+      "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "Facultatea de medicină, pe loc bugetat" },
+      "durataLuni": { "valoare": 72, "deVerificat": true, "sursa": "", "nota": "6 ani" }
+    },
+    "postliceala": {
+      "taxaAnuala": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "școală postliceală particulară; la stat există și locuri gratuite" },
+      "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    },
+    "master": {
+      "taxaAnuala": { "valoare": 5000, "deVerificat": true, "sursa": "", "nota": "master cu taxă la o universitate de stat" },
+      "durataLuni": { "valoare": 24, "deVerificat": true, "sursa": "" }
+    },
+    "doctorat": {
+      "taxaAnuala": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "doctorat cu frecvență, pe loc bugetat" },
+      "durataLuni": { "valoare": 48, "deVerificat": true, "sursa": "" },
+      "bursaLunara": { "valoare": 2600, "deVerificat": true, "sursa": "", "nota": "bursa doctorală, netă" }
+    },
+    "bursaMeritLunara": { "valoare": 700, "deVerificat": true, "sursa": "", "nota": "bursă de merit la buget (licență, master); diferă mult între universități" },
+    "creditStudii": {
+      "dae": { "valoare": 0.05, "deVerificat": true, "sursa": "", "nota": "credit pentru studii, cu dobândă mică; în realitate condițiile diferă de la bancă la bancă" },
+      "luni": { "valoare": 96, "deVerificat": true, "sursa": "" },
+      "luniFaraDobanda": { "valoare": 0, "deVerificat": true, "sursa": "" }
     }
+  },
+
+  "cursuri": {
+    "_info": "Prețurile cursurilor scurte, la prețurile de start.",
+    "bootcampIT": { "valoare": 9000, "deVerificat": true, "sursa": "", "nota": "bootcamp de programare, 6 luni" },
+    "bacalaureat": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "meditații pentru bacalaureat, un an (examenul e gratuit)" },
+    "contabilitate": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "curs de contabil autorizat de ANC" },
+    "electrician": { "valoare": 2200, "deVerificat": true, "sursa": "", "nota": "calificare de electrician (ANC)" },
+    "instalator": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "calificare de instalator (ANC)" },
+    "engleza": { "valoare": 1800, "deVerificat": true, "sursa": "", "nota": "curs de engleză, nivel B2, cu certificat" },
+    "permis": { "valoare": 3500, "deVerificat": true, "sursa": "", "nota": "școala de șoferi + taxele de examen, categoria B" },
+    "antreprenoriat": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "curs de competențe antreprenoriale" },
+    "marketingDigital": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "curs de marketing digital cu certificat" },
+    "educatieFinanciara": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "curs online gratuit" }
   },
 
   "inflatie": {
@@ -212,7 +293,12 @@
       "randamentAnual": { "valoare": 0.07, "deVerificat": true, "sursa": "" },
       "volatilitateAnuala": { "valoare": 0.16, "deVerificat": true, "sursa": "" },
       "comision": { "valoare": 0.005, "deVerificat": true, "sursa": "" },
+      "comisionAnual": { "valoare": 0.002, "deVerificat": true, "sursa": "", "nota": "costul anual de administrare (TER), scăzut din valoare lunar" },
       "socCrash": { "valoare": -0.30, "deVerificat": true, "sursa": "" }
+    },
+    "fondActiv": {
+      "comision": { "valoare": 0.02, "deVerificat": true, "sursa": "", "nota": "comision de subscriere la un fond mutual administrat activ" },
+      "comisionAnual": { "valoare": 0.02, "deVerificat": true, "sursa": "", "nota": "comision anual de administrare; investește în aceleași acțiuni ca un ETF (în joc urmărește același indice)" }
     },
     "actiuni": {
       "randamentAnual": { "valoare": 0.08, "deVerificat": true, "sursa": "" },
@@ -238,5 +324,191 @@
       "comision": { "valoare": 0, "deVerificat": true, "sursa": "" }
     },
     "probabilitateCrashAnual": { "valoare": 0.06, "deVerificat": true, "sursa": "" }
+  },
+
+  "afaceri": {
+    "_info": "Afacerea proprie. Sumele sunt lunare (lei, la prețurile de start), pentru o afacere mică cu un singur sediu. Costurile fixe (chirie, utilități, contabil, asigurări, întreținere) plus echipa minimă sunt alese ca afacerea să intre pe profit pe la jumătatea venitului potențial: cu pregătire medie își scoate investiția în ~2–4 ani, cu pregătire slabă pierde bani.",
+    "contributieAngajator": { "valoare": 0.0225, "deVerificat": true, "sursa": "", "nota": "contribuția asiguratorie pentru muncă, plătită de angajator peste brut" },
+    "impozitMicro": { "valoare": 0.01, "deVerificat": true, "sursa": "", "nota": "impozitul pe venit al microîntreprinderii (SRL); procentul și plafoanele se schimbă des" },
+    "impozitDividende": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "impozit pe dividende" },
+    "cassDividende": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "CASS pe dividende, simplificat (în realitate, plafonat în funcție de salariul minim)" },
+    "taxeProfitPfa": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "PFA / II: impozit 10% + CASS + CAS peste plafon, simplificat ca procent din profit" },
+    "grant": { "valoare": 40000, "deVerificat": true, "sursa": "", "nota": "grant generic pentru tineri antreprenori (ex. programe naționale sau europene); valoarea și condițiile diferă" },
+    "capitalInvestitor": { "valoare": 0.5, "deVerificat": true, "sursa": "", "nota": "cât din investiția inițială pune un investitor (fracție)" },
+    "costStudiuPiata": { "valoare": 1500, "deVerificat": true, "sursa": "", "nota": "un studiu de piață simplu (chestionare, analiza concurenței)" },
+    "creditFirmaDae": { "valoare": 0.11, "deVerificat": true, "sursa": "", "nota": "credit de investiții pentru o firmă mică" },
+    "creditFirmaLuni": { "valoare": 60, "deVerificat": true, "sursa": "" },
+    "impozitVanzareFirma": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "impozit pe câștigul din vânzarea firmei (prețul minus cât ai investit)" },
+    "amendaControlFiscal": { "valoare": 5000, "deVerificat": true, "sursa": "", "nota": "o amendă tipică pentru greșeli de acte; depinde mult de caz" },
+    "costAvocat": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "un proces simplu de recuperare a unei datorii" },
+    "cafenea": {
+      "investitie": { "valoare": 80000, "deVerificat": true, "sursa": "", "nota": "amenajare, espressor, mobilier, avize" },
+      "costuriFixe": { "valoare": 6000, "deVerificat": true, "sursa": "", "nota": "chirie spațiu + utilități + contabil" },
+      "venitPotential": { "valoare": 30000, "deVerificat": true, "sursa": "", "nota": "vânzări lunare ale unei cafenele mici, bine pornite" }
+    },
+    "magazinOnline": {
+      "investitie": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "site, primul stoc, fotografii" },
+      "costuriFixe": { "valoare": 5400, "deVerificat": true, "sursa": "", "nota": "platformă, reclame de bază, depozit, curierat fix, contabil" },
+      "venitPotential": { "valoare": 22000, "deVerificat": true, "sursa": "" }
+    },
+    "it": {
+      "investitie": { "valoare": 15000, "deVerificat": true, "sursa": "", "nota": "echipamente, licențe" },
+      "costuriFixe": { "valoare": 4700, "deVerificat": true, "sursa": "", "nota": "birou sau coworking, licențe, contabil, asigurare" },
+      "venitPotential": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "proiecte pentru clienți" }
+    },
+    "constructii": {
+      "investitie": { "valoare": 60000, "deVerificat": true, "sursa": "", "nota": "dubă la mâna a doua, scule" },
+      "costuriFixe": { "valoare": 6400, "deVerificat": true, "sursa": "", "nota": "depozit, dubă (combustibil, asigurări), scule, contabil" },
+      "venitPotential": { "valoare": 40000, "deVerificat": true, "sursa": "", "nota": "lucrări de renovare" }
+    },
+    "agricultura": {
+      "investitie": { "valoare": 100000, "deVerificat": true, "sursa": "", "nota": "arendă, utilaje la mâna a doua, semințe" },
+      "costuriFixe": { "valoare": 4350, "deVerificat": true, "sursa": "", "nota": "arendă, întreținerea utilajelor, motorină, contabil" },
+      "venitPotential": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "medie lunară; în realitate banii vin la recoltă" }
+    },
+    "salon": {
+      "investitie": { "valoare": 40000, "deVerificat": true, "sursa": "" },
+      "costuriFixe": { "valoare": 3600, "deVerificat": true, "sursa": "", "nota": "chirie, utilități, produse de bază, contabil" },
+      "venitPotential": { "valoare": 18000, "deVerificat": true, "sursa": "" }
+    },
+    "atelier": {
+      "investitie": { "valoare": 35000, "deVerificat": true, "sursa": "", "nota": "reparații auto sau electronice" },
+      "costuriFixe": { "valoare": 2950, "deVerificat": true, "sursa": "", "nota": "chirie atelier, utilități, contabil" },
+      "venitPotential": { "valoare": 20000, "deVerificat": true, "sursa": "" }
+    },
+    "arta": {
+      "investitie": { "valoare": 10000, "deVerificat": true, "sursa": "", "nota": "materiale, site, primele expoziții" },
+      "costuriFixe": { "valoare": 4600, "deVerificat": true, "sursa": "", "nota": "chirie atelier, materiale de bază, site, expoziții, contabil" },
+      "venitPotential": { "valoare": 10000, "deVerificat": true, "sursa": "" }
+    },
+    "turism": {
+      "investitie": { "valoare": 150000, "deVerificat": true, "sursa": "", "nota": "amenajarea unei pensiuni mici, într-o casă închiriată pe termen lung" },
+      "costuriFixe": { "valoare": 4700, "deVerificat": true, "sursa": "", "nota": "chiria casei, utilități, întreținere, platforme de rezervări, contabil" },
+      "venitPotential": { "valoare": 35000, "deVerificat": true, "sursa": "", "nota": "medie lunară; vara e mult peste, iarna mult sub" }
+    }
+  },
+
+  "cumparaturi": {
+    "_info": "Prețurile din catalogul de cumpărături (lei, la prețurile de start) și costurile lunare ale unor bunuri.",
+    "telefonBuget": { "valoare": 800, "deVerificat": true, "sursa": "" },
+    "telefonMediu": { "valoare": 2000, "deVerificat": true, "sursa": "" },
+    "telefonPremium": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "laptopMediu": { "valoare": 3500, "deVerificat": true, "sursa": "" },
+    "laptopGaming": { "valoare": 8000, "deVerificat": true, "sursa": "" },
+    "haineBasic": { "valoare": 400, "deVerificat": true, "sursa": "", "nota": "câteva haine de bază, de sezon" },
+    "haineBrand": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "câteva piese de firmă" },
+    "ceas": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "ceas mecanic de calitate" },
+    "consola": { "valoare": 2500, "deVerificat": true, "sursa": "" },
+    "bicicleta": { "valoare": 2000, "deVerificat": true, "sursa": "" },
+    "masinaSH": { "valoare": 25000, "deVerificat": true, "sursa": "", "nota": "mașină la mâna a doua, 10 ani" },
+    "masinaCompacta": { "valoare": 85000, "deVerificat": true, "sursa": "", "nota": "mașină nouă, compactă" },
+    "masinaSuv": { "valoare": 170000, "deVerificat": true, "sursa": "", "nota": "SUV nou" },
+    "masinaElectrica": { "valoare": 150000, "deVerificat": true, "sursa": "", "nota": "mașină electrică nouă (fără subvenții)" },
+    "costLunarMasinaMica": { "valoare": 650, "deVerificat": true, "sursa": "", "nota": "RCA, revizii, benzină, parcare" },
+    "costLunarMasinaSuv": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "RCA, CASCO, revizii, combustibil" },
+    "costLunarMasinaElectrica": { "valoare": 450, "deVerificat": true, "sursa": "", "nota": "asigurare, încărcare, revizii puține" },
+    "caine": { "valoare": 1000, "deVerificat": true, "sursa": "", "nota": "adopție + primele cheltuieli (vaccinuri, cușcă, lesă)" },
+    "costLunarCaine": { "valoare": 350, "deVerificat": true, "sursa": "", "nota": "hrană, veterinar, medicamente, în medie" },
+    "pisica": { "valoare": 500, "deVerificat": true, "sursa": "" },
+    "costLunarPisica": { "valoare": 200, "deVerificat": true, "sursa": "" },
+    "cadouMic": { "valoare": 200, "deVerificat": true, "sursa": "" },
+    "cadouMare": { "valoare": 1500, "deVerificat": true, "sursa": "" },
+    "daeRate": { "valoare": 0.18, "deVerificat": true, "sursa": "", "nota": "credit de consum la magazin (fără promoție „0%”)" },
+    "luniRateMici": { "valoare": 12, "deVerificat": true, "sursa": "" },
+    "luniRateMasina": { "valoare": 60, "deVerificat": true, "sursa": "" },
+    "luniBnpl": { "valoare": 4, "deVerificat": true, "sursa": "", "nota": "patru rate lunare fără dobândă" }
+  },
+
+  "asigurari": {
+    "_info": "Asigurări facultative. PAD (obligatorie) e deja în utilitățile locuinței și acoperă doar cutremur, inundații naturale și alunecări de teren. Prime lunare în lei, la prețurile de start.",
+    "primaLocuinta": { "valoare": 40, "deVerificat": true, "sursa": "", "nota": "facultativă: incendiu, inundație de la vecini, furt, răspundere civilă" },
+    "primaViata": { "valoare": 120, "deVerificat": true, "sursa": "", "nota": "viață + boli grave, ~100.000 lei sumă asigurată, la 30–40 de ani" },
+    "indemnizatieBoalaGrava": { "valoare": 60000, "deVerificat": true, "sursa": "" },
+    "franciza": { "valoare": 500, "deVerificat": true, "sursa": "" },
+    "varstaMaxViata": { "valoare": 60, "deVerificat": true, "sursa": "", "nota": "după vârsta asta, asigurătorii nu mai încheie polițe noi (simplificat)" }
+  },
+  "familie": {
+    "_info": "Partener și familie (lotul 9c). Lei pe lună, la prețurile de start. Venitul partenerului nu e al tău: partenerul plătește jumătate din costurile comune (locuință, copii, creditul comun).",
+    "venitPartenerNet": { "valoare": 4500, "deVerificat": true, "sursa": "", "nota": "salariul net al partenerului, cam cât salariul mediu net" },
+    "costLunarCopil": { "valoare": 1500, "deVerificat": true, "sursa": "", "nota": "mâncare, haine, grădiniță / școală, activități; medie până la 18 ani" },
+    "alocatieSub2": { "valoare": 719, "deVerificat": true, "sursa": "", "nota": "alocația de stat pentru copiii sub 2 ani" },
+    "alocatiePeste2": { "valoare": 292, "deVerificat": true, "sursa": "", "nota": "alocația de stat între 2 și 18 ani" },
+    "varstaMajorat": { "valoare": 18, "deVerificat": true, "sursa": "", "nota": "simplificat: costurile, alocația și pensia de întreținere se opresc la 18 ani" },
+    "indemnizatieProcent": { "valoare": 0.85, "deVerificat": true, "sursa": "", "nota": "indemnizația de creștere a copilului: 85% din venitul net mediu din ultimele 12 luni" },
+    "indemnizatieMin": { "valoare": 1250, "deVerificat": true, "sursa": "" },
+    "indemnizatieMax": { "valoare": 8500, "deVerificat": true, "sursa": "" },
+    "luniConcediuCrestere": { "valoare": 24, "deVerificat": true, "sursa": "", "nota": "concediul de creștere a copilului, până la 2 ani" },
+    "costBona": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "bonă sau creșă privată, pe lună, cât ar fi durat concediul" },
+    "costNuntaMare": { "valoare": 60000, "deVerificat": true, "sursa": "", "nota": "150 de invitați: restaurant, formație, fotograf, rochie" },
+    "darNuntaMare": { "valoare": 40000, "deVerificat": true, "sursa": "", "nota": "darul invitaților acoperă de obicei doar o parte din cost" },
+    "costNuntaMica": { "valoare": 12000, "deVerificat": true, "sursa": "" },
+    "costStareCivila": { "valoare": 1000, "deVerificat": true, "sursa": "" },
+    "costDivortNotar": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "divorț prin acord, la notar (se poate și cu copii minori, dacă sunteți de acord)" },
+    "costDivortInstanta": { "valoare": 9000, "deVerificat": true, "sursa": "", "nota": "avocat, taxe, expertize, proces de 1–2 ani" },
+    "pensieIntretinere": { "valoare": [0.25, 0.33, 0.5], "deVerificat": true, "sursa": "Codul civil, art. 529 (maxim 1/4, 1/3, 1/2 din venitul net, pentru 1, 2, 3+ copii)", "nota": "procentul din venitul tău net pentru 1, 2, 3 sau mai mulți copii" },
+    "comisionVanzareCasa": { "valoare": 0.02, "deVerificat": true, "sursa": "", "nota": "agenție + notar la vânzarea casei comune" }
+  },
+  "mostenire": {
+    "_info": "Moștenitorii răspund pentru datoriile moștenirii doar cu bunurile moștenite, proporțional cu cota (Codul civil, art. 1114 alin. 2).",
+    "termenOptiuneLuni": { "valoare": 12, "deVerificat": true, "sursa": "Codul civil, art. 1103 (termenul de opțiune succesorală)", "nota": "în cât timp de la deces poți accepta sau renunța la moștenire" },
+    "taxaNotar": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "onorariul pentru dezbaterea unei moșteniri mici (casă de ~70.000 lei)" }
+  },
+
+  "infractiuni": {
+    "_info": "Pedepsele din joc sunt simplificate și orientative; în realitate depind de faptă, de valoare, de antecedente și de instanță. Sumele sunt în lei, la prețurile de start.",
+    "amendaFurt": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "amendă penală pentru un furt mărunt, la prima abatere" },
+    "amendaFrauda": { "valoare": 15000, "deVerificat": true, "sursa": "" },
+    "multiplicatorEvaziune": { "valoare": 3, "deVerificat": true, "sursa": "", "nota": "taxele ascunse se plătesc înapoi, plus dobânzi, penalități și amendă (aprox. de 3 ori suma)" },
+    "costAvocatPenal": { "valoare": 6000, "deVerificat": true, "sursa": "" },
+    "luniInchisoareFurtRepetat": { "valoare": 6, "deVerificat": true, "sursa": "" },
+    "luniInchisoareMule": { "valoare": 18, "deVerificat": true, "sursa": "", "nota": "spălare de bani; la prima faptă, recunoscută, adesea cu suspendare" },
+    "luniInchisoareFrauda": { "valoare": 12, "deVerificat": true, "sursa": "" },
+    "luniInchisoareEvaziune": { "valoare": 24, "deVerificat": true, "sursa": "", "nota": "evaziune fiscală cu prejudiciu mare" },
+    "aniReabilitare": { "valoare": 5, "deVerificat": true, "sursa": "", "nota": "după câți ani se șterge cazierul (simplificat; depinde de pedeapsă)" }
+  },
+
+  "imobiliare": {
+    "_info": "Apartamente cumpărate ca să le dai în chirie. Prețurile de cumpărare sunt în locuinte.pretGarsoniera / pretApartament.",
+    "chirieGarsoniera": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "chirie lunară de piață, oraș mare" },
+    "chirieApartament": { "valoare": 2800, "deVerificat": true, "sursa": "", "nota": "apartament cu 2 camere, oraș mare" },
+    "costLunarProprietarGarsoniera": { "valoare": 120, "deVerificat": true, "sursa": "", "nota": "impozit pe clădire, asigurare (PAD), fond de reparații; utilitățile le plătește chiriașul" },
+    "costLunarProprietarApartament": { "valoare": 180, "deVerificat": true, "sursa": "" },
+    "utilitatiCandEGol": { "valoare": 250, "deVerificat": true, "sursa": "", "nota": "când nu ai chiriaș, întreținerea și utilitățile minime le plătești tu" },
+    "impozitChirie": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "impozit pe venitul din chirii; se declară în Declarația unică (simplificat: reținut lunar)" },
+    "costuriCumparare": { "valoare": 0.03, "deVerificat": true, "sursa": "", "nota": "notar, taxe, comision de agenție, ca procent din preț" },
+    "costuriVanzare": { "valoare": 0.02, "deVerificat": true, "sursa": "", "nota": "comision de agenție la vânzare" },
+    "impozitVanzareSub3Ani": { "valoare": 0.03, "deVerificat": true, "sursa": "", "nota": "impozit la transferul proprietății deținute mai puțin de 3 ani" },
+    "impozitVanzarePeste3Ani": { "valoare": 0.01, "deVerificat": true, "sursa": "" },
+    "avansMinim": { "valoare": 0.25, "deVerificat": true, "sursa": "", "nota": "avansul cerut de bănci pentru o a doua locuință / investiție" },
+    "daeInPlus": { "valoare": 0.005, "deVerificat": true, "sursa": "", "nota": "dobânda la creditul pentru investiție, peste ipoteca obișnuită cu dobândă fixă" },
+    "luniCredit": { "valoare": 300, "deVerificat": true, "sursa": "" },
+    "costReparatie": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "o reparație mai mare (centrală, instalații)" }
+  },
+
+  "rambursareAnticipata": {
+    "comisionDobandaFixa": { "valoare": 0.01, "deVerificat": true, "sursa": "", "nota": "procent din suma rambursată, la creditele cu dobândă fixă (plafonat de lege)" },
+    "comisionDobandaVariabila": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "la dobânda variabilă, rambursarea anticipată e fără comision" }
+  },
+
+  "refinantare": {
+    "dae": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "DAE la un credit de refinanțare / consolidare a datoriilor de consum" }
+  },
+
+  "esalonareRecuperator": {
+    "dobanda": { "valoare": 0, "deVerificat": true, "sursa": "", "nota": "firmele de recuperare acceptă des plata în rate fără dobândă în plus; costurile sunt deja incluse în datorie" },
+    "avansProcent": { "valoare": 0.10, "deVerificat": true, "sursa": "", "nota": "prima plată cerută ca să accepte eșalonarea" }
+  },
+
+  "activitati": {
+    "_info": "Prețurile activităților din meniul „Activități”, la prețurile de start (se ajustează cu inflația).",
+    "abonamentSala3Luni": { "valoare": 450, "deVerificat": true, "sursa": "", "nota": "abonament la sală pe 3 luni" },
+    "iesirePrieteni": { "valoare": 150, "deVerificat": true, "sursa": "", "nota": "o seară în oraș" },
+    "controlMedical": { "valoare": 250, "deVerificat": true, "sursa": "", "nota": "analize și consult la privat; la stat, cu asigurare, e gratuit dar cu programare" },
+    "cityBreak": { "valoare": 1200, "deVerificat": true, "sursa": "", "nota": "un weekend într-un oraș din țară, de persoană" },
+    "vacantaMare": { "valoare": 3500, "deVerificat": true, "sursa": "", "nota": "o săptămână la mare, de persoană" },
+    "vacantaStrainatate": { "valoare": 7000, "deVerificat": true, "sursa": "", "nota": "o săptămână în străinătate, de persoană, cu zborul" },
+    "hobby": { "valoare": 600, "deVerificat": true, "sursa": "", "nota": "echipament de început (chitară, set de desen, aparat foto la mâna a doua)" },
+    "evenimentNetworking": { "valoare": 100, "deVerificat": true, "sursa": "", "nota": "bilet la o conferință sau un meetup" },
+    "premiuHackathon": { "valoare": 3000, "deVerificat": true, "sursa": "", "nota": "premiul pentru locul întâi, împărțit în echipă" }
   }
 }

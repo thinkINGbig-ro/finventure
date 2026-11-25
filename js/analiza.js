@@ -7,10 +7,31 @@
 // Ce face motorul singur, fără JSON (ținut aici ca să nu dea alarme false).
 export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
-    'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job'],
-  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat'],
-  evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta'],
-  concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare'],
+    'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job', 'clauza_fidelitate', 'cazier',
+    'fara_bac', // din scenariile de start (data/scenarii.json)
+    'asigurare_locuinta', 'asigurare_viata', // din meniul Bancă → Asigurări (js/asigurari.js)
+    // din efectul „familie” (js/familie.js)
+    'partener', 'casatorit', 'are_copii', 'divortat', 'concediu_crestere', 'partener_concediu', 'partener_fara_venit', 'credit_cu_fostul'],
+  flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat', 'clauza_fidelitate',
+    'concurenta_afacere', 'cazier',
+    'are_copii', 'divortat', 'concediu_crestere', 'partener_concediu', 'partener_fara_venit', 'credit_cu_fostul'], // js/familie.js
+  evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta',
+    'imobil-reparatie', 'imobil-chirias-nu-plateste', 'afacere-client-neplatitor', 'afacere-concurenta', 'afacere-control-fiscal', 'dosar-penal',
+    'divort', 'divort-casa', 'fostul-nu-plateste'], // din js/familie.js
+  concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare',
+    'mostenire', // din scenariile de start (data/scenarii.json)
+    // din acțiunile meniului „Datoriile mele” (js/datorii.js)
+    'rambursare-anticipata', 'avalansa-bulgare', 'refinantare', 'esalonare',
+    // din meniul Investiții (js/investitii.js)
+    'etf', 'cost-comisioane', 'diversificare', 'investitie-lunara', 'rebalansare',
+    // din imobiliarele de închiriat (js/imobiliare.js)
+    'randament-chirie', 'declaratia-unica',
+    // din meniul Carieră (js/munca.js)
+    'ore-suplimentare', 'clauza-fidelitate', 'venit-variabil',
+    // din afacerea proprie (js/afacere.js)
+    'plan-de-afaceri', 'raspundere-limitata', 'capital-de-lucru', 'salariu-angajator', 'evaluare-afacere',
+    // din cumpărături (js/cumparaturi.js)
+    'cost-total-detinere'],
 };
 
 const numeFlag = (f) => f.split(':')[0];
@@ -69,6 +90,37 @@ export function analizeazaContinut(ctx) {
     const contra = (co.flag ?? []).filter((f) => (co.lipsaFlag ?? []).includes(f));
     if (contra.length) probleme.push({ id: ev.id, mesaj: `cere și interzice același flag: ${contra.join(', ')}` });
   }
+  // Activitățile din meniu: setează și citesc flag-uri, deblochează concepte, pot programa urmări.
+  for (const act of ctx.activitati?.values() ?? []) {
+    const unde = `activitate ${act.id}`;
+    const c = new Set();
+    flaguriDinConditii(act.conditii, c);
+    c.forEach((f) => adauga(citite, f, `${unde} (condiții)`));
+    for (const p of [act, ...(act.rezultate ?? [])]) {
+      for (const f of p.flaguri ?? []) adauga(setate, numeFlag(f), unde);
+      for (const k of p.concepte ?? []) concepteFolosite.add(k);
+      for (const u of p.urmari ?? []) referite.add(u.eveniment);
+    }
+  }
+  // Educația: condițiile citesc flag-uri, cursurile setează certificatul, iar joburile îl citesc.
+  for (const p of [...(ctx.educatie?.programe.values() ?? []), ...(ctx.educatie?.cursuri.values() ?? [])]) {
+    const c = new Set();
+    flaguriDinConditii(p.conditii, c);
+    c.forEach((f) => adauga(citite, f, `educație ${p.id} (condiții)`));
+    if (p.flag) adauga(setate, p.flag, `curs ${p.id}`);
+    for (const k of p.concepte ?? []) concepteFolosite.add(k);
+  }
+  for (const j of ctx.joburi.values()) {
+    if (j.cerinte?.flagInLocDeStudii) adauga(citite, j.cerinte.flagInLocDeStudii, `job ${j.id} (în loc de diplomă)`);
+    if (j.cerinte?.flagNecesar) adauga(citite, j.cerinte.flagNecesar, `job ${j.id} (cerință)`);
+  }
+  for (const s of ctx.secundare?.values() ?? []) if (s.cerinte?.flagNecesar) adauga(citite, s.cerinte.flagNecesar, `job secundar ${s.id}`);
+  for (const b of ctx.cumparaturi?.bunuri.values() ?? []) if (b.flag) adauga(setate, b.flag, `cumpărătura ${b.id}`);
+  // Studiile terminate setează absolvent_<nivel> și, unele, un flag propriu (balans.studii.<id>.flagLaFinal).
+  for (const info of Object.values(ctx.balans?.studii ?? {})) {
+    if (info?.nivel) adauga(setate, `absolvent_${info.nivel}`, 'motor (studii terminate)');
+    if (info?.flagLaFinal) adauga(setate, info.flagLaFinal, 'motor (studii terminate)');
+  }
   for (const f of Object.keys(ctx.balans?.cariera?.cv?.bonusFlaguri ?? {})) adauga(citite, f, 'motor (scorul CV-ului)');
   MOTOR.flaguriSetate.forEach((f) => adauga(setate, f, 'motor'));
   MOTOR.flaguriCitite.forEach((f) => adauga(citite, f, 'motor'));
@@ -92,6 +144,7 @@ export function analizeazaContinut(ctx) {
       concepte: toateConceptele.length,
       finaluri: ctx.finaluri?.size ?? 0,
       joburi: ctx.joburi.size,
+      activitati: ctx.activitati?.size ?? 0,
     },
   };
 }
