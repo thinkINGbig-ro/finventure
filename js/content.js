@@ -27,12 +27,19 @@ const FISIERE = {
 export async function incarcaContinut(citeste) {
   const erori = [];
   const avertismente = [];
+  // Fișierele se cer toate deodată (pe o rețea mobilă, fiecare cerere înseamnă o latență întreagă);
+  // se prelucrează apoi în ordinea fixă de mai jos, ca erorile să apară mereu în aceeași ordine.
+  const cereri = new Map();
+  const cere = (fisier) => {
+    if (!cereri.has(fisier)) {
+      cereri.set(fisier, Promise.resolve().then(() => citeste(fisier)).then((text) => ({ text }), (eroare) => ({ eroare })));
+    }
+    return cereri.get(fisier);
+  };
   const citesteJson = async (fisier) => {
-    let text;
-    try {
-      text = await citeste(fisier);
-    } catch (e) {
-      erori.push({ fisier, mesaj: `nu pot citi fișierul (${e.message})` });
+    const { text, eroare } = await cere(fisier);
+    if (eroare) {
+      erori.push({ fisier, mesaj: `nu pot citi fișierul (${eroare.message})` });
       return null;
     }
     try {
@@ -43,6 +50,7 @@ export async function incarcaContinut(citeste) {
     }
   };
 
+  Object.values(FISIERE).forEach(cere);
   const config = (await citesteJson(FISIERE.config)) ?? {};
   const balans = (await citesteJson(FISIERE.balans)) ?? {};
   const joburiJson = (await citesteJson(FISIERE.joburi)) ?? { joburi: [] };
@@ -57,6 +65,7 @@ export async function incarcaContinut(citeste) {
   const scenariiJson = (await citesteJson(FISIERE.scenarii)) ?? { scenarii: [] };
 
   const brute = [];
+  (index.fisiere ?? []).forEach((nume) => cere(`data/events/${nume}`));
   for (const nume of index.fisiere ?? []) {
     const fisier = `data/events/${nume}`;
     const json = await citesteJson(fisier);

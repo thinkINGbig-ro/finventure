@@ -276,6 +276,13 @@ function asiguraFond(state, ctx) {
 
 // Prudent (realist): bugetul 50/30/20. Fond de 6 luni întâi, apoi ~20% din venitul net investit,
 // ~30% pentru dorințe (stil Confortabil când își permite, cumpărături), restul pentru necesar.
+// Strategia prudentului după orizontul de timp: dinamică cât are zeci de ani de investit, echilibrată
+// de la 45 de ani, prudentă de la 60 (aproape de pensie, un crash nu mai are timp să-și revină).
+export function strategiaDupaVarsta(varsta) {
+  if (varsta < 45) return 'dinamica';
+  return varsta < 60 ? 'echilibrata' : 'prudenta';
+}
+
 function meniuPrudent(state, ctx) {
   asiguraCont(state, ctx);
   inchideRestanteDinEconomii(state, ctx);
@@ -305,10 +312,10 @@ function meniuPrudent(state, ctx) {
     // 20%: investiții (pentru casă, prudentul le vinde la nevoie: „Vând investițiile pentru avans”)
     const deInvestit = Math.min(Math.round(0.2 * 12 * netLunar), baniDisponibili(state) - 3 * lunar);
     if (deInvestit > 50000) actiune(state, ctx, 'deschide', { tip: 'investitie', clasa: 'etf', suma: lei(deInvestit) });
-    // de la 30 de ani, o pensie privată lunară mică; la 5 ani, rebalansare pe strategia echilibrată
+    // de la 30 de ani, o pensie privată lunară mică; la 5 ani, rebalansare după orizontul de timp
     const varsta = varstaLa(state.luna);
     if (varsta >= 30 && !(state.dca ?? []).some((d) => d.clasa === 'pilon3')) actiune(state, ctx, 'seteazaDCA', { clasa: 'pilon3', suma: Math.round(lei(netLunar) * 0.03) });
-    if (varsta % 5 === 0) actiune(state, ctx, 'rebalanseaza', { strategie: 'echilibrata' });
+    if (varsta % 5 === 0) actiune(state, ctx, 'rebalanseaza', { strategie: strategiaDupaVarsta(varsta) });
     // Cu casa lui și fondul complet, o garsonieră de închiriat, cu credit, dacă avansul nu atinge fondul.
     if (varsta >= 35 && state.produse.some((p) => p.tip === 'proprietate') && !state.produse.some((p) => p.tip === 'imobil')) {
       const sim = simuleazaCumparare(state, ctx, 'garsoniera', 'credit');

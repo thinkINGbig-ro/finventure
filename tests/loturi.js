@@ -18,6 +18,7 @@ import { aplicaFamilie, bugetFamilie, casaComuna, proceseazaFamilie, venitParten
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
 import { COD_PAGINA } from '../js/versiune.js';
+import { incarcaContinut } from '../js/content.js';
 
 export function testeLoturi(ctxBaza, a) {
   return {
@@ -64,15 +65,16 @@ function migrareDinMain(ctxBaza, a) {
     ok(Number.isFinite(avereNeta(state)), 'averea netă e un număr');
   };
   return {
-    async 'pornire: index.html și codul au aceeași versiune, iar încărcătorul găsește toate modulele din main.js'() {
+    async 'pornire: index.html și codul au aceeași versiune, iar lista MODULE din index.html = graful real de importuri al lui main.js'() {
       const index = await a.citeste('index.html');
       egal(index.match(/<meta name="finventure-cod" content="([^"]+)">/)?.[1], COD_PAGINA, 'versiunea din index.html = js/versiune.js');
       ok(/window\.finventurePregateste\(\)\.then\(\(\) => import\('\.\/js\/main\.js'\)\)/.test(index), 'main.js pornește după verificarea modulelor');
       ok(!/<script type="module" src=/.test(index), 'fără încărcare directă a lui main.js (ar ocoli verificarea)');
-      const sursa = index.match(/const IMPORTURI = (\/.+\/g);/)?.[1];
-      ok(sursa, 'expresia pentru importuri e în index.html');
-      const IMPORTURI = new RegExp(sursa.slice(1, -2), 'g');
-      // Același mers ca în index.html, pe fișiere: fiecare modul atins există, iar expresia prinde toate importurile relative.
+      const bloc = index.match(/const MODULE = \[([^\]]*)\];/)?.[1];
+      ok(bloc, 'lista MODULE e în index.html');
+      const lista = [...(bloc ?? '').matchAll(/'([^']+)'/g)].map((m) => m[1]);
+      // Graful real, pe fișiere: importurile statice, re-exporturile și importurile dinamice relative.
+      const IMPORTURI = /(?:import|export)\s[^'"]*?from\s*['"](\.{1,2}\/[^'"]+)['"]|import\s*\(?\s*['"](\.{1,2}\/[^'"]+)['"]/g;
       const vazute = new Set();
       const mergi = async (cale) => {
         if (vazute.has(cale)) return;
@@ -87,6 +89,35 @@ function migrareDinMain(ctxBaza, a) {
       await mergi('js/main.js');
       for (const m of ['js/ui/debug.js', 'js/familie.js', 'js/storage.js', 'js/versiune.js', 'js/ui/meniuri.js', 'js/content.js']) ok(vazute.has(m), `${m} e atins`);
       ok(vazute.size >= 35, `${vazute.size} module`);
+      const lipsa = [...vazute].filter((m) => !lista.includes(m));
+      const inPlus = lista.filter((m) => !vazute.has(m));
+      ok(!lipsa.length, `module importate, dar lipsă din MODULE în index.html (adaugă-le): ${lipsa.join(', ')}`);
+      ok(!inPlus.length, `module din MODULE pe care main.js nu le mai importă (scoate-le): ${inPlus.join(', ')}`);
+      egal(new Set(lista).size, lista.length, 'fără module duble în listă');
+    },
+    async 'pornire: fișierele de conținut se cer în paralel (pe o rețea mobilă, una după alta însemna ~16 s), cu același rezultat'() {
+      let inZbor = 0;
+      let maxim = 0;
+      const cerute = [];
+      const cititor = async (cale) => {
+        cerute.push(cale);
+        inZbor += 1;
+        maxim = Math.max(maxim, inZbor);
+        await new Promise((r) => setTimeout(r, 5)); // ca o latență de rețea
+        inZbor -= 1;
+        return a.citeste(cale);
+      };
+      const { ctx, erori } = await incarcaContinut(cititor);
+      const index = JSON.parse(await a.citeste('data/events/index.json'));
+      egal(cerute.length, 12 + index.fisiere.length, 'fiecare fișier cerut o singură dată');
+      // două valuri: cele 12 fișiere de bază, apoi evenimentele din index.json
+      ok(maxim >= Math.max(12, index.fisiere.length), `cereri în paralel: ${maxim}`);
+      egal(erori.length, 0, 'fără erori');
+      egal(ctx.evenimente.size, ctxBaza.evenimente.size, 'aceleași evenimente');
+      egal(ctx.concepte.size, ctxBaza.concepte.size, 'aceleași concepte');
+      // un fișier lipsă: eroarea apare tot o dată, cu numele lui
+      const { erori: e2 } = await incarcaContinut((cale) => (cale === 'data/jobs.json' ? Promise.reject(new Error('HTTP 404')) : a.citeste(cale)));
+      egal(e2.filter((e) => e.fisier === 'data/jobs.json' && /HTTP 404/.test(e.mesaj)).length, 1, 'eroarea pentru fișierul lipsă');
     },
     'salvări: prefixul cheilor depinde de adresă (site-ul principal „finventure.”, preview-ul și restul „finventure-preview.”)'() {
       const adresa = (url) => new URL(url);

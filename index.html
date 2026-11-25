@@ -67,26 +67,28 @@
   <noscript><p class="noscript">Finventure are nevoie de JavaScript.</p></noscript>
   <script>
     // Cache-ul după o actualizare: GitHub Pages lasă browserul să țină fișierele 10 minute fără să întrebe,
-    // așa că un jucător poate primi un amestec de fișiere vechi și noi. La pornire, modulele se verifică la
-    // server (cereri condiționate: 304 dacă nu s-au schimbat) urmărind importurile din main.js; datele JSON
-    // se cer oricum așa (js/content.js). Dacă tot apare o nepotrivire (un export lipsă, o pagină veche),
-    // finventureRepara cere totul din nou și reîncarcă: cel mult o dată la 5 minute, ca să nu intre în buclă.
-    const IMPORTURI = /(?:import|export)\s[^'"]*?from\s*['"](\.{1,2}\/[^'"]+)['"]|import\s*\(?\s*['"](\.{1,2}\/[^'"]+)['"]/g;
-    async function improspateaza(radacini, mod) {
-      const vazute = new Set();
-      const descarca = async (url) => {
-        if (vazute.has(url)) return;
-        vazute.add(url);
-        try {
-          const text = await (await fetch(url, { cache: mod })).text();
-          if (!new URL(url).pathname.endsWith('.js')) return;
-          await Promise.all([...text.matchAll(IMPORTURI)].map((m) => descarca(new URL(m[1] ?? m[2], url).href)));
-        } catch { /* fără rețea: merge din cache */ }
-      };
-      await Promise.all(radacini.map((cale) => descarca(new URL(cale, location.href).href)));
-      return vazute.size;
+    // așa că un jucător poate primi un amestec de fișiere vechi și noi. La pornire, toate modulele se verifică
+    // la server deodată (cereri condiționate: 304 dacă nu s-au schimbat); datele JSON se cer oricum așa
+    // (js/content.js). Dacă tot apare o nepotrivire (un export lipsă, o pagină veche), finventureRepara cere
+    // totul din nou și reîncarcă: cel mult o dată la 5 minute, ca să nu intre în buclă.
+    // MODULE = toate modulele din graful de importuri al lui main.js. Un modul nou se adaugă aici
+    // (testul „pornire” din tests/loturi.js pică și spune care lipsește). O listă fixă cere totul într-un
+    // singur val; urmărirea importurilor cerea un val pe fiecare nivel (~1 s în plus pe o rețea mobilă).
+    const MODULE = [
+      'js/activitati.js', 'js/afacere.js', 'js/asigurari.js', 'js/bilant.js', 'js/cariera.js', 'js/content.js',
+      'js/cumparaturi.js', 'js/datorii.js', 'js/educatie.js', 'js/engine.js', 'js/events.js', 'js/familie.js',
+      'js/finaluri.js', 'js/finance.js', 'js/imobiliare.js', 'js/infractiuni.js', 'js/investitii.js', 'js/main.js',
+      'js/munca.js', 'js/rng.js', 'js/scenarii.js', 'js/share.js', 'js/simulare.js', 'js/state.js', 'js/storage.js',
+      'js/tipare.js', 'js/ui/concepte.js', 'js/ui/debug.js', 'js/ui/dom.js', 'js/ui/ecrane.js', 'js/ui/eveniment.js',
+      'js/ui/final.js', 'js/ui/grafic.js', 'js/ui/meniuri.js', 'js/ui/principal.js', 'js/ui/strat.js',
+      'js/ui/toast.js', 'js/util.js', 'js/versiune.js',
+    ];
+    async function improspateaza(cai, mod) {
+      // fără rețea: fetch eșuează, iar pornirea merge din cache
+      await Promise.all(cai.map((cale) => fetch(new URL(cale, location.href), { cache: mod }).catch(() => null)));
+      return cai.length;
     }
-    window.finventurePregateste = () => improspateaza(['js/main.js'], 'no-cache');
+    window.finventurePregateste = () => improspateaza(MODULE, 'no-cache');
     window.finventureRepara = async function (motiv) {
       const CHEIE = 'finventure-reparat';
       try {
@@ -97,7 +99,7 @@
         return false;
       }
       console.warn('[pornire] fișiere din versiuni diferite în cache; le cer din nou:', motiv);
-      await improspateaza([location.href.split('#')[0], './', 'css/style.css', 'js/main.js'], 'reload');
+      await improspateaza([location.href.split('#')[0], './', 'css/style.css', ...MODULE], 'reload');
       location.reload();
       return true;
     };

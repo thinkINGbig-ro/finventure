@@ -50,7 +50,7 @@ Un joc care învață despre bani trebuie să fie corect: deciziile bune să duc
 
 | Stil de joc | Ajung liniștiți la pensie | Ajung la faliment sau la epuizare | Averea tipică la final, în bani de azi |
 |---|---|---|---|
-| **Prudent**: buget echilibrat, bani puși deoparte pentru urgențe, o parte investită | 100% | 0% | ~1,2 milioane lei |
+| **Prudent**: buget echilibrat, bani puși deoparte pentru urgențe, o parte investită | 100% | 0% | ~1,3 milioane lei |
 | **Econom**: trai simplu toată viața, investește aproape tot | 100% | 0% | ~2 milioane lei |
 | **La întâmplare**: alege orice, fără plan | 38% | 62% | ~86.000 lei |
 | **Riscant**: credite rapide, muncă la negru, cheltuie tot | 1% | 99% | sub zero (datorii) |
@@ -59,7 +59,8 @@ Toți au trecut prin aceleași tipuri de încercări: boli, concedieri, crize pe
 
 **Chirie sau casă proprie?** E o întrebare pe care o au mulți tineri și părinții lor. Am jucat aceeași viață de două ori: o dată jucătorul își cumpără o locuință pe care și-o permite, o dată rămâne în chirie și își investește banii. Rezultatul depinde de **cum investești** banii rămași:
 - **Cu tot pe bursă, într-un fond ieftin,** chiria iese aproape la egalitate cu casa: în medie ~1,3 milioane lei în chirie, față de ~1,38 milioane lei cu casa.
-- **Cu o parte din bani în variante mai sigure** (titluri de stat, aur), cum face jucătorul nostru prudent, casa câștigă în 4 vieți din 5: ~1,18 milioane lei, față de ~820.000 lei în chirie.
+- **Cu o strategie după vârstă,** cum face jucătorul nostru prudent (mult pe bursă cât e tânăr, tot mai prudent pe măsură ce se apropie pensia), casa câștigă în 3 vieți din 4: ~1,3 milioane lei, față de ~935.000 lei în chirie.
+- **Cu aceeași strategie echilibrată toată viața** (o parte din bani în titluri de stat și aur), casa câștigă în 4 vieți din 5: ~1,18 milioane lei, față de ~820.000 lei în chirie.
 
 Casa aduce siguranță și nicio chirie la bătrânețe; chiria merge doar dacă investești disciplinat diferența. Iar chiria fără economii pierde de fiecare dată. Lecția nu e „cumpără” sau „nu cumpăra”, ci: alege ce-ți permiți și pune deoparte diferența.
 

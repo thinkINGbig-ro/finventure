@@ -1,14 +1,14 @@
 {
-  "generat": "2026-11-25T05:47:59.118Z",
+  "generat": "2026-11-25T10:28:59.135Z",
   "seed": "sim",
   "vietiPeProfil": 500,
   "evenimente": 88,
   "chirieVsCumparareAceleasiVieti": {
-    "perechi": 464,
-    "avereMedianaCuCasa": 1176988,
-    "avereMedianaInChirie": 817861,
-    "diferentaMediana": 347226,
-    "procentCasaMaiBuna": 80
+    "perechi": 458,
+    "avereMedianaCuCasa": 1319832,
+    "avereMedianaInChirie": 935508,
+    "diferentaMediana": 312936,
+    "procentCasaMaiBuna": 74
   },
   "profiluri": {
     "aleator": {
@@ -108,43 +108,46 @@
       "descriere": "bugetul 50/30/20: fond de 6 luni, ~20% investit, se mută de acasă, stil Confortabil când își permite",
       "n": 500,
       "procente": {
-        "pensie": 100,
-        "independenta": 0,
+        "pensie": 99.4,
+        "independenta": 0.6,
         "faliment": 0,
         "burnout": 0,
         "renuntare": 0
       },
       "finaluriColectie": {
-        "Milionar (în lei de azi)": 64.4,
-        "Acasă la tine": 18.6,
-        "Pensionar liniștit": 16,
-        "Rentierul": 1
+        "Milionar (în lei de azi)": 66.8,
+        "Pensionar liniștit": 15.4,
+        "Acasă la tine": 14.6,
+        "Libertate la 40": 1.6,
+        "Rentierul": 1,
+        "Liber să alegi": 0.4,
+        "Minimalistul": 0.2
       },
-      "varstaMedie": 65,
+      "varstaMedie": 64.9,
       "varstaMedieGameOver": null,
-      "avereMedianaLei": 10835860,
-      "avereMedianaLeiDeAzi": 1161753,
+      "avereMedianaLei": 11706162,
+      "avereMedianaLeiDeAzi": 1287406,
       "mediiAnualeProcent": {
         "inflatie": 4.86,
         "etf": 7.08,
-        "salariu": 5.83,
-        "salariuReal": 0.82
+        "salariu": 5.76,
+        "salariuReal": 0.76
       },
       "cauzeGameOver": [],
       "chirieVsCumparare": {
         "cumparat": {
-          "vieti": 464,
-          "garsoniera": 337,
-          "apartament": 127,
-          "garsoniereVandutePentruApartament": 135,
-          "avereMedianaAzi": 1176988,
+          "vieti": 458,
+          "garsoniera": 318,
+          "apartament": 140,
+          "garsoniereVandutePentruApartament": 115,
+          "avereMedianaAzi": 1319832,
           "varstaMedianaCumparare": 32,
-          "salariuBrutMedianAzi": 7841
+          "salariuBrutMedianAzi": 7890
         },
         "chirie": {
-          "vieti": 36,
-          "avereMedianaAzi": 658326,
-          "salariuBrutMedianAzi": 6953
+          "vieti": 42,
+          "avereMedianaAzi": 793017,
+          "salariuBrutMedianAzi": 6798
         }
       }
     },

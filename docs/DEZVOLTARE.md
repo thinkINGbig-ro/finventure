@@ -213,11 +213,23 @@ git worktree remove ../finventure-main
 **Salvările pe adrese diferite** (`js/storage.js`, `prefixPentru`): doar site-ul principal (`thinkingbig-ro.github.io/finventure/`) folosește cheile `finventure.*`; orice altă adresă (preview, localhost, alt repo) folosește `finventure-preview.*`. Toate site-urile de pe același domeniu `*.github.io` au același localStorage, așa că un preview publicat tot pe `thinkingbig-ro.github.io` nu poate strica salvările jucătorilor.
 
 **Cache-ul după o actualizare:** GitHub Pages lasă browserul să folosească fișierele 10 minute fără să întrebe serverul. Ca un jucător să nu primească un amestec de fișiere vechi și noi:
-- `index.html` nu încarcă direct `js/main.js`: întâi verifică la server toate modulele, urmărind importurile din `main.js` (cereri condiționate, 304 dacă nu s-au schimbat). JSON-urile se cer oricum așa (`js/content.js`).
+- `index.html` nu încarcă direct `js/main.js`: întâi verifică la server, deodată, toate modulele din lista `MODULE` (cereri condiționate, 304 dacă nu s-au schimbat). JSON-urile se cer oricum așa, toate în paralel (`js/content.js`).
+- **Când adaugi un modul nou (sau scoți unul), actualizează lista `MODULE` din `index.html`.** Testul „pornire” din `tests/loturi.js` compară lista cu graful real de importuri al lui `main.js` și pică, cu numele modulului, dacă lipsește ceva sau e ceva în plus. Lista fixă cere totul într-un singur val; urmărirea importurilor cerea un val pe fiecare nivel al grafului (~1 s în plus pe o rețea mobilă).
 - Dacă tot apare o nepotrivire, `window.finventureRepara` cere din nou din rețea pagina, stilul și modulele, apoi reîncarcă, cel mult o dată la 5 minute. Nepotrivirile posibile: un modul nu pornește, conținutul are erori la pornire sau `index.html` are altă versiune decât codul.
 - Versiunea paginii stă în `<meta name="finventure-cod">` din `index.html` și în `js/versiune.js`. Schimb-o în ambele locuri când codul depinde de o schimbare din `index.html`; un test le compară.
 - Butoanele din antet sunt opționale în `main.js`, ca o pagină veche să nu oprească jocul.
-- Importurile rămân statice și relative (`from './x.js'`); un test verifică faptul că încărcătorul le găsește pe toate.
+- Importurile rămân relative (`from './x.js'` sau `import('./x.js')`), ca testul să le găsească pe toate.
+
+**Pornirea pe o rețea mobilă lentă** (Chrome, presetul „Slow 4G” din DevTools: ~560 ms latență, 1,6 Mbps; până apare numele jucătorului în antet; măsurat pe 2026-11-25):
+
+| Varianta | Prima vizită | Vizita repetată |
+|---|---|---|
+| Înainte: JSON-urile unul după altul, modulele urmărite nivel cu nivel | ~20,8 s | ~18,5 s |
+| JSON-urile în paralel | ~5,7 s | ~3,4 s |
+| JSON-urile în paralel + lista fixă `MODULE` (acum, pe preview) | ~4,9 s | ~2,4 s |
+| Limita de jos, fără nicio verificare a modulelor (doar pentru comparație) | ~5,7 s | ~1,5 s |
+
+La vizita repetată, timpul vine aproape numai din latență: pagina, verificarea modulelor (un val) și conținutul (două valuri: fișierele de bază, apoi evenimentele din `data/events/index.json`). Scriptul de măsurare folosește Chrome headless prin protocolul DevTools; nu e în repo.
 
 ## Cum am testat echilibrul jocului
 
@@ -225,7 +237,7 @@ Un joc educativ trebuie să fie corect: deciziile bune trebuie să ducă la rezu
 
 | Profil | Cum joacă | Ajung la pensie sau la independență | Faliment | Averea mediană la final (lei de azi) | Finalul cel mai des |
 |---|---|---|---|---|---|
-| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, chiria sub 35% din venit, stil mai bun doar dacă și-l permite, cumpără casă când banca îl aprobă | **100%** | 0% | ~1,2 mil. lei | Milionar în lei de azi (64%) |
+| **Prudent** | bugetul 50/30/20: fond de urgență de 6 luni, ~20% din venit investit, chiria sub 35% din venit, stil mai bun doar dacă și-l permite, cumpără casă când banca îl aprobă | **100%** | 0% | ~1,3 mil. lei | Milionar în lei de azi (67%) |
 | **Frugal** | trai modest toată viața, rămâne în chirie, investește aproape tot ce rămâne | **100%** | 0% | ~2 mil. lei | Rentierul (51%) |
 | **Aleator** | alege la întâmplare, inclusiv în meniuri | 38% | 62% (54% faliment, 8% burnout) | ~86.000 lei | Faliment personal (25%) |
 | **Riscant** | IFN, muncă la negru, card pe plata minimă, cheltuie tot, vinde în panică | 1% | 99% | sub zero | Victima reducerilor (55%) |
@@ -250,8 +262,11 @@ Ca să comparăm corect, am jucat **aceeași viață de două ori**, cu același
 | 500 de vieți, înainte de extindere (tot pe ETF) | 475 | ~1,20 mil. lei de azi | ~1,23 mil. lei de azi | **51%** din vieți (diferența mediană: ~+5.000 lei) |
 | 500 de vieți, după extindere (prudentul rebalansează la 5 ani pe strategia echilibrată: 60% ETF, 25% titluri de stat, 10% aur, 5% acțiuni) | 464 | ~1,18 mil. lei de azi | ~818.000 lei de azi | **80%** din vieți (diferența mediană: ~+347.000 lei) |
 | 500 de vieți, după extindere, fără rebalansare (verificare) | 455 | ~1,38 mil. lei de azi | ~1,30 mil. lei de azi | **59%** din vieți |
+| **500 de vieți, profilul de acum: strategie după vârstă** (dinamică sub 45 de ani: 80% ETF, 10% acțiuni, 5% aur, 5% crypto; echilibrată la 45–59; prudentă de la 60: 60% titluri de stat, 30% ETF, 10% aur) | 458 | ~1,3 mil. lei de azi | ~935.000 lei de azi | **74%** din vieți (diferența mediană: ~+313.000 lei) |
 
 Schimbarea a apărut la lotul 4a (verificat commit cu commit pe 100 de vieți: 51% pe `main`, 84% imediat după 4a). Cauza e strategia de investiții a profilului, nu o greșeală de calcul: în chirie, toată averea stă în portofoliu, iar un portofoliu echilibrat crește mai încet decât unul doar pe ETF. Cu tot pe ETF, chiria și casa ies aproape egal.
+
+De la 2026-11-25, prudentul rebalansează după orizontul de timp (`strategiaDupaVarsta` în `js/simulare.js`; atinge doar profilul din simulare, nu jocul), ca în lecția „orizontul de timp”. Chiria se apropie de casă față de strategia echilibrată fixă (74% față de 80%), dar nu ajunge la egalitatea de la „tot pe ETF”, care ține totul pe bursă până la 65 de ani. N-am măsurat separat cât contează partea din strategia dinamică care nu e ETF (acțiuni, aur, crypto) și cât trecerea pe variante mai sigure după 45 de ani. Casa nu depinde de strategie.
 
 Răspunsul, în modelul nostru: **depinde de cum investești diferența.** Casa îți aduce siguranță și nicio chirie la bătrânețe; chiria ajunge în același loc doar cu investiții disciplinate și pe bursă. Lecția nu e „cumpără” sau „nu cumpăra”, ci: alege o casă pe care ți-o permiți, iar dacă rămâi în chirie, investește diferența. Fără investiții, chiria pierde. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
 
