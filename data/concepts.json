@@ -387,6 +387,46 @@
       "text": "Dacă accepți o moștenire, preiei și datoriile ei, dar răspunzi pentru ele doar cu bunurile moștenite, proporțional cu partea ta (Codul civil, art. 1114), nu cu salariul sau cu economiile tale. Ai trei variante: accepți și plătești datoria din banii tăi ca să păstrezi bunul, accepți și vinzi bunul ca să plătești creditorii, sau renunți la moștenire la notar, în termenul legal (de regulă un an de la deces). Calculul e simplu: merită să păstrezi casa doar dacă valorează mai mult decât datoria. Exemplu: o casă de 70.000 lei cu un credit de 50.000 lei îți lasă cam 20.000 lei; o casă de 60.000 lei cu 90.000 lei datorii nu-ți lasă nimic, dar nici nu-ți ia din buzunar cei 30.000 lei care lipsesc."
     },
     {
+      "id": "buget-comun",
+      "titlu": "Bugetul în cuplu",
+      "text": "Când locuiți împreună, unele costuri se împart: chiria, utilitățile, mâncarea, apoi copiii. Variantele obișnuite sunt jumătate-jumătate, proporțional cu venitul sau totul la comun. Ce contează e să vă înțelegeți dinainte și să vorbiți lunar despre bani: cele mai multe certuri în cuplu pornesc de la bani. Exemplu: la o chirie de 2.600 lei cu utilități, fiecare plătește 1.300 lei, mult mai puțin decât o garsonieră pentru fiecare."
+    },
+    {
+      "id": "costul-nuntii",
+      "titlu": "Costul unei nunți",
+      "text": "O nuntă mare în România costă zeci de mii de lei: restaurant, formație, fotograf, rochie, invitații. Darul invitaților acoperă de obicei doar o parte, iar avansurile se plătesc cu luni înainte. Mulți tineri iau un credit pentru diferență și încep căsnicia cu rate. Exemplu: 60.000 lei cost, 40.000 lei dar, 20.000 lei pe un credit de 3 ani, adică vreo 700 lei pe lună."
+    },
+    {
+      "id": "costul-unui-copil",
+      "titlu": "Cât costă un copil",
+      "text": "Un copil înseamnă cheltuieli lunare până la majorat: mâncare, haine, grădiniță sau școală, activități, sănătate. Costul se împarte între părinți și e parțial acoperit de alocația de stat. Înainte de un copil, un fond de urgență mai mare și un buget clar fac diferența. Exemplu: la 1.500 lei pe lună, 18 ani înseamnă peste 320.000 lei la prețurile de azi."
+    },
+    {
+      "id": "alocatia",
+      "titlu": "Alocația de stat pentru copii",
+      "text": "Statul plătește o alocație lunară pentru fiecare copil, până la 18 ani (sau mai mult, dacă e la școală): mai mare până la 2 ani, apoi mai mică. Banii vin pe un card sau într-un cont, pe numele părintelui cu care stă copilul. Nu acoperă costul copilului, dar ajută. Exemplu: 719 lei pe lună până la 2 ani, apoi 292 lei."
+    },
+    {
+      "id": "concediu-crestere",
+      "titlu": "Concediul de creștere a copilului",
+      "text": "După naștere, unul dintre părinți poate sta acasă cu copilul până la 2 ani (3 ani pentru un copil cu dizabilități) și primește o indemnizație de 85% din venitul net mediu din ultimul an, între un minim și un maxim. Ca s-o primești, trebuie să fi avut venituri impozabile (de exemplu, un contract de muncă) înainte. Exemplu: la un salariu net de 6.000 lei, indemnizația e de 5.100 lei pe lună; restul de 900 lei trebuie să iasă din buget."
+    },
+    {
+      "id": "co-debitor",
+      "titlu": "Co-debitorul",
+      "text": "Când luați un credit împreună, banca adună veniturile voastre și vă poate da mai mult. În schimb, fiecare co-debitor răspunde pentru toată datoria, nu doar pentru jumătatea lui. Dacă vă despărțiți, creditul nu se desparte singur: fie vindeți casa, fie unul preia creditul (dacă banca acceptă), fie rămâneți amândoi legați de el. Exemplu: dacă fostul partener nu-și mai plătește jumătatea dintr-o rată de 3.000 lei, banca îți cere ție toți cei 3.000 lei."
+    },
+    {
+      "id": "partaj",
+      "titlu": "Partajul la divorț",
+      "text": "La divorț, bunurile cumpărate în timpul căsătoriei (comunitatea de bunuri) se împart între soți, de obicei pe din două. Ce aveai înainte de căsătorie sau ai moștenit rămâne al tău. Un contract de separație de bunuri, făcut la notar, schimbă regula. Exemplu: un apartament de 450.000 lei cu 300.000 lei credit rămas înseamnă cam 75.000 lei pentru fiecare, după ce se vinde și se închide creditul."
+    },
+    {
+      "id": "pensie-intretinere",
+      "titlu": "Pensia de întreținere",
+      "text": "După despărțire, părintele la care nu stă copilul îi plătește o pensie de întreținere, stabilită de instanță sau prin acord, de obicei până la 18 ani. Codul civil o plafonează: până la un sfert din venitul net pentru un copil, o treime pentru doi, jumătate pentru trei sau mai mulți. E o cheltuială fixă, ca o rată. Exemplu: la un venit net de 6.000 lei și un copil, până la 1.500 lei pe lună."
+    },
+    {
       "id": "money-mule",
       "titlu": "„Money mule”: contul tău, banii altora",
       "text": "Un „money mule” e cineva care își împrumută contul bancar ca să treacă prin el bani furați (din înșelătorii, fraude, phishing), în schimbul unui comision. Rețelele caută tineri pe rețele sociale, cu mesaje de tipul „bani ușori, doar primești și trimiți mai departe”. Pentru lege, tu ești cel care a mutat banii: contul ți se închide, banii se confiscă și urmează un dosar penal pentru spălare de bani. Exemplu: pentru 1.000 de lei comision, poți rămâne fără cont bancar, cu cazier și cu o datorie de zeci de mii de lei față de cei păgubiți."

@@ -25,6 +25,7 @@ import {
 } from './events.js';
 import { bilantNou, inregistreazaAn, inregistreazaLuna, verificaIndependenta } from './bilant.js';
 import { esteAsigurat } from './events.js';
+import { proceseazaFamilie, verificaCuplu } from './familie.js';
 import { areJobFullTime, cereMarire, contractCurent, ritm, sansaMarire } from './cariera.js';
 import { consumaTimp, faActivitate, motivTimp } from './activitati.js';
 import { achitaTot, consolideaza, esaloneaza, platesteRestanta, ramburseazaPartial, verificaEsalonare } from './datorii.js';
@@ -284,7 +285,8 @@ export function proceseazaLuna(state, ctx) {
 
   // 2. Venituri
   const contract = gasesteProduse(state, 'contractMunca')[0];
-  if (contract) proceseazaSalariu(state, ctx, contract);
+  // În concediul de creștere a copilului nu vine salariul, ci indemnizația (js/familie.js).
+  if (contract && !areFlag(state, 'concediu_crestere')) proceseazaSalariu(state, ctx, contract);
   proceseazaAfacere(state, ctx); // afacerea are contul ei; tu scoți bani din ea când vrei
   const sec = proceseazaSecundar(state, ctx); // jobul secundar (side hustle)
   ac.venituri += sec.net;
@@ -294,6 +296,10 @@ export function proceseazaLuna(state, ctx) {
   ac.taxe += im.impozit;
   ac.cheltuieliTrai += im.cheltuieli;
   ac.cheltuieliTrai += proceseazaBunuri(state, ctx); // mașini, animale: costuri lunare; bunurile se depreciază
+  const fam = proceseazaFamilie(state, ctx); // partea partenerului, alocația, copiii, pensia de întreținere
+  ac.venituri += fam.venit;
+  ac.cheltuieliTrai += fam.cheltuieli;
+  neplatit += fam.neplatit;
   for (const r of state.recurente) {
     if (r.tip === 'venit') {
       incaseaza(state, r.suma);
@@ -421,6 +427,7 @@ export function proceseazaLuna(state, ctx) {
   // 9. Restanțe: Biroul de Credit, somații, cesiune, executare silită; apoi poprirea pe cont
   proceseazaRestante(state, ctx);
   proceseazaPoprireCont(state, ctx);
+  verificaCuplu(state, ctx, neplatit > 0); // stresul financiar crește riscul de divorț
 
   // 10. Investiția automată lunară: doar cu ce a rămas după toate plățile.
   proceseazaDCA(state, ctx);

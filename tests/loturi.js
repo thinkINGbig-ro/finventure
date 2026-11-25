@@ -1,8 +1,8 @@
 // Testele extinderii, grupate pe loturi. Primesc ajutoarele din tests/suite.js.
 
 import { ACTIUNI, actiune, alege, avanseaza, forteazaEveniment, jocNou, oprireCurenta } from '../js/engine.js';
-import { motivNeindeplinire as motivNeindeplinireTest, textRezultat } from '../js/events.js';
-import { baniDisponibili, creeazaProdus, datorieProdus, pret, valoareProdus } from '../js/finance.js';
+import { gradIndatorare, motivNeindeplinire as motivNeindeplinireTest, textRezultat } from '../js/events.js';
+import { baniDisponibili, creeazaProdus, datorieProdus, facturiLunare, fluturas, pret, valoareProdus } from '../js/finance.js';
 import { aplicaComisioaneAnuale, miscaCompanii, portofoliu, proceseazaDCA } from '../js/investitii.js';
 import { actualizeazaImobileAnual, proceseazaImobile, simuleazaCumparare, simuleazaVanzare } from '../js/imobiliare.js';
 import { bilantEducatie, descrieCurs, descrieProgram, proceseazaCursuriLuna, proceseazaStudiiLuna } from '../js/educatie.js';
@@ -13,6 +13,7 @@ import { optiuniPlata, proceseazaBunuri } from '../js/cumparaturi.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, motivTimp, timpPeAn, timpRamas } from '../js/activitati.js';
 import { creeazaStorageMemorie } from '../js/storage.js';
+import { aplicaFamilie, bugetFamilie, casaComuna, proceseazaFamilie, venitPartener, verificaCuplu } from '../js/familie.js';
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
 
@@ -31,6 +32,178 @@ export function testeLoturi(ctxBaza, a) {
     ...lot8(ctxBaza, a),
     ...lot9a(ctxBaza, a),
     ...lot9b(ctxBaza, a),
+    ...lot9c(ctxBaza, a),
+  };
+}
+
+// ---------- Lotul 9c: partener și familie ----------
+
+function lot9c(ctxBaza, a) {
+  const { ok, egal } = a;
+  // Un joc cu job, locuință doar a ta și partener (prin evenimentul „intalnire”).
+  const cuPartener = (seed) => {
+    const { ctx, state } = a.jocCuJob(seed);
+    a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+    state.pendinte = null;
+    state.situatie.locuinta = 'chirieSingur';
+    forteazaEveniment(state, ctx, 'intalnire');
+    alege(state, ctx, 'muta');
+    state.pendinte = null;
+    return { ctx, state };
+  };
+  const netTau = (state, ctx) => {
+    const c = state.produse.find((p) => p.tip === 'contractMunca');
+    return fluturas(c.brut, c.contract, ctx).net;
+  };
+  return {
+    'lotul 9c: partenerul plătește jumătate din chirie și facturi; banii lui nu sunt ai tăi'() {
+      const { ctx, state } = cuPartener('fam-partener');
+      ok(areFlag(state, 'partener') && state.familie.partener, 'partenerul');
+      const { chirie, utilitati } = facturiLunare(state, ctx);
+      const b = bugetFamilie(state, ctx);
+      egal(b.contributie, Math.round((chirie + utilitati) / 2), 'jumătate din locuință');
+      const inainte = baniDisponibili(state);
+      const r = proceseazaFamilie(state, ctx);
+      egal(r.venit, b.contributie, 'venitul lunii');
+      egal(baniDisponibili(state) - inainte, b.contributie, 'banii intră în cont');
+      // Fără venit, partenerul nu poate contribui.
+      aplicaFamilie(state, ctx, 'partenerSomer');
+      egal(bugetFamilie(state, ctx).contributie, 0, 'partenerul fără job nu pune nimic');
+    },
+
+    'lotul 9c: banca adună veniturile doar dacă luați creditul împreună (co-debitori)'() {
+      const { ctx, state } = cuPartener('fam-codebitor');
+      const spec = { suma: inBani(300_000), luni: 360, dae: 0.06 };
+      const singur = gradIndatorare(state, ctx, spec);
+      const impreuna = gradIndatorare(state, ctx, { ...spec, coDebitor: true });
+      egal(impreuna.net, singur.net + venitPartener(state, ctx), 'venitul vostru net');
+      ok(impreuna.grad < singur.grad, `grad ${impreuna.grad.toFixed(2)} vs. ${singur.grad.toFixed(2)}`);
+      // Cumpărarea normală („cumpara-locuinta”) nu pune venitul partenerului la socoteală.
+      const ev = ctx.evenimente.get('cumpara-locuinta');
+      ok(JSON.stringify(ev).indexOf('coDebitor') < 0, 'creditul pe numele tău: doar venitul tău');
+      const fara = cloneaza(state);
+      fara.familie.partener = null;
+      egal(gradIndatorare(fara, ctx, { ...spec, coDebitor: true }).net, singur.net, 'fără partener, co-debitorul nu ajută');
+    },
+
+    'lotul 9c: copilul costă lunar, alocația scade la 2 ani, totul se oprește la 18 ani'() {
+      const { ctx, state } = cuPartener('fam-copil');
+      aplicaFamilie(state, ctx, 'copil');
+      let b = bugetFamilie(state, ctx);
+      egal(b.costCopii, pret(state, ctx, 'familie.costLunarCopil'), 'costul');
+      egal(b.alocatie, pret(state, ctx, 'familie.alocatieSub2'), 'alocația sub 2 ani');
+      const { chirie, utilitati } = facturiLunare(state, ctx);
+      egal(b.contributie, Math.round((chirie + utilitati + b.costCopii) / 2), 'partenerul plătește jumătate și din copil');
+      state.familie.copii[0].nascutLa -= 30;
+      egal(bugetFamilie(state, ctx).alocatie, pret(state, ctx, 'familie.alocatiePeste2'), 'alocația după 2 ani');
+      state.familie.copii[0].nascutLa -= 12 * 16;
+      b = bugetFamilie(state, ctx);
+      egal(b.costCopii + b.alocatie, 0, 'majorat: fără cost și fără alocație');
+    },
+
+    'lotul 9c: în concediul de creștere vine indemnizația (85% din net, plafonată), nu salariul'() {
+      const { ctx, state } = cuPartener('fam-concediu');
+      state.pendinte = null;
+      forteazaEveniment(state, ctx, 'nastere');
+      alege(state, ctx, 'eu');
+      ok(areFlag(state, 'concediu_crestere') && state.familie.copii.length === 1, 'concediul și copilul');
+      const net = netTau(state, ctx);
+      const asteptat = Math.min(pret(state, ctx, 'familie.indemnizatieMax'), Math.max(pret(state, ctx, 'familie.indemnizatieMin'), Math.round(net * 0.85)));
+      egal(bugetFamilie(state, ctx).indemnizatie, asteptat, 'indemnizația');
+      state.pendinte = null;
+      const fara = cloneaza(state);
+      delete fara.flaguri.concediu_crestere;
+      const venituri = (s) => {
+        a.consuma(s, ctx, avanseaza(s, ctx), a.primaDisponibila);
+        return avereNeta(s);
+      };
+      const cu = venituri(state);
+      const faraConcediu = venituri(fara);
+      const minim = 12 * (net - asteptat);
+      ok(faraConcediu - cu >= minim * 0.8, `după un an: ${cu / 100} lei în concediu, ${faraConcediu / 100} lei cu salariu (diferență așteptată ~${minim / 100})`);
+    },
+
+    'lotul 9c: divorțul cu casă și credit comun: vânzarea închide creditul și împarte restul pe din două'() {
+      const { ctx, state } = cuPartener('fam-divort');
+      aplicaFamilie(state, ctx, 'casatorie');
+      aplicaFamilie(state, ctx, 'copil');
+      state.produse.push(creeazaProdus({ tip: 'proprietate', valoare: inBani(450_000), marime: 'apartament' }, state, ctx));
+      state.produse.push(creeazaProdus({ tip: 'credit', furnizor: 'ipoteca', suma: inBani(300_000), dae: 0.06, luni: 360, coDebitor: true }, state, ctx));
+      state.situatie.locuinta = 'proprietate';
+      const cc = casaComuna(state, ctx);
+      ok(cc && cc.credit.coDebitor, 'casa comună');
+      const rata = cc.credit.rata;
+      ok(bugetFamilie(state, ctx).contributie >= Math.round(rata / 2), 'partenerul plătește jumătate din rată');
+      forteazaEveniment(state, ctx, 'divort');
+      const oprire = oprireCurenta(state, ctx);
+      ok(!oprire.alegeri.find((x) => x.id === 'despartire').disponibil, 'căsătoriți: e nevoie de divorț');
+      const r = alege(state, ctx, 'notar');
+      ok(!areFlag(state, 'partener') && areFlag(state, 'divortat'), 'divorțați');
+      egal(r.oprire?.eveniment, 'divort-casa', 'urmează casa și creditul comun');
+      const vand = cloneaza(state);
+      const raman = cloneaza(state);
+      const inainte = baniDisponibili(vand);
+      alege(vand, ctx, 'vindem');
+      ok(!vand.produse.some((p) => p.coDebitor) && !vand.produse.some((p) => p.tip === 'proprietate'), 'casa vândută, creditul închis');
+      egal(baniDisponibili(vand) - inainte, cc.partea, 'jumătate din ce rămâne după bancă și comision');
+      egal(vand.situatie.locuinta, 'chirieSingur', 'te muți în chirie');
+      // Copiii rămân la celălalt părinte: pensia de întreținere, 25% din net pentru un copil.
+      const b = bugetFamilie(vand, ctx);
+      egal(b.costCopii, 0, 'costul copilului nu mai e al tău');
+      egal(b.pensie, Math.round(netTau(vand, ctx) * 0.25), 'pensia de întreținere');
+      // Rămâneți amândoi pe credit: fostul plătește jumătate, până când nu mai plătește.
+      alege(raman, ctx, 'ramanem');
+      ok(areFlag(raman, 'credit_cu_fostul'), 'credit cu fostul');
+      egal(bugetFamilie(raman, ctx).contributie, Math.round(Math.min(rata, cc.credit.rest) / 2), 'fostul plătește jumătate din rată');
+      raman.familie.fostulNuPlateste = true;
+      egal(bugetFamilie(raman, ctx).contributie, 0, 'fostul nu mai plătește: toată rata e a ta');
+      raman.pendinte = null;
+      forteazaEveniment(raman, ctx, 'fostul-nu-plateste');
+      alege(raman, ctx, 'platesc');
+      ok(!raman.produse.some((p) => p.coDebitor) && !areFlag(raman, 'credit_cu_fostul'), 'creditul e acum doar al tău');
+    },
+
+    'lotul 9c: preluarea creditului la divorț cere ca salariul tău să acopere singur rata'() {
+      const { ctx, state } = cuPartener('fam-preia');
+      aplicaFamilie(state, ctx, 'casatorie');
+      state.produse.push(creeazaProdus({ tip: 'proprietate', valoare: inBani(450_000), marime: 'apartament' }, state, ctx));
+      state.produse.push(creeazaProdus({ tip: 'credit', furnizor: 'ipoteca', suma: inBani(380_000), dae: 0.06, luni: 360, coDebitor: true }, state, ctx));
+      state.numerar = inBani(200_000);
+      forteazaEveniment(state, ctx, 'divort');
+      const r = alege(state, ctx, 'notar');
+      const preiau = r.oprire.alegeri.find((x) => x.id === 'preiau');
+      ok(!preiau.disponibil && /Creditorul te refuză/.test(preiau.motiv), `curierul nu poate duce singur rata: ${preiau.motiv}`);
+      ok(r.oprire.alegeri.some((x) => x.disponibil), 'rămâne o variantă');
+    },
+
+    'lotul 9c: stresul financiar crește riscul de divorț'() {
+      const rata = (luniLipsuri) => {
+        let divorturi = 0;
+        for (let i = 0; i < 300; i++) {
+          const { ctx, state } = cuPartener(`fam-stres-${i % 3}`);
+          state.rng.actiuni = 1000 + i;
+          for (let l = 0; l < 12; l++) verificaCuplu(state, ctx, l < luniLipsuri);
+          if (state.familie.divortProgramat) divorturi++;
+        }
+        return divorturi;
+      };
+      const linistit = rata(0);
+      const stresat = rata(12);
+      ok(stresat > linistit * 2, `divorțuri într-un an: ${linistit} fără lipsuri, ${stresat} cu lipsuri în fiecare lună (din 300)`);
+    },
+
+    'lotul 9c: o salvare din versiunea 5 primește familia goală'() {
+      const { ctx, state } = a.jocCuJob('fam-migrare');
+      const veche = cloneaza(state);
+      veche.versiune = 5;
+      delete veche.familie;
+      const storage = creeazaStorageMemorie();
+      salveazaJoc(storage, veche);
+      const s = incarcaJoc(storage);
+      egal(s.versiune, VERSIUNE_SALVARE, 'versiunea');
+      ok(s.familie && s.familie.partener === null && Array.isArray(s.familie.copii), 'familia goală');
+      a.consuma(s, ctx, oprireCurenta(s, ctx) ?? avanseaza(s, ctx), a.primaDisponibila);
+    },
   };
 }
 

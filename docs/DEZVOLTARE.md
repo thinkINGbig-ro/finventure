@@ -56,6 +56,7 @@ js/cumparaturi.js   catalogul de cumpărături: plată, depreciere, revânzare, 
 js/infractiuni.js   fapte, dosar penal, pedepse, detenție, cazier
 js/scenarii.js      scenariile de start (datorii, fără bac, moștenire)
 js/asigurari.js     asigurările facultative (locuință, viață)
+js/familie.js       partenerul, copiii, creditul comun, divorțul
 js/bilant.js        bilanțul vieții (tipare, pensie estimată, independență)
 js/tipare.js        „Ce te-a costat / Ce te-a ajutat”
 js/content.js       încărcarea JSON-urilor + validarea schemei
@@ -163,6 +164,16 @@ Averea netă an de an: `state.istoricPortofoliu` (instantaneu la sfârșitul fie
 
 `js/asigurari.js`, panoul Bancă → Asigurări (acțiunea `asigurare` cu `{ tip: 'locuinta' | 'viata', activ }`). Prima e o recurență marcată `asigurare` (din `config.json` → `asigurari`), iar flagurile `asigurare_locuinta` / `asigurare_viata` sunt citite de evenimentele din `data/events/familie-bani.json`: inundația de la vecini (cu asigurare plătești doar franciza), diagnosticul grav (indemnizația asigurării de viață, tratamentul la stat sau credit pentru clinica privată), moștenirea în bani, moștenirea cu datorii (Codul civil, art. 1114: răspunzi doar cu bunurile moștenite; plătești datoria și păstrezi casa ca imobil de închiriat, o vinzi și îți rămâne diferența, sau renunți în termenul din `config.mostenire`), ajutorul pentru părinți, donația părinților pentru avans, formularul 230. Asigurarea locuinței se oprește singură când nu mai ai nicio locuință; o primă neplătită reziliază polița (nu devine datorie). Evenimentele pot da un imobil de închiriat cu `"produsNou": { "tip": "imobil", "valoare": …, "marime": "garsoniera" }`.
 
+## Partenerul și familia
+
+`data/events/familie.json`, `js/familie.js`, `state.familie` (`{ partener, copii, stres, divortProgramat, fostulNuPlateste, indemnizatie }`; salvări versiunea 6). Alegerile schimbă familia cu efectul `"familie"` (un text sau o listă): `partener`, `casatorie`, `copil`, `concediuEu`, `concediuPartener`, `partenerSomer`, `divortNotar`, `divortInstanta`, `impacare`, `vindeCasaComuna`, `preiaCreditul`, `creditComun`, `platescEu`. Flagurile întreținute de cod: `partener`, `casatorit`, `are_copii`, `divortat`, `concediu_crestere`, `partener_concediu`, `partener_fara_venit`, `credit_cu_fostul`.
+
+Banii lunii (`proceseazaFamilie`, pasul 2 din `proceseazaLuna`): venitul partenerului (`config.familie.venitPartenerNet`) nu e al tău; partenerul plătește jumătate din chirie și utilități, din costul copiilor și din ratele creditelor comune (cel mult 60% din venitul lui). Copiii costă `costLunarCopil` până la `varstaMajorat`; alocația e `alocatieSub2` / `alocatiePeste2`. În concediul de creștere (24 de luni) salariul nu vine, vine indemnizația (85% din net, între minim și maxim). După despărțire, copiii rămân la celălalt părinte și plătești pensia de întreținere (`pensieIntretinere`: 25 / 33 / 50% din net, Codul civil art. 529). Simplificare: fiecare își păstrează economiile (presupunem că ați pus deoparte cam la fel); se împarte doar casa cumpărată împreună.
+
+**Co-debitorii:** venitul partenerului intră în gradul de îndatorare doar dacă luați creditul împreună: `"indatorare": { …, "coDebitor": true }` în condiții și `"coDebitor": true` pe credit (evenimentul `cumpara-impreuna`). Atunci amândoi răspundeți pentru tot creditul. La divorț, `divort-casa` (programat de cod) oferă: vânzarea (banca se plătește prima, restul sau lipsa se împarte pe din două, comision `comisionVanzareCasa`), preluarea creditului (doar dacă salariul tău duce singur rata și ai banii pentru partea celuilalt) sau rămâneți amândoi pe credit; atunci, lunar, fostul poate înceta să plătească (`balans.familie.sansaFostulNuPlateste`) și urmează `fostul-nu-plateste`.
+
+**Riscul de divorț** (`verificaCuplu`, la sfârșitul lunii, fluxul RNG `actiuni`): anual `divortBaza` + `divortLipsuri` × (lunile cu lipsuri din ultimul an, cu uitare treptată) / 12 + `divortRestante` dacă ai restanțe sau executare. Evenimentul `divort` are și „Mai încercăm o dată”, care înjumătățește stresul acumulat.
+
 ## Infracțiunile și consecințele
 
 `data/events/infractiuni.json`, `js/infractiuni.js`. Doar decizii și urmări, fără descrierea faptei. O alegere cu `"infractiune": { "tip": "furt" | "mule" | "frauda" | "evaziune", "castig": "{suma}" }` dă câștigul (scris separat, în `efecte`) și trage la sorți dacă vine dosarul (`balans.json` → `infractiuni`: șansa de bază + creșterea la fiecare repetare). Evenimentul-urmare `dosar-penal` are alegerile `"pedeapsa": "recunoaste" | "avocat"`: amendă (ce nu plătești devine datorie la stat), închisoare (luni fără job, fără timp, fără evenimente obișnuite; în meniuri merg doar operațiunile cu bani), cazier pentru `config.infractiuni.aniReabilitare` ani (flagul `cazier`: băncile refuză creditele, scorul CV scade, joburile cu `"faraCazier": true` sunt închise). Un test verifică faptul că nicio faptă nu e rentabilă: câștigul e mai mic decât șansa de bază × amenda. Variabilele text ale evenimentelor se scriu `"text:…"`.
@@ -223,7 +234,6 @@ Răspunsul, în modelul nostru: **la bani, e practic egal.** Casa îți aduce si
 
 ## Limitări cunoscute (direcții de extindere)
 
-- **Un singur venit.** Jocul nu are partener sau venit dublu; în realitate, multe locuințe se cumpără în doi, ceea ce schimbă gradul de îndatorare.
 - **Fără programe de stat pentru locuințe** (de exemplu „Noua Casă”, cu avans de 5%).
 - **Fără credite în valută.** Plafonul BNR pentru ele (20%) e deja în `data/config.json`, dar nefolosit.
 

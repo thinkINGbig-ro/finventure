@@ -427,6 +427,27 @@
     "franciza": { "valoare": 500, "deVerificat": true, "sursa": "" },
     "varstaMaxViata": { "valoare": 60, "deVerificat": true, "sursa": "", "nota": "după vârsta asta, asigurătorii nu mai încheie polițe noi (simplificat)" }
   },
+  "familie": {
+    "_info": "Partener și familie (lotul 9c). Lei pe lună, la prețurile de start. Venitul partenerului nu e al tău: partenerul plătește jumătate din costurile comune (locuință, copii, creditul comun).",
+    "venitPartenerNet": { "valoare": 4500, "deVerificat": true, "sursa": "", "nota": "salariul net al partenerului, cam cât salariul mediu net" },
+    "costLunarCopil": { "valoare": 1500, "deVerificat": true, "sursa": "", "nota": "mâncare, haine, grădiniță / școală, activități; medie până la 18 ani" },
+    "alocatieSub2": { "valoare": 719, "deVerificat": true, "sursa": "", "nota": "alocația de stat pentru copiii sub 2 ani" },
+    "alocatiePeste2": { "valoare": 292, "deVerificat": true, "sursa": "", "nota": "alocația de stat între 2 și 18 ani" },
+    "varstaMajorat": { "valoare": 18, "deVerificat": true, "sursa": "", "nota": "simplificat: costurile, alocația și pensia de întreținere se opresc la 18 ani" },
+    "indemnizatieProcent": { "valoare": 0.85, "deVerificat": true, "sursa": "", "nota": "indemnizația de creștere a copilului: 85% din venitul net mediu din ultimele 12 luni" },
+    "indemnizatieMin": { "valoare": 1250, "deVerificat": true, "sursa": "" },
+    "indemnizatieMax": { "valoare": 8500, "deVerificat": true, "sursa": "" },
+    "luniConcediuCrestere": { "valoare": 24, "deVerificat": true, "sursa": "", "nota": "concediul de creștere a copilului, până la 2 ani" },
+    "costBona": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "bonă sau creșă privată, pe lună, cât ar fi durat concediul" },
+    "costNuntaMare": { "valoare": 60000, "deVerificat": true, "sursa": "", "nota": "150 de invitați: restaurant, formație, fotograf, rochie" },
+    "darNuntaMare": { "valoare": 40000, "deVerificat": true, "sursa": "", "nota": "darul invitaților acoperă de obicei doar o parte din cost" },
+    "costNuntaMica": { "valoare": 12000, "deVerificat": true, "sursa": "" },
+    "costStareCivila": { "valoare": 1000, "deVerificat": true, "sursa": "" },
+    "costDivortNotar": { "valoare": 2500, "deVerificat": true, "sursa": "", "nota": "divorț prin acord, la notar (se poate și cu copii minori, dacă sunteți de acord)" },
+    "costDivortInstanta": { "valoare": 9000, "deVerificat": true, "sursa": "", "nota": "avocat, taxe, expertize, proces de 1–2 ani" },
+    "pensieIntretinere": { "valoare": [0.25, 0.33, 0.5], "deVerificat": true, "sursa": "Codul civil, art. 529 (maxim 1/4, 1/3, 1/2 din venitul net, pentru 1, 2, 3+ copii)", "nota": "procentul din venitul tău net pentru 1, 2, 3 sau mai mulți copii" },
+    "comisionVanzareCasa": { "valoare": 0.02, "deVerificat": true, "sursa": "", "nota": "agenție + notar la vânzarea casei comune" }
+  },
   "mostenire": {
     "_info": "Moștenitorii răspund pentru datoriile moștenirii doar cu bunurile moștenite, proporțional cu cota (Codul civil, art. 1114 alin. 2).",
     "termenOptiuneLuni": { "valoare": 12, "deVerificat": true, "sursa": "Codul civil, art. 1103 (termenul de opțiune succesorală)", "nota": "în cât timp de la deces poți accepta sau renunța la moștenire" },

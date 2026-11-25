@@ -546,6 +546,8 @@ const PONDERI_ATENT = {
   viitor: 0.5, skill: 0.3, retea: 0.3, reputatie: 0.2, fericire: 0.15, energie: 0.15, inselatorie: -15, pariu: -6,
   panica: -8, pastreaza: 4, asigurare: 2, faraAsigurare: -2, venitExtra: 2, economisire: 3, ignoraTaxe: -6, afacere: 0,
   amanaTratament: -6, infractiune: -20,
+  // familia (lotul 9c): un partener ajută la costuri; după despărțire, nu rămân legați de fostul pe credit
+  partener: 2, creditComun: 1, ramanPeCreditComun: -4, preiauCreditul: 2, vandCasa: 1,
 };
 
 export const PROFILURI = {
@@ -566,6 +568,7 @@ export const PROFILURI = {
       return {
         ...PONDERI_ATENT,
         studii: rateFaraVenit(state) ? -4 : PONDERI_ATENT.studii,
+        copil: fondComplet ? 3 : -3, // un copil doar cu fondul de urgență plin
         'locuinta:chirieSingur': accesibila('chirieSingur'), 'locuinta:chirieColegi': accesibila('chirieColegi'),
         vandPentruAvans: fondComplet ? 4 : -4, casaMare: 1, upgradeCasa: fondComplet ? 2 : -3,
         negociaza: areJobFullTime(state, ctx) ? 4 : -1,
@@ -584,6 +587,7 @@ export const PROFILURI = {
     alege: alegePrinScor((state, ctx) => ({
       ...PONDERI_ATENT,
       studii: rateFaraVenit(state) ? -4 : PONDERI_ATENT.studii,
+      copil: fondUrgenta(state) >= 5 * cheltuieliLunare(state, ctx) ? 2 : -3,
       negociaza: areJobFullTime(state, ctx) ? 4 : -1,
       stilSus: -6, stilJos: 4, rate: -4, investitieRiscanta: -3, chirieScumpa: -1, chirieIeftina: 2,
       cumparaCasa: -1, dobandaVariabila: -2, amanaCumpararea: 2,
@@ -599,6 +603,7 @@ export const PROFILURI = {
       inselatorie: 3, pariu: 6, stilSus: 6, stilJos: -4, rate: 5, investitieRiscanta: 6, chirieScumpa: 3, panica: 5,
       cumparaCasa: 3, casaMare: 3, upgradeCasa: 3, dobandaVariabila: 3, asigurare: -2, faraAsigurare: 2, ignoraTaxe: 4, afacere: 3, economisire: -2,
       infractiune: 1, // „bani ușori”: nu caută faptele, dar nici nu le refuză mereu
+      partener: 2, copil: 2, ramanPeCreditComun: 2,
     }),
     meniu: meniuRiscant,
   },

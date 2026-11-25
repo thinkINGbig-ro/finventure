@@ -6,6 +6,7 @@ import { dupaCale } from './util.js';
 import { CLASE_INVESTITII, TIPURI_PRODUSE } from './finance.js';
 import { SURSE_STARE } from './events.js';
 import { CONDITII_FINAL } from './finaluri.js';
+import { ACTIUNI_FAMILIE } from './familie.js';
 
 const FISIERE = {
   config: 'data/config.json',
@@ -357,7 +358,7 @@ const CAMPURI_EVENIMENT = ['id', 'titlu', 'faza', 'conditii', 'pondere', 'cooldo
 const CAMPURI_EFECT_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
   'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou',
-  'infractiune', 'pedeapsa'];
+  'infractiune', 'pedeapsa', 'familie'];
 const CAMPURI_ALEGERE = ['id', 'eticheta', 'cere', 'rezultate', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_REZULTAT = ['pondere', ...CAMPURI_EFECT_REZULTAT];
 const CAMPURI_EFECTE = ['numerar', 'fericire', 'energie', 'viitor', 'skill', 'scorCredit', 'retea', 'reputatie'];
@@ -370,7 +371,7 @@ const CAMPURI_PRODUS = {
   contEconomii: { suma: 'num', fondUrgenta: 'bool', dobandaAnuala: 'num' },
   depozit: { suma: 'num', luni: 'num', dobandaAnuala: 'num', reinnoire: 'bool' },
   cardCredit: { limita: 'num', plata: ['integral', 'minim'], cumparaturiPeCard: 'bool', dobandaAnuala: 'num' },
-  credit: { furnizor: 'str', suma: 'num', dae: 'num', luni: 'num', luniFaraDobanda: 'num', laRestanta: 'eveniment', flag: 'str', variabila: 'bool' },
+  credit: { furnizor: 'str', suma: 'num', dae: 'num', luni: 'num', luniFaraDobanda: 'num', laRestanta: 'eveniment', flag: 'str', variabila: 'bool', coDebitor: 'bool' },
   proprietate: { valoare: 'num', marime: ['garsoniera', 'apartament'] },
   imobil: { valoare: 'num', marime: ['garsoniera', 'apartament'] }, // de închiriat sau de vândut (ex. o casă moștenită)
   investitie: { clasa: CLASE_INVESTITII, suma: 'num', luni: 'num' },
@@ -545,6 +546,7 @@ function valideazaRezultat(r, cale, err, warn, cv, vars, fisier, idEv) {
     if (r.infractiune.castig !== undefined) num(r.infractiune.castig, 'infractiune.castig');
   }
   if (r.pedeapsa !== undefined && !['recunoaste', 'avocat'].includes(r.pedeapsa)) err(`${cale}.pedeapsa`, 'recunoaste sau avocat');
+  for (const a of [r.familie ?? []].flat()) if (!ACTIUNI_FAMILIE.includes(a)) err(`${cale}.familie`, `„${a}”: valori permise: ${ACTIUNI_FAMILIE.join(', ')}`);
   if (r.bunNou !== undefined) {
     if (typeof r.bunNou !== 'string') err(`${cale}.bunNou`, 'id-ul unui produs din data/cumparaturi.json');
     else cv.referinte.push({ tip: 'bun', valoare: r.bunNou, unde: { fisier, id: idEv, camp: `${cale}.bunNou` } });
@@ -630,7 +632,7 @@ function valideazaConditii(cond, cale, err, cv, vars) {
     'areOferta', 'jobProgram', 'inStudii', 'promovareDisponibila', 'stilViata', 'asigurat', 'indatorare'], cale, err);
   if (cond.indatorare !== undefined) {
     const d = cond.indatorare;
-    campuriNecunoscute(d, ['suma', 'luni', 'dae', 'variabila', 'primaLocuinta'], `${cale}.indatorare`, err);
+    campuriNecunoscute(d, ['suma', 'luni', 'dae', 'variabila', 'primaLocuinta', 'coDebitor'], `${cale}.indatorare`, err);
     verificaNumar(d.suma, `${cale}.indatorare.suma`, err, cv, vars);
     if (!Number.isInteger(d.luni) || d.luni <= 0) err(`${cale}.indatorare.luni`, 'număr întreg de luni');
     if (d.variabila !== true) verificaNumar(d.dae, `${cale}.indatorare.dae`, err, cv, vars);

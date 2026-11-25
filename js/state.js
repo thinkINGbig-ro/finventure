@@ -4,8 +4,9 @@ import { bal, clamp, cloneaza, inBani, varstaLa, numeLuna } from './util.js';
 import { creeazaFluxuri } from './rng.js';
 import { CLASE_PIATA, baniDisponibili, contCurent, datorieProdus, facturiLunare, pret, valoareProdus } from './finance.js';
 import { CHEI } from './storage.js';
+import { familieNoua } from './familie.js';
 
-export const VERSIUNE_SALVARE = 5;
+export const VERSIUNE_SALVARE = 6;
 
 // Migrările salvărilor: fiecare pas aduce o salvare de la versiunea `de` la `de + 1`, completând
 // câmpurile noi cu valori neutre. Așa, un joc început pe GitHub Pages merge și după o actualizare.
@@ -28,6 +29,10 @@ const MIGRARI = {
   // Lotul 8: faptele (de câte ori) și lunile de detenție rămase
   4: (s) => {
     s.infractiuni ??= { furt: 0, mule: 0, frauda: 0, evaziune: 0, inchisoare: 0 };
+  },
+  // Lotul 9c: partenerul, copiii, stresul financiar al cuplului
+  5: (s) => {
+    s.familie ??= familieNoua();
   },
 };
 
@@ -85,6 +90,7 @@ export function creeazaStare(ctx, { seed = Date.now(), nume = 'Alex' } = {}) {
     istoricPortofoliu: [], // un punct pe an: investiții, sumă investită, avere netă (pentru grafice)
     tintaInvestitii: null, // strategia aleasă la ultima rebalansare
     infractiuni: { furt: 0, mule: 0, frauda: 0, evaziune: 0, inchisoare: 0 }, // fapte comise; luni de detenție rămase
+    familie: familieNoua(), // partenerul, copiii (js/familie.js)
     final: null,
   };
   state.pendinte = {

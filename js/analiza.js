@@ -9,11 +9,15 @@ export const MOTOR = {
   flaguriSetate: ['istoric_restante', 'executare_silita', 'datorie_recuperator', 'deconectat', 'telefon_suspendat',
     'evacuat', 'absolvent_licenta', 'absolvent_profesionala', 'experienta_munca', 'cautare_job', 'clauza_fidelitate', 'cazier',
     'fara_bac', // din scenariile de start (data/scenarii.json)
-    'asigurare_locuinta', 'asigurare_viata'], // din meniul Bancă → Asigurări (js/asigurari.js)
+    'asigurare_locuinta', 'asigurare_viata', // din meniul Bancă → Asigurări (js/asigurari.js)
+    // din efectul „familie” (js/familie.js)
+    'partener', 'casatorit', 'are_copii', 'divortat', 'concediu_crestere', 'partener_concediu', 'partener_fara_venit', 'credit_cu_fostul'],
   flaguriCitite: ['cautare_job', 'somaj', 'deconectat', 'telefon_suspendat', 'cv_umflat', 'pastrat_in_criza', 'are_locuinta', 'netratat', 'clauza_fidelitate',
-    'concurenta_afacere', 'cazier'],
+    'concurenta_afacere', 'cazier',
+    'are_copii', 'divortat', 'concediu_crestere', 'partener_concediu', 'partener_fara_venit', 'credit_cu_fostul'], // js/familie.js
   evenimente: ['facturi-somatie', 'evacuare', 'independenta-financiara', 'prabusire-bursa', 'rata-variabila-crescuta',
-    'imobil-reparatie', 'imobil-chirias-nu-plateste', 'afacere-client-neplatitor', 'afacere-concurenta', 'afacere-control-fiscal', 'dosar-penal'],
+    'imobil-reparatie', 'imobil-chirias-nu-plateste', 'afacere-client-neplatitor', 'afacere-concurenta', 'afacere-control-fiscal', 'dosar-penal',
+    'divort', 'divort-casa', 'fostul-nu-plateste'], // din js/familie.js
   concepte: ['rata', 'brut-net', 'pilonii-pensiei', 'poprire', 'poprire-cont', 'dobanda-compusa', 'puterea-de-cumparare',
     'mostenire', // din scenariile de start (data/scenarii.json)
     // din acțiunile meniului „Datoriile mele” (js/datorii.js)

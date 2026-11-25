@@ -10,6 +10,7 @@ import { actualizeazaDerivate, adaugaJurnal, areFlag, cheltuieliLunare, schimbaS
 import { estimeazaPensie, inregistreazaDecizie, venitPasivLunar } from './bilant.js';
 import { adaugaBun } from './cumparaturi.js';
 import { aplicaPedeapsa, comiteFapta } from './infractiuni.js';
+import { aplicaFamilie, venitPartener } from './familie.js';
 import {
   areJobFullTime, cereMarire, descriereOferta, genereazaOferte, jobCurent, negociaza, promovareDisponibila, promoveaza, schimbaJob,
 } from './cariera.js';
@@ -27,9 +28,11 @@ export function potrivesteProdus(p, selector) {
 }
 
 // Asigurat medical: contract de muncă sau PFA (plătești CASS), student, sau imediat după concediere (șomaj).
-export function gradIndatorare(state, ctx, { suma, luni, dae }) {
+export function gradIndatorare(state, ctx, { suma, luni, dae, coDebitor = false }) {
   const c = state.produse.find((p) => p.tip === 'contractMunca');
-  const net = c && c.contract !== 'negru' ? fluturas(c.brut, c.contract, ctx).net : 0;
+  const netTau = c && c.contract !== 'negru' ? fluturas(c.brut, c.contract, ctx).net : 0;
+  // Co-debitorii: banca adună veniturile, dar doar dacă luați creditul împreună.
+  const net = netTau + (coDebitor && netTau ? venitPartener(state, ctx) : 0);
   const daeEfectiv = dae ?? cfg(ctx, 'ipotecar.marjaVariabila') + ircc(state, ctx);
   const rataNoua = rataAnuitate(suma, rataLunara(daeEfectiv), luniCreditDupaVarsta(state, ctx, luni));
   // Ratele existente: toate creditele (și IFN-urile, banca le vede la Biroul de Credit) și plata minimă la card.
@@ -207,12 +210,12 @@ export function motivNeindeplinire(cond, state, ctx, vars = {}) {
     // Gradul de îndatorare: (ratele existente + rata creditului nou) / venitul net din salariu.
     indatorare: (spec) => {
       if (areFlag(state, 'cazier')) return 'Banca refuză: ai cazier.';
-      const r = gradIndatorare(state, ctx, { suma: inBani(val(spec.suma)), luni: spec.luni, dae: spec.variabila ? null : val(spec.dae) });
+      const r = gradIndatorare(state, ctx, { suma: inBani(val(spec.suma)), luni: spec.luni, dae: spec.variabila ? null : val(spec.dae), coDebitor: !!spec.coDebitor });
       if (r.net === 0) return 'Creditorul te refuză: n-ai un venit din salariu pe care să-l poată verifica.';
       // Prima locuință: limită mai mare, dacă n-ai și n-ai avut altă locuință (BNR: 40% + 5 puncte).
       const primaLocuinta = spec.primaLocuinta && !areFlag(state, 'are_locuinta') && !state.produse.some((p) => p.tip === 'proprietate');
       const max = cfg(ctx, primaLocuinta ? 'indatorare.gradMaximPrimaLocuinta' : 'indatorare.gradMaxim');
-      return r.grad <= max || `Creditorul te refuză: rata ar fi ${lei(Math.round(inLei(r.rataNoua)))}, iar toate ratele ar lua ${Math.round(r.grad * 100)}% din venitul tău net (maximul e ${Math.round(max * 100)}%).`;
+      return r.grad <= max || `Creditorul te refuză: rata ar fi ${lei(Math.round(inLei(r.rataNoua)))}, iar toate ratele ar lua ${Math.round(r.grad * 100)}% din ${spec.coDebitor ? 'venitul vostru net' : 'venitul tău net'} (maximul e ${Math.round(max * 100)}%).`;
     },
     asigurat: (da) => esteAsigurat(state, ctx) === da || (da ? 'Nu ești asigurat medical: lucrezi fără contract.' : 'Ești asigurat medical.'),
     stilViata: (lista) => lista.includes(state.stilViata) || 'Nu se potrivește cu stilul tău de viață.',
@@ -341,7 +344,7 @@ export function areUrmareScadenta(state) {
 const CAMPURI_REZULTAT = ['efecte', 'sursaPlata', 'flaguri', 'stergeFlaguri', 'produsNou', 'lichideaza', 'ramburseaza',
   'seteazaProdus', 'transferaInCont', 'job', 'situatie', 'recurente', 'urmari', 'lectie', 'concepte', 'jurnal',
   'acceptaOferta', 'negociazaOferta', 'cereMarire', 'promovare', 'stilViata', 'etichete', 'retrageEconomii', 'retragere', 'afacere', 'bunNou',
-  'infractiune', 'pedeapsa'];
+  'infractiune', 'pedeapsa', 'familie'];
 
 export function aplicaAlegere(state, ctx, oprire, idAlegere) {
   const ev = ctx.evenimente.get(oprire.eveniment);
@@ -437,6 +440,7 @@ export function aplicaPachet(state, ctx, p, vars, idDecizie, oprire = {}) {
   // Infracțiuni: fapta (riscul vine mai târziu, ca dosar penal) și pedeapsa aleasă în dosar.
   if (p.infractiune) comiteFapta(state, ctx, p.infractiune.tip, val(p.infractiune.castig ?? 0), idDecizie);
   if (p.pedeapsa) aplicaPedeapsa(state, ctx, p.pedeapsa, vars);
+  for (const a of [p.familie ?? []].flat()) aplicaFamilie(state, ctx, a); // partener, nuntă, copil, divorț, casa comună
   for (const [sel, campuri] of Object.entries(p.seteazaProdus ?? {})) {
     for (const prod of gasesteProduse(state, sel)) Object.assign(prod, campuri);
   }

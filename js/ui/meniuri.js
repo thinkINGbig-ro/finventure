@@ -15,6 +15,7 @@ import { deschideStrat, inchideStrat } from './strat.js';
 import { descrieActivitati, timpPeAn, timpRamas } from '../activitati.js';
 import { datoriiTotal, listaDatorii, simuleazaConsolidare, simuleazaEsalonare, simuleazaRambursare } from '../datorii.js';
 import { descrieAsigurari } from '../asigurari.js';
+import { bugetFamilie } from '../familie.js';
 import { descrieCurs, descrieProgram } from '../educatie.js';
 import { companieFalimentata, infoClasa, portofoliu } from '../investitii.js';
 import { baniDisponibili, paramClasa } from '../finance.js';
@@ -406,6 +407,24 @@ function panouBanca(o, reranda) {
     sectiuni.push(produs(`${as.emoji} ${as.titlu}`, `${lei(as.prima)} / lună`,
       as.activa ? `Activă. ${as.descriere}` : as.motiv ?? as.descriere,
       h('div', { class: 'rand-butoane' }, buton)));
+  }
+
+  // Familia: ce pune partenerul la comun, ce costă copiii, ce vine de la stat (doar dacă e cazul).
+  const fam = bugetFamilie(state, ctx);
+  if (fam.partener || fam.copii.length || fam.copiiLaFost || fam.creditCuFostul) {
+    const intra = fam.contributie + fam.alocatie + fam.indemnizatie;
+    const ies = fam.costCopii + fam.pensie;
+    const randuri = [
+      fam.partener ? `${fam.partener.casatorit ? 'Căsătoriți' : 'Locuiți împreună'}; partenerul câștigă ${lei(fam.venitPartener)} pe lună${fam.venitPartener ? '' : ' (acum, nimic)'}.` : null,
+      fam.contributie ? `Partea ${fam.partener ? 'partenerului' : 'fostului partener'} la cheltuielile comune${fam.crediteComune ? ' și la creditul comun' : ''}: ${lei(fam.contributie)} pe lună.` : null,
+      fam.copii.length ? `${fam.copii.length === 1 ? 'Un copil' : `${fam.copii.length} copii`} (${fam.copii.map((c) => (c.varsta === 0 ? 'sub un an' : c.varsta === 1 ? '1 an' : ani(c.varsta))).join(', ')}): costă ${lei(fam.costCopii)} pe lună; alocația, ${lei(fam.alocatie)}.` : null,
+      fam.indemnizatie ? `Indemnizația de creștere a copilului: ${lei(fam.indemnizatie)} pe lună, în locul salariului.` : null,
+      fam.pensie ? `Pensia de întreținere: ${lei(fam.pensie)} pe lună.` : null,
+      fam.creditCuFostul ? 'După despărțire, ai rămas pe credit împreună cu fostul partener: dacă nu-și plătește partea, banca ți-o cere ție.' : null,
+    ].filter(Boolean);
+    sectiuni.push(h('h3', { class: 'sectiune-titlu' }, 'Familia'));
+    sectiuni.push(produs(fam.partener ? '👫 Bugetul familiei' : '👪 Familia', `${intra - ies >= 0 ? '+' : '−'}${lei(Math.abs(intra - ies))} / lună`,
+      randuri.join(' ')));
   }
   return sectiuni;
 }

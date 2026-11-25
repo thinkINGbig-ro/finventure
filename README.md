@@ -19,6 +19,7 @@ Pornești la 18 ani, chiar după bac, cu prima decizie mare: facultate, job sau 
 - **Locuință:** chirie sau cumpărare, avansul, creditul ipotecar, dobânda fixă sau variabilă.
 - **Taxe și pensie:** contractul de muncă, munca la negru, PFA, Declarația unică, pilonii pensiei.
 - **Înșelătorii:** mesaje false, joburi care îți cer bani, „investiții garantate”.
+- **Familie:** bugetul în cuplu, costul unei nunți și al unui copil, alocația, concediul de creștere, o casă cumpărată în doi și ce se întâmplă cu creditul la o despărțire.
 
 Fiecare concept nou pe care îl întâlnești intră în **Enciclopedia Finventure**, cu o explicație scurtă și un exemplu în lei. Sunt aproape 50 de concepte de colecționat, plus 14 finaluri diferite de descoperit.
 
@@ -43,7 +44,6 @@ Taxele de pe salariu, dobânzile, prețurile și regulile băncilor din joc porn
 
 ## Ce nu face (încă) jocul
 
-- **Un singur venit.** În joc trăiești pe un singur salariu; în realitate, mulți cumpără o casă în doi, ceea ce schimbă cât îți dă banca.
 - **Fără programe de stat pentru locuințe**, cum e „Noua Casă”, cu avans mic.
 - **Fără credite în euro.** Toate creditele din joc sunt în lei.
 

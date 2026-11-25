@@ -146,6 +146,7 @@ export function creeazaProdus(spec, state, ctx) {
         rata: rataAnuitate(spec.suma, rLunar, spec.luni),
         restanta: 0, luniRestanta: 0, totalPlatit: 0, dobandaTotala: 0, penalitati: 0,
         laRestanta: spec.laRestanta ?? null, flag: spec.flag ?? null, variabila: !!spec.variabila,
+        coDebitor: !!spec.coDebitor, // luat împreună cu partenerul: răspundeți amândoi
       };
     }
     case 'investitie': {

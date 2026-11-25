@@ -234,6 +234,16 @@
     "sansaChiriasNuPlatesteAnual": 0.05
   },
 
+  "familie": {
+    "_info": "Riscul de divorț e anual: divortBaza, plus divortLipsuri × (luni cu lipsuri din ultimele 12) / 12, plus divortRestante dacă ai restanțe sau executare. Zarurile folosesc fluxul „actiuni”. sansaFostulNuPlateste = pe lună, cât timp rămâneți amândoi pe credit după divorț.",
+    "divortBaza": 0.012,
+    "divortLipsuri": 0.12,
+    "divortRestante": 0.05,
+    "sansaFostulNuPlateste": 0.02,
+    "luniPartenerFaraVenit": 6,
+    "fericireDivort": -15
+  },
+
   "salvare": {
     "checkpointuriRecente": 5,
     "checkpointuriMax": 10
