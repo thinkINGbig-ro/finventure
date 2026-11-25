@@ -4,6 +4,8 @@ Ramura `extindere` (loturile 0–9c). Pentru fiecare ecran: **unde** (tab, buton
 
 **Ce urmărești peste tot:** nimic nu iese din ecran pe orizontală (fără scroll lateral), cifrele nu se rup pe două rânduri în mijlocul sumei, butoanele au cel puțin un deget lățime (44 px) și nu se suprapun, textele lungi se rup pe rânduri în loc să fie tăiate, mesajul verde / roșu apare sus după fiecare acțiune.
 
+**Adresa de test:** https://mihaimpmo.github.io/finventure-preview/?debug=1 (se actualizează singură la câteva minute după un push pe `extindere`; commit-ul publicat e în `/versiune.txt`). Salvarea de acolo e separată de jocul publicat.
+
 **Scurtături:** deschide jocul cu `?debug=1` la final de adresă. Din panoul de debug poți sări la o vârstă, seta bani, statistici sau flag-uri și forța un eveniment după id (id-urile sunt scrise mai jos, în paranteze). Pentru ecranele care cer bani, setează întâi numerar mult (ex. 500.000 lei).
 
 ---
@@ -79,4 +81,4 @@ Ramura `extindere` (loturile 0–9c). Pentru fiecare ecran: **unde** (tab, buton
 
 ## Salvările
 
-32. **Un joc început pe site-ul de acum (`main`) nu se pierde.** Testul automat „migrare: salvările reale de pe main…” încarcă 10 salvări reale (generate cu `tools/genereaza-salvari-main.js`), inclusiv 3 cu un card deschis, și le joacă 3 ani. Pe telefon nu poți verifica direct: salvarea de pe GitHub Pages e legată de adresa acelui site și nu se vede de pe serverul local.
+32. **Un joc început pe site-ul de acum (`main`) nu se pierde.** Testul automat „migrare: salvările reale de pe main…” încarcă 10 salvări reale (generate cu `tools/genereaza-salvari-main.js`), inclusiv 3 cu un card deschis, și le joacă 3 ani. Pe telefon nu poți verifica direct: preview-ul e pe alt domeniu și folosește alte chei (`finventure-preview.*`), deci nu vede salvarea de pe site-ul principal (și nici nu o poate atinge).

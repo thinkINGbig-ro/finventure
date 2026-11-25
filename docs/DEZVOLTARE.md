@@ -208,7 +208,9 @@ node tools/genereaza-salvari-main.js ../finventure-main tests/fixtures/salvari-m
 git worktree remove ../finventure-main
 ```
 
-**Testarea pe telefon fără `main`:** pornește `python -m http.server 8000 --bind 0.0.0.0` pe ramura de test și deschide `http://<IP-ul calculatorului>:8000` de pe telefon, în aceeași rețea. Nu publica o ramură de test pe alt site `thinkingbig-ro.github.io/…`: toate site-urile de pe acel domeniu au același localStorage, iar cheile `finventure.*` ar fi comune cu jocul publicat. Lista ecranelor de verificat e în `docs/testare-telefon.md`.
+**Testarea pe telefon fără `main`:** ramura `extindere` e publicată pe **https://mihaimpmo.github.io/finventure-preview/** (repo-ul `mihaimpmo/finventure-preview`: un workflow verifică la câteva minute dacă `extindere` s-a schimbat și o publică; commit-ul publicat e în `/versiune.txt`; publicare imediată din Actions → „Preview extindere” → Run workflow). Local: `python -m http.server 8000 --bind 0.0.0.0` și `http://<IP-ul calculatorului>:8000` de pe telefon, în aceeași rețea. Lista ecranelor de verificat e în `docs/testare-telefon.md`.
+
+**Salvările pe adrese diferite** (`js/storage.js`, `prefixPentru`): doar site-ul principal (`thinkingbig-ro.github.io/finventure/`) folosește cheile `finventure.*`; orice altă adresă (preview, localhost, alt repo) folosește `finventure-preview.*`. Toate site-urile de pe același domeniu `*.github.io` au același localStorage, așa că un preview publicat tot pe `thinkingbig-ro.github.io` nu poate strica salvările jucătorilor.
 
 ## Cum am testat echilibrul jocului
 
