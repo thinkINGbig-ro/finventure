@@ -12,7 +12,7 @@ import { pregatire, proceseazaAfacere, simuleazaPornire, simuleazaVanzare as sim
 import { descrieCatalog, optiuniPlata, proceseazaBunuri } from '../js/cumparaturi.js';
 import { costRamasCredit, listaDatorii, simuleazaConsolidare, simuleazaRambursare } from '../js/datorii.js';
 import { descrieActivitati, motivTimp, timpPeAn, timpRamas } from '../js/activitati.js';
-import { creeazaStorage, creeazaStorageMemorie } from '../js/storage.js';
+import { PREFIX_PREVIEW, PREFIX_PRINCIPAL, creeazaStorage, creeazaStorageMemorie, prefixPentru } from '../js/storage.js';
 import { descrieAsigurari } from '../js/asigurari.js';
 import { aplicaFamilie, bugetFamilie, casaComuna, proceseazaFamilie, venitPartener, verificaCuplu } from '../js/familie.js';
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
@@ -45,7 +45,8 @@ function migrareDinMain(ctxBaza, a) {
   const { ok, egal } = a;
   const storageDin = (date) => {
     const m = new Map(Object.entries(date));
-    return creeazaStorage({ tip: 'memorie', getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) });
+    // Salvările de pe main au cheile „finventure.*”; prefixul e dat explicit, ca testul să meargă și în browser pe localhost.
+    return creeazaStorage({ tip: 'memorie', getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) }, PREFIX_PRINCIPAL);
   };
   // Tot ce citesc panourile din meniuri (fără DOM): dacă o salvare veche n-are un câmp, aici se vede.
   const deschideMeniurile = (state, ctx) => {
@@ -62,6 +63,38 @@ function migrareDinMain(ctxBaza, a) {
     ok(Number.isFinite(avereNeta(state)), 'averea netă e un număr');
   };
   return {
+    'salvări: prefixul cheilor depinde de adresă (site-ul principal „finventure.”, preview-ul și restul „finventure-preview.”)'() {
+      const adresa = (url) => new URL(url);
+      for (const url of [
+        'https://thinkingbig-ro.github.io/finventure/',
+        'https://thinkingbig-ro.github.io/finventure/index.html?debug=1',
+        'https://thinkingbig-ro.github.io/finventure',
+        'https://ThinkINGbig-ro.github.io/finventure/',
+        'https://thinkingbig-ro.github.io/finventure/tests/run.html',
+      ]) egal(prefixPentru(adresa(url)), PREFIX_PRINCIPAL, url);
+      for (const url of [
+        'https://thinkingbig-ro.github.io/finventure/preview/',
+        'https://thinkingbig-ro.github.io/finventure/preview/index.html?debug=1',
+        'https://thinkingbig-ro.github.io/finventure/preview',
+        'https://thinkingbig-ro.github.io/finventure-preview/',
+        'https://thinkingbig-ro.github.io/',
+        'https://alt-cont.github.io/finventure/',
+        'http://localhost:8000/',
+        'http://10.190.2.136:8000/',
+      ]) egal(prefixPentru(adresa(url)), PREFIX_PREVIEW, url);
+      egal(prefixPentru(null), PREFIX_PRINCIPAL, 'fără adresă (Node)');
+      // Pe același localStorage (același domeniu), preview-ul nu vede și nu atinge salvarea site-ului principal.
+      const comun = new Map([['finventure.salvare', '{"versiune":1}']]);
+      const backend = { getItem: (k) => comun.get(k) ?? null, setItem: (k, v) => comun.set(k, String(v)), removeItem: (k) => comun.delete(k) };
+      const preview = creeazaStorage(backend, prefixPentru(adresa('https://thinkingbig-ro.github.io/finventure/preview/')));
+      egal(preview.citeste('salvare'), null, 'preview-ul nu vede salvarea principală');
+      preview.scrie('salvare', { versiune: 6 });
+      preview.sterge('checkpointuri');
+      egal(comun.get('finventure.salvare'), '{"versiune":1}', 'salvarea principală rămâne neatinsă');
+      egal(comun.get('finventure-preview.salvare'), '{"versiune":6}', 'preview-ul are cheia lui');
+      const principal = creeazaStorage(backend, prefixPentru(adresa('https://thinkingbig-ro.github.io/finventure/')));
+      egal(principal.citeste('salvare')?.versiune, 1, 'site-ul principal își citește salvarea');
+    },
     async 'migrare: salvările reale de pe main (versiunea 1) se încarcă, se văd în meniuri și se joacă 3 ani'() {
       const fixture = JSON.parse(await a.citeste('tests/fixtures/salvari-main-v1.json'));
       const cazuri = Object.entries(fixture.cazuri);
