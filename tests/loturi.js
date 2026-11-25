@@ -18,6 +18,7 @@ import { aplicaFamilie, bugetFamilie, casaComuna, proceseazaFamilie, venitParten
 import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoint, incarcaJoc, listaCheckpointuri, salveazaJoc } from '../js/state.js';
 import { cloneaza, inBani } from '../js/util.js';
 import { COD_PAGINA } from '../js/versiune.js';
+import { incarcaContinut } from '../js/content.js';
 
 export function testeLoturi(ctxBaza, a) {
   return {
@@ -87,6 +88,30 @@ function migrareDinMain(ctxBaza, a) {
       await mergi('js/main.js');
       for (const m of ['js/ui/debug.js', 'js/familie.js', 'js/storage.js', 'js/versiune.js', 'js/ui/meniuri.js', 'js/content.js']) ok(vazute.has(m), `${m} e atins`);
       ok(vazute.size >= 35, `${vazute.size} module`);
+    },
+    async 'pornire: fișierele de conținut se cer în paralel (pe o rețea mobilă, una după alta însemna ~16 s), cu același rezultat'() {
+      let inZbor = 0;
+      let maxim = 0;
+      const cerute = [];
+      const cititor = async (cale) => {
+        cerute.push(cale);
+        inZbor += 1;
+        maxim = Math.max(maxim, inZbor);
+        await new Promise((r) => setTimeout(r, 5)); // ca o latență de rețea
+        inZbor -= 1;
+        return a.citeste(cale);
+      };
+      const { ctx, erori } = await incarcaContinut(cititor);
+      const index = JSON.parse(await a.citeste('data/events/index.json'));
+      egal(cerute.length, 12 + index.fisiere.length, 'fiecare fișier cerut o singură dată');
+      // două valuri: cele 12 fișiere de bază, apoi evenimentele din index.json
+      ok(maxim >= Math.max(12, index.fisiere.length), `cereri în paralel: ${maxim}`);
+      egal(erori.length, 0, 'fără erori');
+      egal(ctx.evenimente.size, ctxBaza.evenimente.size, 'aceleași evenimente');
+      egal(ctx.concepte.size, ctxBaza.concepte.size, 'aceleași concepte');
+      // un fișier lipsă: eroarea apare tot o dată, cu numele lui
+      const { erori: e2 } = await incarcaContinut((cale) => (cale === 'data/jobs.json' ? Promise.reject(new Error('HTTP 404')) : a.citeste(cale)));
+      egal(e2.filter((e) => e.fisier === 'data/jobs.json' && /HTTP 404/.test(e.mesaj)).length, 1, 'eroarea pentru fișierul lipsă');
     },
     'salvări: prefixul cheilor depinde de adresă (site-ul principal „finventure.”, preview-ul și restul „finventure-preview.”)'() {
       const adresa = (url) => new URL(url);
