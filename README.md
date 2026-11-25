@@ -21,7 +21,7 @@ Pornești la 18 ani, chiar după bac, cu prima decizie mare: facultate, job sau 
 - **Înșelătorii:** mesaje false, joburi care îți cer bani, „investiții garantate”.
 - **Familie:** bugetul în cuplu, costul unei nunți și al unui copil, alocația, concediul de creștere, o casă cumpărată în doi și ce se întâmplă cu creditul la o despărțire.
 
-Fiecare concept nou pe care îl întâlnești intră în **Enciclopedia Finventure**, cu o explicație scurtă și un exemplu în lei. Sunt aproape 50 de concepte de colecționat, plus 14 finaluri diferite de descoperit.
+Fiecare concept nou pe care îl întâlnești intră în **Enciclopedia Finventure**, cu o explicație scurtă și un exemplu în lei. Sunt 90 de concepte de colecționat, plus 14 finaluri diferite de descoperit.
 
 ## Cum am verificat că jocul e corect
 
@@ -30,9 +30,9 @@ Un joc care învață despre bani trebuie să fie corect: deciziile bune să duc
 | Stil de joc | Ajung liniștiți la pensie | Ajung la faliment sau la epuizare | Averea tipică la final, în bani de azi |
 |---|---|---|---|
 | **Prudent**: buget echilibrat, bani puși deoparte pentru urgențe, o parte investită | 100% | 0% | ~1,2 milioane lei |
-| **Econom**: trai simplu toată viața, investește aproape tot | 100% | 0% | ~1,8 milioane lei |
-| **La întâmplare**: alege orice, fără plan | 55% | 45% | ~224.000 lei |
-| **Riscant**: credite rapide, muncă la negru, cheltuie tot | 24% | 76% | ~61.000 lei |
+| **Econom**: trai simplu toată viața, investește aproape tot | 100% | 0% | ~2 milioane lei |
+| **La întâmplare**: alege orice, fără plan | 38% | 62% | ~86.000 lei |
+| **Riscant**: credite rapide, muncă la negru, cheltuie tot | 1% | 99% | sub zero (datorii) |
 
 Toți au trecut prin aceleași tipuri de încercări: boli, concedieri, crize pe bursă. Diferența a venit din cum le-au întâmpinat. Cel prudent a plătit din banii puși deoparte; cel riscant a luat un credit scump, apoi încă unul, până când datoria l-a îngropat.
 

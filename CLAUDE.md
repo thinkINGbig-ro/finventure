@@ -373,14 +373,14 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 | Modul debug | `/?debug=1` (sari la o vârstă, setezi statistici/flag-uri, forțezi un eveniment, simulare) |
 | Formatarea JSON-urilor | `node tools/formateaza-json.js data/events/fisier.json` |
 
-### Echilibrul (ultimul raport, 500 de vieți pe profil)
+### Echilibrul (ultimul raport, 500 de vieți pe profil, după lotul 9c)
 
 | Profil | Pensie sau independență | Faliment |
 |---|---|---|
 | prudent | 100% | 0% |
 | frugal | 100% | 0% |
-| aleator | ~55% | ~45% (incl. ~5% burnout) |
-| riscant | ~24% | ~76% |
+| aleator | ~38% | ~62% (incl. ~8% burnout) |
+| riscant | ~1% | ~99% |
 
 Ținte stabilite: prudent > 80%, aleator 30–60% (coborâtă de la 40–60% după lotul 9b: fiecare lot i-a dat opțiuni riscante; contează diferența mare față de prudent), riscant rar (foarte jos e acceptabil). **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
 
@@ -453,6 +453,6 @@ Reguli pentru extindere:
 
 ### Ce urmează
 
-- Loturile 1–9 pe `extindere`, apoi testare de către echipă și merge.
+- Loturile 1–9 sunt gata pe `extindere`: urmează testarea echipei pe telefon și merge-ul în `main` (doar după confirmare).
 - Verificarea valorilor din `data/config.json` cu un specialist (completat `sursa`, `deVerificat: false`).
 - Mai târziu, doar dacă decidem: clasamentul online (stratul `js/storage.js` e pregătit).
