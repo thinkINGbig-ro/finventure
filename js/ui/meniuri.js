@@ -858,6 +858,7 @@ function panouMeniu({ ctx, colectie, laJocNou }) {
         h('strong', {}, c.nume), ` · ${c.final ?? MOTIVE[c.motiv]} la ${ani(c.varsta)} · ${Math.round(c.avereAzi).toLocaleString('ro-RO')} lei de azi`)))
       : h('p', { class: 'mic' }, 'Încă nicio viață terminată.'),
     h('div', { class: 'rand-butoane' }, h('button', { type: 'button', class: 'btn btn-secundar', onclick: () => { inchideStrat(); laJocNou(); } }, 'Joc nou')),
+    h('p', { class: 'mic' }, 'Pentru proiectul nostru numărăm, anonim, câți oameni joacă și până la ce vârstă ajung: fără cookie-uri, fără nume și fără sumele din joc.'),
   ];
 }
 

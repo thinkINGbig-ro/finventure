@@ -73,6 +73,10 @@ Taxele de pe salariu, dobânzile, prețurile și regulile băncilor din joc porn
 - **Fără programe de stat pentru locuințe**, cum e „Noua Casă”, cu avans mic.
 - **Fără credite în euro.** Toate creditele din joc sunt în lei.
 
+## Ce date colectăm
+
+Pentru proiect vrem să știm câți oameni joacă și până unde ajung. Jocul trimite, anonim, la serverul echipei: că a început un joc nou (și cu ce scenariu), vârstele atinse (din 5 în 5 ani), cum s-a terminat viața și ce s-a ales la patru decizii-cheie (după liceu, o urgență de bani, creditul rapid, prăbușirea bursei). Fără cookie-uri, fără un cod care să te recunoască, fără nume și fără sumele din joc. Dacă browserul tău cere „Do Not Track”, nu trimitem nimic.
+
 ## Despre proiect
 
 Finventure a fost realizat pentru concursul național de educație financiară **Banometru**.

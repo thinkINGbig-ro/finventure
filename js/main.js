@@ -12,6 +12,7 @@ import { alegeFinal } from './finaluri.js';
 import { calculeazaTipare } from './tipare.js';
 import { arataFinalViata } from './ui/final.js';
 import { CHEI, creeazaStorage } from './storage.js';
+import { creeazaStatistici } from './statistici.js';
 import { bal } from './util.js';
 import { $, h } from './ui/dom.js';
 import { arataEveniment } from './ui/eveniment.js';
@@ -51,13 +52,16 @@ async function porneste() {
     concepte: (ids) => deblocheazaConcepteGlobal(storage, ids),
   };
 
+  const statistici = creeazaStatistici({ storage });
+  statistici.vizita();
   const ui = creeazaEcranPrincipal(ctx);
   const btnAvanseaza = $('#btn-avanseaza');
-  let state = incarcaJoc(storage) ?? stareNoua(ctx);
+  let state = incarcaJoc(storage) ?? stareNoua(ctx, 'obisnuit', statistici);
   let ocupat = false;
 
   const randeaza = () => {
     ui.randeaza(state);
+    statistici.varsta(state);
     deblocheazaConcepteGlobal(storage, state.concepte); // include conceptele din momentele-cheie
   };
 
@@ -71,6 +75,7 @@ async function porneste() {
         if (oprire.tip === 'eveniment') {
           const cale = await arataEveniment(oprire);
           const r = alege(state, ctx, cale);
+          statistici.decizie(oprire.eveniment, cale);
           randeaza();
           // Dacă urmează imediat alt card, rezultatul primește ecranul lui (un toast ar rămâne ascuns sub card).
           const text = textRezultat(r.rezultat);
@@ -116,6 +121,7 @@ async function porneste() {
     // O viață intră o singură dată în clasament (și dacă pagina e reîncărcată pe ecranul de final).
     if (state.final && !state.final.inregistrat) {
       adaugaInClasament(storage, { nume: state.nume, varsta: oprire.varsta, motiv: oprire.motiv, final: final?.titlu, avereAzi: rezumat.avereAzi, data: new Date().toISOString().slice(0, 10) });
+      statistici.final(state, { motiv: oprire.motiv, varsta: oprire.varsta, final: final?.id });
       state.final.inregistrat = true;
       salveazaJoc(storage, state);
     }
@@ -133,7 +139,7 @@ async function porneste() {
   function incepeDinNou(scenariu = 'obisnuit') {
     stergeJoc(storage);
     ui.reseteaza();
-    return stareNoua(ctx, scenariu);
+    return stareNoua(ctx, scenariu, statistici);
   }
 
   btnAvanseaza.addEventListener('click', () => {
@@ -207,9 +213,11 @@ async function repara(motiv) {
   return true;
 }
 
-function stareNoua(ctx, scenariu = 'obisnuit') {
+function stareNoua(ctx, scenariu = 'obisnuit', statistici = null) {
   const nume = NUME[Math.floor(Math.random() * NUME.length)];
-  return jocNou(ctx, { seed: `${Date.now()}-${Math.random()}`, nume, scenariu });
+  const state = jocNou(ctx, { seed: `${Date.now()}-${Math.random()}`, nume, scenariu });
+  statistici?.jocNou(state);
+  return state;
 }
 
 function arataErori(erori) {
