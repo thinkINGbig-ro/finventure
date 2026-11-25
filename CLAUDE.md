@@ -286,6 +286,7 @@ js/simulare.js      profilurile de jucător și simularea
 js/ui/*.js          ecrane: principal, card eveniment, rezumat an, meniuri, enciclopedie, final
 js/share.js         cardul final pe canvas
 js/storage.js       localStorage abstractizat
+js/statistici.js    statistici anonime (Umami), doar de pe site-ul principal
 data/config.json    valori economice (deVerificat)
 data/balans.json    parametri de joc / echilibrare (nu valori economice)
 data/jobs.json
@@ -458,6 +459,7 @@ Reguli pentru extindere:
 - **Salvările:** `js/storage.js` `prefixPentru`: doar site-ul principal folosește cheile `finventure.*`; orice altă adresă (preview, localhost) folosește `finventure-preview.*`.
 - **Cache-ul:** `index.html` verifică la pornire, deodată, modulele din lista `MODULE` și repară un amestec de fișiere vechi și noi. **Orice modul JS nou (sau scos) se trece în lista `MODULE` din `index.html`**; testul „pornire” pică altfel și spune care modul lipsește; versiunea paginii e în `<meta name="finventure-cod">` și în `js/versiune.js` (detalii în `docs/DEZVOLTARE.md`).
 - **Chirie vs. cumpărare:** după lotul 4a, casa iese mai bine în ~80% din vieți (era ~51%), din cauza rebalansării prudentului pe strategia echilibrată; fără rebalansare, ~59%. Din 2026-11-25 prudentul rebalansează după vârstă (dinamică < 45, echilibrată 45–59, prudentă ≥ 60; doar profilul din simulare): casa mai bună în ~74%, prudentul tot 100%, averea mediană ~1,3 mil. lei de azi. Detalii în `docs/DEZVOLTARE.md`.
+- **Statistici anonime** (din 2026-11-25, decizia echipei): `js/statistici.js` trimite la Umami-ul echipei (`https://mpetrar.go.ro/`, pe serverul Debian al echipei; Claude nu are acces acolo, comenzile le rulează echipa) vizita, `joc-nou`, vârstele din 5 în 5 ani, 4 decizii-cheie și finalul; doar de pe site-ul principal, fără cookie-uri, nume sau sume. Detalii în `docs/DEZVOLTARE.md`.
 - **Pornirea pe rețea mobilă:** JSON-urile de conținut se cer în paralel (`js/content.js`); una după alta, pornirea pe „Slow 4G” lua ~18 s.
 
 ### Ce urmează

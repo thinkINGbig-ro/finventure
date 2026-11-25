@@ -19,6 +19,7 @@ import { VERSIUNE_SALVARE, adaugaCheckpoint, areFlag, avereNeta, incarcaCheckpoi
 import { cloneaza, inBani } from '../js/util.js';
 import { COD_PAGINA } from '../js/versiune.js';
 import { incarcaContinut } from '../js/content.js';
+import { DECIZII_URMARITE, SITE, creeazaStatistici, statisticiActive } from '../js/statistici.js';
 
 export function testeLoturi(ctxBaza, a) {
   return {
@@ -37,6 +38,70 @@ export function testeLoturi(ctxBaza, a) {
     ...lot9b(ctxBaza, a),
     ...lot9c(ctxBaza, a),
     ...migrareDinMain(ctxBaza, a),
+    ...statistici(ctxBaza, a),
+  };
+}
+
+// ---------- Statisticile anonime (js/statistici.js) ----------
+
+function statistici(ctxBaza, a) {
+  const { ok, egal } = a;
+  const mediu = (url, nav = {}) => ({ location: new URL(url), navigator: { language: 'ro-RO', ...nav }, screen: { width: 390, height: 844 }, document: { title: 'Finventure', referrer: '' } });
+  const PRINCIPAL = 'https://thinkingbig-ro.github.io/finventure/';
+  return {
+    'statistici: se trimit doar de pe site-ul principal, fără ?debug=1, Do Not Track sau Global Privacy Control'() {
+      ok(statisticiActive(mediu(PRINCIPAL)), 'site-ul principal');
+      ok(statisticiActive(mediu('https://thinkingbig-ro.github.io/finventure/index.html')), 'index.html');
+      for (const url of ['https://mihaimpmo.github.io/finventure-preview/', 'https://thinkingbig-ro.github.io/finventure/preview/', 'http://localhost:8000/', 'https://thinkingbig-ro.github.io/finventure/tests/run.html?debug=1', `${PRINCIPAL}?debug=1`]) {
+        ok(!statisticiActive(mediu(url)), url);
+      }
+      ok(!statisticiActive(mediu(PRINCIPAL, { doNotTrack: '1' })), 'Do Not Track');
+      ok(!statisticiActive(mediu(PRINCIPAL, { globalPrivacyControl: true })), 'Global Privacy Control');
+      ok(!statisticiActive({}), 'fără adresă (Node, simularea)');
+      ok(!statisticiActive(globalThis) || globalThis.location?.hostname === 'thinkingbig-ro.github.io', 'testele nu trimit nimic');
+    },
+    'statistici: joc nou, vârstele din 5 în 5 ani o singură dată, deciziile-cheie, finalul; fără nume și fără sume'() {
+      const trimise = [];
+      const storage = creeazaStorageMemorie();
+      const st = creeazaStatistici({ storage, mediu: mediu(`${PRINCIPAL}?x=1`), trimite: (c) => trimise.push(c) });
+      const state = jocNou(ctxBaza, { seed: 'statistici', nume: 'Zamfira' });
+      st.vizita();
+      st.jocNou(state);
+      st.varsta(state);
+      egal(trimise.map((c) => c.payload.name ?? 'vizita').join(','), 'vizita,joc-nou', 'la 18 ani: nicio vârstă-reper');
+      ok(trimise.every((c) => c.type === 'event' && c.payload.website === SITE && c.payload.url === '/finventure/'), 'site-ul și adresa fără parametri');
+      egal(trimise[1].payload.data.scenariu, 'obisnuit');
+      state.luna = 12 * (37 - 18); // 37 de ani
+      st.varsta(state);
+      st.varsta(state); // reîncărcarea paginii nu trimite din nou
+      egal(trimise.filter((c) => c.payload.name === 'varsta').map((c) => c.payload.data.varsta).join(','), '20,25,30,35');
+      st.decizie('dupa-liceu', 'munca/full-time');
+      st.decizie('nunta', 'mare');
+      egal(trimise.filter((c) => c.payload.name === 'decizie').map((c) => `${c.payload.data.eveniment}:${c.payload.data.alegere}`).join(','), 'dupa-liceu:munca/full-time', 'doar deciziile urmărite');
+      for (const id of DECIZII_URMARITE) ok(ctxBaza.evenimente.has(id), `decizia urmărită ${id} există în conținut`);
+      st.final(state, { motiv: 'faliment', varsta: 37, final: undefined });
+      egal(JSON.stringify(trimise.at(-1).payload.data), JSON.stringify({ motiv: 'faliment', varsta: 37, final: 'niciunul', scenariu: 'obisnuit' }));
+      const text = JSON.stringify(trimise);
+      ok(!text.includes('Zamfira') && !text.includes('statistici'), 'numele personajului și seed-ul nu pleacă');
+      // O salvare de dinainte de statistici (alt seed): nu trimite vârstele trecute, doar pe cele de acum încolo.
+      const veche = jocNou(ctxBaza, { seed: 'veche' });
+      veche.luna = 12 * (44 - 18);
+      const n = trimise.length;
+      st.varsta(veche);
+      egal(trimise.length, n, 'salvarea veche nu trimite vârstele trecute');
+      veche.luna = 12 * (45 - 18);
+      st.varsta(veche);
+      egal(trimise.at(-1).payload.data.varsta, 45);
+    },
+    'statistici: pe preview nu trimit nimic, iar o eroare de rețea nu oprește jocul'() {
+      const trimise = [];
+      const st = creeazaStatistici({ storage: creeazaStorageMemorie(), mediu: mediu('https://mihaimpmo.github.io/finventure-preview/'), trimite: (c) => trimise.push(c) });
+      const state = jocNou(ctxBaza, { seed: 'p' });
+      st.vizita(); st.jocNou(state); state.luna = 12 * 30; st.varsta(state); st.decizie('dupa-liceu', 'x'); st.final(state, { motiv: 'pensie', varsta: 65 });
+      egal(trimise.length, 0);
+      const strica = creeazaStatistici({ storage: creeazaStorageMemorie(), mediu: mediu(PRINCIPAL), trimite: () => { throw new Error('rețea'); } });
+      strica.vizita(); strica.jocNou(state); strica.decizie('dupa-liceu', 'x'); strica.final(state, { motiv: 'pensie', varsta: 65 });
+    },
   };
 }
 

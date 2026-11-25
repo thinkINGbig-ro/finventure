@@ -11,14 +11,18 @@ export const PREFIX_PRINCIPAL = 'finventure.';
 export const PREFIX_PREVIEW = 'finventure-preview.';
 const GAZDA_PRINCIPALA = 'thinkingbig-ro.github.io';
 
-export function prefixPentru(loc = globalThis.location) {
-  if (!loc) return PREFIX_PRINCIPAL;
-  const gazda = String(loc.hostname ?? '').toLowerCase();
-  const cale = String(loc.pathname ?? '').toLowerCase();
-  const principal = gazda === GAZDA_PRINCIPALA
+// Jocul publicat (nu preview-ul, nu localhost). Îl folosesc și statisticile (js/statistici.js).
+export function esteSitePrincipal(loc) {
+  const gazda = String(loc?.hostname ?? '').toLowerCase();
+  const cale = String(loc?.pathname ?? '').toLowerCase();
+  return gazda === GAZDA_PRINCIPALA
     && (cale === '/finventure' || cale.startsWith('/finventure/'))
     && !(cale === '/finventure/preview' || cale.startsWith('/finventure/preview/'));
-  return principal ? PREFIX_PRINCIPAL : PREFIX_PREVIEW;
+}
+
+export function prefixPentru(loc = globalThis.location) {
+  if (!loc) return PREFIX_PRINCIPAL;
+  return esteSitePrincipal(loc) ? PREFIX_PRINCIPAL : PREFIX_PREVIEW;
 }
 
 const PREFIX_ADRESA = prefixPentru();
@@ -29,6 +33,7 @@ export const CHEI = {
   concepte: 'concepte',
   achievements: 'achievements',
   clasament: 'clasament',
+  statistici: 'statistici',
 };
 
 function backendMemorie() {

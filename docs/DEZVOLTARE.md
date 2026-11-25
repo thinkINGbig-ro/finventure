@@ -190,6 +190,23 @@ Produsul `imobil` (apartamentul de închiriat) e separat de `proprietate` (locui
 
 Starea are câmpul `versiune` (`VERSIUNE_SALVARE` în `js/state.js`). Când se schimbă formatul stării, crește versiunea și adaugă un pas în `MIGRARI` care completează câmpurile noi: salvările și checkpoint-urile vechi se încarcă migrate, nu se pierd. O salvare dintr-o versiune mai nouă decât jocul nu se încarcă.
 
+## Statisticile anonime (Umami)
+
+`js/statistici.js` trimite la serverul Umami al echipei (`https://mpetrar.go.ro/`, panoul cu login; Docker în `~/umami` pe serverul echipei, în spatele Caddy-ului din `~/guacamole`, care trimite `/guacamole*` la Guacamole și restul la Umami) câteva evenimente, ca să știm câți joacă și până unde ajung:
+
+| Eveniment | Date | Când |
+|---|---|---|
+| (vizită) | — | la fiecare pornire a paginii |
+| `joc-nou` | `scenariu` | prima viață pe dispozitiv și fiecare „Joc nou” |
+| `varsta` | `varsta` (20, 25 … 60), `scenariu` | o singură dată pe viață pentru fiecare vârstă-reper (`CHEI.statistici` ține minte ultima, ca reîncărcarea să nu le trimită din nou) |
+| `decizie` | `eveniment`, `alegere` (calea, ex. `ma-imprumut/ifn`) | la deciziile din `DECIZII_URMARITE`: `dupa-liceu`, `urgenta-2000`, `ifn-alegere`, `prabusire-bursa` |
+| `final` | `motiv`, `varsta`, `final` (id-ul finalului colecționabil), `scenariu` | o dată pe viață, odată cu intrarea în clasament |
+
+- **Doar de pe site-ul principal** (`esteSitePrincipal` din `js/storage.js`): preview-ul, localhost, `?debug=1`, „Do Not Track” și „Global Privacy Control” nu trimit nimic. Simularea și testele nu trimit nimic.
+- **Fără cookie-uri și fără identificator pe dispozitiv**; fără numele personajului, seed sau sume. Textul pentru jucători e în meniul ⋯ și în README („Ce date colectăm”).
+- **Datele brute** sunt în PostgreSQL-ul lui Umami (containerul `umami-umami-db-1`); pentru proiect se pot exporta cu SQL sau din panou (filtre pe proprietățile evenimentelor).
+- O decizie nouă de urmărit: adaug-o în `DECIZII_URMARITE` (testul verifică că id-ul există în conținut) și în tabelul de aici și din README.
+
 ## Teste și simulare
 
 ```
