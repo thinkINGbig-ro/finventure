@@ -247,9 +247,13 @@ Ca să comparăm corect, am jucat **aceeași viață de două ori**, cu același
 
 | Simulare | Vieți cu cumpărare | Averea mediană cu casa | Aceeași viață, în chirie | Casa a ieșit mai bine în |
 |---|---|---|---|---|
-| 500 de vieți | 475 | ~1,20 mil. lei de azi | ~1,23 mil. lei de azi | **51%** din vieți (diferența mediană: ~+5.000 lei) |
+| 500 de vieți, înainte de extindere (tot pe ETF) | 475 | ~1,20 mil. lei de azi | ~1,23 mil. lei de azi | **51%** din vieți (diferența mediană: ~+5.000 lei) |
+| 500 de vieți, după extindere (prudentul rebalansează la 5 ani pe strategia echilibrată: 60% ETF, 25% titluri de stat, 10% aur, 5% acțiuni) | 464 | ~1,18 mil. lei de azi | ~818.000 lei de azi | **80%** din vieți (diferența mediană: ~+347.000 lei) |
+| 500 de vieți, după extindere, fără rebalansare (verificare) | 455 | ~1,38 mil. lei de azi | ~1,30 mil. lei de azi | **59%** din vieți |
 
-Răspunsul, în modelul nostru: **la bani, e practic egal.** Casa îți aduce siguranță și nicio chirie la bătrânețe; chiria plus investițiile disciplinate ajung în același loc. Lecția nu e „cumpără” sau „nu cumpăra”, ci: alege o casă pe care ți-o permiți, iar dacă rămâi în chirie, investește diferența. Fără investiții, chiria pierde. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
+Schimbarea a apărut la lotul 4a (verificat commit cu commit pe 100 de vieți: 51% pe `main`, 84% imediat după 4a). Cauza e strategia de investiții a profilului, nu o greșeală de calcul: în chirie, toată averea stă în portofoliu, iar un portofoliu echilibrat crește mai încet decât unul doar pe ETF. Cu tot pe ETF, chiria și casa ies aproape egal.
+
+Răspunsul, în modelul nostru: **depinde de cum investești diferența.** Casa îți aduce siguranță și nicio chirie la bătrânețe; chiria ajunge în același loc doar cu investiții disciplinate și pe bursă. Lecția nu e „cumpără” sau „nu cumpăra”, ci: alege o casă pe care ți-o permiți, iar dacă rămâi în chirie, investește diferența. Fără investiții, chiria pierde. Rezultatul depinde de ipoteze care pot fi discutate și sunt toate în `data/config.json`: dobânda la ipotecă (7,5%), randamentul investițiilor (~7%), creșterea prețurilor caselor (inflația + 1%) și faptul că chiria crește odată cu inflația.
 
 ## Limitări cunoscute (direcții de extindere)
 

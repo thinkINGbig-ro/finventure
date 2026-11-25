@@ -1,6 +1,6 @@
 # Finventure — joc web de educație financiară (concurs Banometru)
 
-> **Stare: fazele A–F sunt terminate; a început EXTINDEREA (loturile 0–9) pe ramura `extindere`.** Pe `main` (publicat pe GitHub Pages) ajung doar loturi terminate, cu testele trecute și simularea rulată, și doar după confirmarea echipei. `main` trebuie să rămână jucabil în orice moment. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
+> **Stare: fazele A–F și EXTINDEREA (loturile 0–9c) sunt terminate și publicate pe `main`. Funcționalitățile sunt din nou ÎNGHEȚATE:** fără funcționalități noi fără decizia echipei; doar reparații, conținut și verificarea valorilor. Orice schimbare se face pe ramura `extindere` și se testează pe preview (https://mihaimpmo.github.io/finventure-preview/) înainte de merge în `main`, doar după confirmarea echipei. `main` trebuie să rămână jucabil în orice moment. Vezi secțiunea 14, „Stare curentă”, înainte de orice altă modificare.
 
 ## 1. Context
 
@@ -332,7 +332,7 @@ docs/DEZVOLTARE.md  documentația tehnică: rulare locală, GitHub Pages, struct
 5. ✅ **Faza D:** ecranul „Ce s-a întâmplat?”, checkpoint-urile, finalurile, achievements, cardul de distribuit.
 6. ✅ **Faza E:** `tools/validate.html`, modul debug, testare pe mobil, deploy pe GitHub Pages, README.
 7. ✅ **Faza F:** conținutul pentru fazele de viață 4–5, simularea automată, `tools/tree.html`.
-8. **Extinderea (loturile 0–9):** vezi secțiunea 14, „Extinderea”.
+8. ✅ **Extinderea (loturile 0–9c):** vezi secțiunea 14, „Extinderea”.
 9. **Mai târziu, doar dacă decidem:** clasamentul online.
 
 **Reguli de lucru:**
@@ -348,7 +348,7 @@ Actualizează secțiunea asta la fiecare schimbare importantă, ca o sesiune nou
 
 ### Ce e gata (fazele A–F)
 
-- **Conținut:** 59 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare).
+- **Conținut:** 59 de evenimente în 10 fișiere (`data/events/`), 49 de concepte, 14 finaluri colecționabile, 20 de joburi (cu scări de promovare). După extindere: 88 de evenimente, 90 de concepte, 53 de joburi, 16 activități, 7 programe de studii și 10 cursuri, 18 bunuri, 9 domenii de afaceri, 4 scenarii de start.
 - **Motor:** an septembrie–august cu simulare lunară; max. 4 opriri pe an (lanțurile imediate cu `dupaLuni: 0`, ca CV-ul, nu se numără); sub-alegeri pe două niveluri; facturi neplătite → somație → deconectare/evacuare → recuperatori → executare → poprire pe salariu, cont, economii și investiții; faliment = insolvență (activele vandabile nu acoperă datoriile); renunțarea cere Fericire 0 trei luni la rând.
 - **Bani și produse:** cont curent, economii (fond de urgență = cont marcat), depozite, card de credit (integral / minim), credite (IFN, bancă, magazin, BNPL, auto, leasing, ipotecă fixă sau variabilă cu IRCC), investiții (ETF, acțiuni, crypto, aur, titluri de stat; crash-uri cu decizia „vinzi sau păstrezi?”), casa ca activ, Pilonii II și III.
 - **Creditorii verifică:** contract (nu la negru), istoricul (restanțe, executări, spirala IFN, recuperatori), scorul de credit, **gradul de îndatorare** (BNR: 40%, 45% pentru prima locuință; se aplică și la IFN) și vârsta la scadența ipotecii.
@@ -372,6 +372,7 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 | Arborele deciziilor | `/tools/tree.html` (`?radacina=urgenta-2000` pentru ramura IFN) |
 | Modul debug | `/?debug=1` (sari la o vârstă, setezi statistici/flag-uri, forțezi un eveniment, simulare) |
 | Formatarea JSON-urilor | `node tools/formateaza-json.js data/events/fisier.json` |
+| Preview-ul de test (ramura `extindere`) | https://mihaimpmo.github.io/finventure-preview/ (repo `mihaimpmo/finventure-preview`; se actualizează singur la câteva minute după push pe `extindere`; commit-ul publicat în `/versiune.txt`; imediat: `gh workflow run preview.yml -R mihaimpmo/finventure-preview`) |
 
 ### Echilibrul (ultimul raport, 500 de vieți pe profil, după lotul 9c)
 
@@ -393,9 +394,9 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 - Fără atribuire către Claude în commit-uri (verificare: `git log --format=%B | grep -i -E "co-authored|generated with"` trebuie să nu găsească nimic).
 - Push doar cu acordul explicit al echipei (pentru `extindere`: commit-uri locale; merge în `main` doar după confirmare).
 
-### Extinderea (în lucru pe ramura `extindere`)
+### Extinderea (terminată, pe `main` din 2026-11-25)
 
-Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
+Funcționalitățile s-au dezghețat pentru extindere și sunt din nou înghețate după ea. Loturile, în ordinea în care s-au făcut:
 
 | Lot | Ce conține | Stare |
 |---|---|---|
@@ -451,8 +452,15 @@ Reguli pentru extindere:
 - Fișierele se scriu cu tool-ul de editare, nu prin bash.
 - Merge în `main` doar după confirmarea echipei.
 
+### Mediul de test și salvările
+
+- **Preview:** ramura `extindere` rămâne mediul de test: orice reparație se face acolo, se urcă (push), se verifică pe https://mihaimpmo.github.io/finventure-preview/ și ajunge pe `main` doar după confirmarea echipei. `thinkINGbig-ro` e un cont personal, iar colaboratorii nu pot schimba setările de Pages; de aceea preview-ul e pe contul `mihaimpmo`.
+- **Salvările:** `js/storage.js` `prefixPentru`: doar site-ul principal folosește cheile `finventure.*`; orice altă adresă (preview, localhost) folosește `finventure-preview.*`.
+- **Cache-ul:** `index.html` verifică modulele la pornire și repară un amestec de fișiere vechi și noi; versiunea paginii e în `<meta name="finventure-cod">` și în `js/versiune.js` (detalii în `docs/DEZVOLTARE.md`).
+- **Chirie vs. cumpărare:** după lotul 4a, casa iese mai bine în ~80% din vieți (era ~51%), din cauza rebalansării prudentului pe strategia echilibrată; fără rebalansare, ~59%. Detalii în `docs/DEZVOLTARE.md`.
+
 ### Ce urmează
 
-- Loturile 1–9 sunt gata pe `extindere`: urmează testarea echipei pe telefon și merge-ul în `main` (doar după confirmare).
+- Funcționalitățile sunt înghețate; doar reparații din testare, pe `extindere` → preview → `main`.
 - Verificarea valorilor din `data/config.json` cu un specialist (completat `sursa`, `deVerificat: false`).
 - Mai târziu, doar dacă decidem: clasamentul online (stratul `js/storage.js` e pregătit).
