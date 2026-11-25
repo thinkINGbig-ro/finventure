@@ -87,18 +87,57 @@ function lot9b(ctxBaza, a) {
       ok(!state.recurente.some((x) => x.asigurare === 'locuinta'), 'prima nu se mai plătește');
     },
 
-    'lotul 9b: moștenirea cu datorii: renunțarea nu costă nimic, acceptarea lasă o datorie'() {
+    'lotul 9b: moștenirea cu datorii (art. 1114 C. civ.): nicio variantă nu ia din banii tăi mai mult decât valoarea casei'() {
+      const ev = ctxBaza.evenimente.get('mostenire-datorii');
+      const v = ev.variabile;
+      egal(v.diferenta, v.casa - v.datorii, 'diferența');
+      egal(v.rest, v.casa - v.datorii - ctxBaza.config.mostenire.taxaNotar.valoare, 'restul după bancă și notar');
+      ok(ev.alegeri.every((x) => !x.produsNou || [x.produsNou].flat().every((p) => p.tip !== 'credit')), 'nicio alegere nu deschide un credit');
+      ok(ev.alegeri.some((x) => !x.cere), 'o alegere fără „cere”');
+
       const { ctx, state } = a.jocCuJob('mostenire-datorii');
       a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
       state.pendinte = null;
-      const datoriiInainte = state.produse.filter((p) => p.tip === 'credit').length;
+      state.numerar = inBani(100_000);
+      const credite = () => state.produse.filter((p) => p.tip === 'credit').length;
+      const nrCredite = credite();
       forteazaEveniment(state, ctx, 'mostenire-datorii');
-      const copie = cloneaza(state);
+      const vars = oprireCurenta(state, ctx).variabile;
+      const avere = avereNeta(state);
+      const vand = cloneaza(state);
+      const platesc = cloneaza(state);
       alege(state, ctx, 'renunt');
-      egal(state.produse.filter((p) => p.tip === 'credit').length, datoriiInainte, 'renunț: nicio datorie nouă');
-      alege(copie, ctx, 'accept');
-      ok(copie.produse.filter((p) => p.tip === 'credit').length === datoriiInainte + 1, 'accept: un credit nou');
-      ok(copie.concepte.includes('mostenire'), 'conceptul');
+      egal(avereNeta(state), avere, 'renunț: averea nu se schimbă');
+      egal(credite(), nrCredite, 'renunț: nicio datorie nouă');
+      alege(vand, ctx, 'vand');
+      egal(avereNeta(vand) - avere, inBani(vars.rest), 'vând: primesc diferența');
+      alege(platesc, ctx, 'platesc');
+      const casa = platesc.produse.find((p) => p.tip === 'imobil');
+      ok(casa && casa.valoare === inBani(vars.casa), 'plătesc: păstrez casa, ca imobil de închiriat');
+      ok(avereNeta(platesc) - avere === inBani(vars.casa - vars.datorii), 'plătesc: câștig valoarea casei minus datoria');
+      ok(platesc.concepte.includes('mostenire-datorii'), 'conceptul');
+
+      const sarac = cloneaza(vand);
+      sarac.numerar = 0;
+      sarac.produse = sarac.produse.filter((p) => !['contCurent', 'contEconomii', 'depozit', 'investitie'].includes(p.tip) || p.tip === 'contCurent');
+      for (const p of sarac.produse) if (p.tip === 'contCurent') p.sold = 0;
+      sarac.pendinte = null;
+      forteazaEveniment(sarac, ctx, 'mostenire-datorii');
+      ok(!oprireCurenta(sarac, ctx).alegeri.find((x) => x.id === 'platesc').disponibil, 'fără bani: nu poți plăti din buzunar');
+    },
+
+    'lotul 9b: o primă de asigurare neplătită reziliază polița, nu devine datorie'() {
+      const { ctx, state } = a.jocCuJob('asig-reziliere');
+      a.consuma(state, ctx, oprireCurenta(state, ctx), a.primaDisponibila);
+      ok(actiune(state, ctx, 'asigurare', { tip: 'viata' }).ok, 'asigurată');
+      state.produse = state.produse.filter((p) => p.tip !== 'contractMunca' && p.tip !== 'contEconomii');
+      state.numerar = 0;
+      for (const p of state.produse) if (p.tip === 'contCurent') p.sold = 0;
+      state.pendinte = null;
+      a.consuma(state, ctx, avanseaza(state, ctx), a.primaDisponibila);
+      ok(!state.recurente.some((x) => x.asigurare === 'viata'), 'prima nu se mai plătește');
+      ok(!areFlag(state, 'asigurare_viata'), 'fără flag');
+      ok(state.jurnal.some((j) => /reziliat/.test(j.text ?? j)), 'jurnalul');
     },
   };
 }

@@ -372,9 +372,10 @@ const CAMPURI_PRODUS = {
   cardCredit: { limita: 'num', plata: ['integral', 'minim'], cumparaturiPeCard: 'bool', dobandaAnuala: 'num' },
   credit: { furnizor: 'str', suma: 'num', dae: 'num', luni: 'num', luniFaraDobanda: 'num', laRestanta: 'eveniment', flag: 'str', variabila: 'bool' },
   proprietate: { valoare: 'num', marime: ['garsoniera', 'apartament'] },
+  imobil: { valoare: 'num', marime: ['garsoniera', 'apartament'] }, // de închiriat sau de vândut (ex. o casă moștenită)
   investitie: { clasa: CLASE_INVESTITII, suma: 'num', luni: 'num' },
 };
-const PRODUSE_OBLIGATORII = { credit: ['suma', 'luni'], depozit: ['suma'], investitie: ['clasa', 'suma'], proprietate: ['valoare'] };
+const PRODUSE_OBLIGATORII = { credit: ['suma', 'luni'], depozit: ['suma'], investitie: ['clasa', 'suma'], proprietate: ['valoare'], imobil: ['valoare', 'marime'] };
 const RE_FLAG = /^[a-z0-9_]+(:\d+)?$/;
 const RE_FLAG_NUME = /^[a-z0-9_]+$/;
 const RE_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;

@@ -427,6 +427,11 @@
     "franciza": { "valoare": 500, "deVerificat": true, "sursa": "" },
     "varstaMaxViata": { "valoare": 60, "deVerificat": true, "sursa": "", "nota": "după vârsta asta, asigurătorii nu mai încheie polițe noi (simplificat)" }
   },
+  "mostenire": {
+    "_info": "Moștenitorii răspund pentru datoriile moștenirii doar cu bunurile moștenite, proporțional cu cota (Codul civil, art. 1114 alin. 2).",
+    "termenOptiuneLuni": { "valoare": 12, "deVerificat": true, "sursa": "Codul civil, art. 1103 (termenul de opțiune succesorală)", "nota": "în cât timp de la deces poți accepta sau renunța la moștenire" },
+    "taxaNotar": { "valoare": 2000, "deVerificat": true, "sursa": "", "nota": "onorariul pentru dezbaterea unei moșteniri mici (casă de ~70.000 lei)" }
+  },
 
   "infractiuni": {
     "_info": "Pedepsele din joc sunt simplificate și orientative; în realitate depind de faptă, de valoare, de antecedente și de instanță. Sumele sunt în lei, la prețurile de start.",

@@ -529,6 +529,7 @@ export function deschideProdus(state, ctx, spec, cauza = null) {
   if (sePlateste && baniDisponibili(state) < spec.suma) return null;
   const prod = creeazaProdus({ ...spec, cauza }, state, ctx);
   if (sePlateste) plateste(state, spec.suma);
+  if (prod.tip === 'imobil') prod.cumparatLa = state.luna;
   if (prod.tip === 'credit') {
     incaseaza(state, prod.sumaInitiala);
     if (prod.flag) seteazaFlag(state, prod.flag);

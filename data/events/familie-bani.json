@@ -121,24 +121,33 @@
       "conditii": { "varstaMin": 25 },
       "pondere": 1,
       "maxAparitii": 1,
-      "variabile": { "casa": 60000, "datorii": 90000, "diferenta": 30000 },
-      "text": "Unchiul ți-a lăsat casa lui de la țară, care valorează cam {casa} lei. La notar afli că lasă și datorii la bancă: {datorii} lei.",
+      "variabile": { "casa": 70000, "datorii": 50000, "diferenta": 20000, "notar": "pret:mostenire.taxaNotar", "rest": 18000, "termen": "config:mostenire.termenOptiuneLuni" },
+      "text": "Unchiul ți-a lăsat casa lui de la țară, care valorează cam {casa} lei. La notar afli că avea și un credit la bancă: {datorii} lei. Ai {termen} luni ca să accepți sau să renunți. Dacă accepți, răspunzi pentru datorie doar cu ce moștenești, nu cu banii tăi.",
       "alegeri": [
+        {
+          "id": "platesc",
+          "eticheta": "Accept și plătesc datoria din banii mei: păstrez casa",
+          "cere": { "baniMin": "{datorii}" },
+          "efecte": { "numerar": "-{datorii}", "fericire": 3 },
+          "produsNou": { "tip": "imobil", "valoare": "{casa}", "marime": "garsoniera" },
+          "concepte": ["mostenire-datorii", "mostenire"],
+          "lectie": "Ai dat {datorii} lei pe o casă de {casa} lei. Merită doar când casa valorează mai mult decât datoria; acum o poți da în chirie sau vinde.",
+          "jurnal": "Ai acceptat moștenirea unchiului, i-ai plătit creditul din banii tăi și ai păstrat casa."
+        },
+        {
+          "id": "vand",
+          "eticheta": "Accept și vând casa",
+          "efecte": { "numerar": "{rest}" },
+          "concepte": ["mostenire-datorii", "mostenire"],
+          "lectie": "Banca se plătește din prețul casei, iar diferența e a ta. Dacă datoria ar fi fost mai mare decât casa, ai fi rămas cu zero, dar fără să plătești restul din buzunar.",
+          "jurnal": "Ai acceptat moștenirea unchiului, ai vândut casa și ți-au rămas bani după ce s-a închis creditul."
+        },
         {
           "id": "renunt",
           "eticheta": "Renunț la moștenire",
-          "concepte": ["mostenire"],
-          "lectie": "Moștenești și datoriile. Când sunt mai mari decât averea, poți renunța la notar.",
-          "jurnal": "Ai renunțat la moștenirea unchiului, care avea mai multe datorii decât valoarea casei."
-        },
-        {
-          "id": "accept",
-          "eticheta": "Accept: vând casa și plătesc datoriile",
-          "produsNou": { "tip": "credit", "furnizor": "banca", "suma": "{diferenta}", "dae": "config:creditNevoiPersonale.dae", "luni": 60 },
-          "efecte": { "numerar": "-{diferenta}", "fericire": -3 },
-          "concepte": ["mostenire"],
-          "lectie": "Ai preluat o datorie care nu era a ta. Citește actele înainte să accepți o moștenire.",
-          "jurnal": "Ai acceptat moștenirea unchiului: după vânzarea casei, ai rămas cu 30.000 lei de plătit."
+          "concepte": ["mostenire-datorii", "mostenire"],
+          "lectie": "Renunțarea are sens când datoriile sunt mai mari decât averea. Aici casa valora cu {diferenta} lei mai mult decât creditul.",
+          "jurnal": "Ai renunțat la moștenirea unchiului."
         }
       ]
     },

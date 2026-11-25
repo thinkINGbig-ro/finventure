@@ -302,12 +302,18 @@ export function proceseazaLuna(state, ctx) {
       const platit = plateste(state, r.suma);
       if (r.destinatie === 'pilon3') state.pensie.pilon3 = (state.pensie.pilon3 ?? 0) + platit; // economie, nu cheltuială
       else ac.cheltuieliTrai += platit;
-      neplatit += r.suma - platit;
+      // O primă de asigurare neplătită nu devine datorie: polița se reziliază.
+      if (r.asigurare && platit < r.suma) r.reziliata = true;
+      else neplatit += r.suma - platit;
     }
     if (r.luniRamase != null) r.luniRamase -= 1;
   }
+  for (const r of state.recurente.filter((x) => x.reziliata)) {
+    delete state.flaguri[`asigurare_${r.asigurare}`];
+    adaugaJurnal(state, `Nu ai mai avut bani de prima la ${r.eticheta.toLowerCase()}, așa că polița s-a reziliat.`);
+  }
   // Recurențele legate de o locuință (ex. contribuția extra la părinți) se opresc când te muți.
-  state.recurente = state.recurente.filter((r) => (r.luniRamase == null || r.luniRamase > 0) && (!r.locuinta || r.locuinta === state.situatie.locuinta));
+  state.recurente = state.recurente.filter((r) => !r.reziliata).filter((r) => (r.luniRamase == null || r.luniRamase > 0) && (!r.locuinta || r.locuinta === state.situatie.locuinta));
 
   // 3. Studii: bursa lunară și taxa la începutul fiecărui an de studiu (dacă nu e plătită cu credit);
   // cursurile scurte merg în paralel.

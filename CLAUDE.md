@@ -382,7 +382,7 @@ Documentația tehnică completă (pentru echipă) e în `docs/DEZVOLTARE.md`; `R
 | aleator | ~55% | ~45% (incl. ~5% burnout) |
 | riscant | ~24% | ~76% |
 
-Ținte stabilite: prudent > 80%, aleator 40–60%, riscant rar. **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
+Ținte stabilite: prudent > 80%, aleator 30–60% (coborâtă de la 40–60% după lotul 9b: fiecare lot i-a dat opțiuni riscante; contează diferența mare față de prudent), riscant rar (foarte jos e acceptabil). **Nu ajusta parametrii ca să iasă procentele**: dacă un rezultat pare greșit, caută cauza în mecanici sau în profiluri și raportează.
 
 ### Reguli care s-au stabilit pe parcurs
 
@@ -411,7 +411,7 @@ Funcționalitățile s-au dezghețat pentru o extindere mare. Ordinea aprobată:
 | 7 | Cumpărături (`data/cumparaturi.json`, `js/cumparaturi.js`): 18 bunuri în 6 categorii (tehnologie, haine, 4 mașini, hobby, câine / pisică cu cost lunar, cadouri), calitate, depreciere lunară, revânzare (animalele nu), plata cash / card / rate (DAE și costul total afișat) / BNPL; „Caut o locuință” deschide decizia de cumpărare; evenimentele-tentație „A ieșit noul model” și „Black Friday” (efectul nou `bunNou`, selectorul `bun:<categorie>`); 3 concepte noi | ✅ |
 | 8 | Infracțiuni și consecințe (`data/events/infractiuni.json`, `js/infractiuni.js`; doar decizii și urmări, fără „cum se face”): 4 tentații (money mule pe Instagram, furt mărunt la sfârșit de lună, decont fals, vânzări nedeclarate la firmă), șansa de a fi prins crește la fiecare repetare, „Dosar penal” (recunoști sau iei avocat), amendă / închisoare (fără job, fără timp, doar operațiuni cu bani), cazier 5 ani (credite refuzate, CV mai slab, 15 joburi închise prin `faraCazier`); test: nicio faptă nu e rentabilă; variabile `"text:…"`; salvări versiunea 5; 3 concepte noi | ✅ |
 | 9a | Scenariile de start (`data/scenarii.json`, `js/scenarii.js`), alese la „Joc nou”: Ca toată lumea, Începi cu 15.000 lei datorii, Fără bac (facultatea și postliceala închise, poliția la fel; cursul „Bacalaureatul, din nou”), Moștenești o garsonieră (de închiriat); graficul averii nete și al datoriilor (butonul 📈 din antet și ecranul de final); `node tests/simulare.js --scenariu <id>`; conceptul „moștenirea” | ✅ |
-| 9b | Asigurări (`js/asigurari.js`, Bancă → Asigurări): locuința (facultativă, peste PAD) și viața cu boli grave, cu prima lunară; evenimente (`data/events/familie-bani.json`): inundație de la vecini, diagnostic grav, moștenire în bani, moștenire cu datorii (renunți sau preiei datoria), ajutorul pentru părinți, donația părinților pentru avans, formularul 230; 4 concepte noi | ✅ |
+| 9b | Asigurări (`js/asigurari.js`, Bancă → Asigurări): locuința (facultativă, peste PAD) și viața cu boli grave, cu prima lunară; evenimente (`data/events/familie-bani.json`): inundație de la vecini, diagnostic grav, moștenire în bani, moștenire cu datorii (după art. 1114 C. civ.: plătești și păstrezi casa, o vinzi și iei diferența, sau renunți), ajutorul pentru părinți, donația părinților pentru avans, formularul 230; 4 concepte noi | ✅ |
 | 9c | Partener și familie: venit comun, copii, alocație, risc de divorț | |
 
 Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 500 de vieți pe profil):
@@ -435,11 +435,12 @@ Evoluția echilibrului pe loturi (pensie + independență / faliment + burnout, 
 | 8 | 100 / 0 | 100 / 0 | 42 / 58 (verificat pe aceleași 500 de vieți: când refuză faptele, 48,6%; ~29% dintre vieți comit măcar una, iar cele condamnate cad mai des în faliment) | 10 / 90 (fără fapte, 10,6%) |
 | 9a | 100 / 0 | 100 / 0 | 42,2 / 57,8 | 10 / 90 (jocul de bază neschimbat; pe scenarii, 200 de vieți: „datorii” 100 / 100 / 12 / 0, „fără bac” 100 / 100 / 26,5 / 9,5, „moștenire” 100 / 100 / 87 / 99,5: chiria plătește popririle, iar executarea nu poate vinde un imobil, limitare de discutat) |
 | 9b | 100 / 0 | 100 / 0 | 33,8 / 66,2 (sub țintă; verificat pe aceleași 300 de vieți: fără cele 7 evenimente noi, 38,7%; fără „Casa unchiului”, 38%; fără „Un diagnostic greu”, 36,3%: aleatorul preia jumătate din timp datoria de 30.000 lei sau ia credit de 40.000 lei pentru clinică) | 1,4 / 98,6 (fără cele 7, 10%; fără „Casa unchiului”, 6%; fără diagnostic, 4%) |
+| 9b, reparat | 100 / 0 | 100 / 0 | 37,4 / 62,6 (în ținta nouă de 30–60%) | 4,8 / 95,2 |
 
-**De decis cu echipa (lotul 9b):** aleatorul e sub ținta de 40%. Cauza principală e „Casa unchiului” (moștenire cu 30.000 lei datorii, de la 25 de ani). Variante: rămâne ca lecție, vârstă minimă mai mare sau o datorie mai mică.
+**Reparat după lotul 9b (decizia echipei):** „Casa unchiului” respectă acum Codul civil (art. 1114 alin. 2): moștenitorul răspunde pentru datorii doar cu bunurile moștenite. Variante: plătești datoria din banii tăi și păstrezi casa, o vinzi și îți rămâne diferența, sau renunți în termenul legal (`config.mostenire.termenOptiuneLuni`). „Un diagnostic greu” rămâne: varianta la stat e disponibilă oricui e asigurat (93 din 106 apariții la aleator); creditul pentru clinica privată e o lecție. O primă de asigurare neplătită reziliază acum polița, în loc să conteze ca lipsă de bani; restul asigurărilor aleatorului sunt o lecție („asigurarea potrivită, nu toate asigurările”).
 
 Atenție la citirea raportului de simulare: reușita = coloana „pensie” + coloana „independenta”.
-Aleatorul a coborât de la ~55% la ~41% pe parcursul extinderii, aproape de marginea țintei (40–60%): fiecare lot îi dă mai multe opțiuni riscante din care alege la întâmplare. De urmărit la loturile 7–8.
+Aleatorul a coborât de la ~55% la ~37% pe parcursul extinderii: fiecare lot îi dă mai multe opțiuni riscante din care alege la întâmplare. Ținta lui a devenit 30–60%.
 
 Reguli pentru extindere:
 - Fiecare lot: teste noi (`tests/loturi.js`), analiza conținutului fără erori, simularea cu cele 4 profiluri (`--n 200` intermediar, `--n 500` la final de lot; profilurile folosesc și opțiunile noi), UI verificat la 360 px, commit separat per lot / sub-lot.
