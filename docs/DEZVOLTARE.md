@@ -213,11 +213,13 @@ git worktree remove ../finventure-main
 **Salvările pe adrese diferite** (`js/storage.js`, `prefixPentru`): doar site-ul principal (`thinkingbig-ro.github.io/finventure/`) folosește cheile `finventure.*`; orice altă adresă (preview, localhost, alt repo) folosește `finventure-preview.*`. Toate site-urile de pe același domeniu `*.github.io` au același localStorage, așa că un preview publicat tot pe `thinkingbig-ro.github.io` nu poate strica salvările jucătorilor.
 
 **Cache-ul după o actualizare:** GitHub Pages lasă browserul să folosească fișierele 10 minute fără să întrebe serverul. Ca un jucător să nu primească un amestec de fișiere vechi și noi:
-- `index.html` nu încarcă direct `js/main.js`: întâi verifică la server toate modulele, urmărind importurile din `main.js` (cereri condiționate, 304 dacă nu s-au schimbat). JSON-urile se cer oricum așa (`js/content.js`).
+- `index.html` nu încarcă direct `js/main.js`: întâi verifică la server, deodată, toate modulele din lista `MODULE` (cereri condiționate, 304 dacă nu s-au schimbat). JSON-urile se cer oricum așa, toate în paralel (`js/content.js`).
+- **Când adaugi un modul nou (sau scoți unul), actualizează lista `MODULE` din `index.html`.** Testul „pornire” din `tests/loturi.js` compară lista cu graful real de importuri al lui `main.js` și pică, cu numele modulului, dacă lipsește ceva sau e ceva în plus. Lista fixă cere totul într-un singur val; urmărirea importurilor cerea un val pe fiecare nivel al grafului (~1 s în plus pe o rețea mobilă).
 - Dacă tot apare o nepotrivire, `window.finventureRepara` cere din nou din rețea pagina, stilul și modulele, apoi reîncarcă, cel mult o dată la 5 minute. Nepotrivirile posibile: un modul nu pornește, conținutul are erori la pornire sau `index.html` are altă versiune decât codul.
 - Versiunea paginii stă în `<meta name="finventure-cod">` din `index.html` și în `js/versiune.js`. Schimb-o în ambele locuri când codul depinde de o schimbare din `index.html`; un test le compară.
 - Butoanele din antet sunt opționale în `main.js`, ca o pagină veche să nu oprească jocul.
-- Importurile rămân statice și relative (`from './x.js'`); un test verifică faptul că încărcătorul le găsește pe toate.
+- Importurile rămân relative (`from './x.js'` sau `import('./x.js')`), ca testul să le găsească pe toate.
+- Pornirea măsurată cu „Slow 4G” în Chrome: vezi tabelul de mai jos.
 
 ## Cum am testat echilibrul jocului
 
