@@ -457,7 +457,8 @@ Reguli pentru extindere:
 - **Preview:** ramura `extindere` rămâne mediul de test: orice reparație se face acolo, se urcă (push), se verifică pe https://mihaimpmo.github.io/finventure-preview/ și ajunge pe `main` doar după confirmarea echipei. `thinkINGbig-ro` e un cont personal, iar colaboratorii nu pot schimba setările de Pages; de aceea preview-ul e pe contul `mihaimpmo`.
 - **Salvările:** `js/storage.js` `prefixPentru`: doar site-ul principal folosește cheile `finventure.*`; orice altă adresă (preview, localhost) folosește `finventure-preview.*`.
 - **Cache-ul:** `index.html` verifică modulele la pornire și repară un amestec de fișiere vechi și noi; versiunea paginii e în `<meta name="finventure-cod">` și în `js/versiune.js` (detalii în `docs/DEZVOLTARE.md`).
-- **Chirie vs. cumpărare:** după lotul 4a, casa iese mai bine în ~80% din vieți (era ~51%), din cauza rebalansării prudentului pe strategia echilibrată; fără rebalansare, ~59%. Detalii în `docs/DEZVOLTARE.md`.
+- **Chirie vs. cumpărare:** după lotul 4a, casa iese mai bine în ~80% din vieți (era ~51%), din cauza rebalansării prudentului pe strategia echilibrată; fără rebalansare, ~59%. Din 2026-11-25 prudentul rebalansează după vârstă (dinamică < 45, echilibrată 45–59, prudentă ≥ 60; doar profilul din simulare): casa mai bună în ~74%, prudentul tot 100%, averea mediană ~1,3 mil. lei de azi. Detalii în `docs/DEZVOLTARE.md`.
+- **Pornirea pe rețea mobilă:** JSON-urile de conținut se cer în paralel (`js/content.js`); una după alta, pornirea pe „Slow 4G” lua ~18 s.
 
 ### Ce urmează
 
